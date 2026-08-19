@@ -4,10 +4,10 @@ import httpx
 import pytest
 import respx
 
-from sert_parser.config import Settings
-from sert_parser.domain.certificate_number import parse_certificate_number
-from sert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
-from sert_parser.infrastructure.registries.belarus import BelgissProvider
+from cert_parser.config import Settings
+from cert_parser.domain.certificate_number import parse_certificate_number
+from cert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
+from cert_parser.infrastructure.registries.belarus import BelgissProvider
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 API_PATTERN = r"https://api\.belgiss\.by/tsouz/tsouz-certifs-light"

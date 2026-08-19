@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import fitz
 
-from sert_parser.config import Settings
-from sert_parser.domain.certificate_number import parse_certificate_number
-from sert_parser.infrastructure.pdf import extract_numbers_from_pdf
+from cert_parser.config import Settings
+from cert_parser.domain.certificate_number import parse_certificate_number
+from cert_parser.infrastructure.pdf import extract_numbers_from_pdf
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 
@@ -33,7 +33,7 @@ def test_extract_numbers_empty_when_no_certificate_text() -> None:
 def test_texts_from_new_and_legacy_ocr_results() -> None:
     from types import SimpleNamespace
 
-    from sert_parser.infrastructure.pdf import _texts_from_ocr_result
+    from cert_parser.infrastructure.pdf import _texts_from_ocr_result
 
     modern = SimpleNamespace(txts=("ЕАЭС BY/112", "02.01"))
     assert "ЕАЭС BY/112" in _texts_from_ocr_result(modern)
@@ -42,7 +42,7 @@ def test_texts_from_new_and_legacy_ocr_results() -> None:
 
 
 def test_ocr_stops_after_first_page_when_number_found(monkeypatch) -> None:
-    from sert_parser.infrastructure import pdf as pdf_module
+    from cert_parser.infrastructure import pdf as pdf_module
 
     scanned: list[int] = []
 
@@ -67,7 +67,7 @@ def test_ocr_stops_after_first_page_when_number_found(monkeypatch) -> None:
 
 
 def test_ocr_falls_back_to_next_pages_when_first_page_empty(monkeypatch) -> None:
-    from sert_parser.infrastructure import pdf as pdf_module
+    from cert_parser.infrastructure import pdf as pdf_module
 
     scanned: list[int] = []
 

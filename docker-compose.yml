@@ -22,8 +22,8 @@ services:
       PDF_OCR_MAX_PAGES: "5"
       PDF_OCR_ENABLED: "true"
     volumes:
-      - sert-parser-data:/app/data
+      - cert-parser-data:/app/data
     restart: unless-stopped
 
 volumes:
-  sert-parser-data:
+  cert-parser-data:

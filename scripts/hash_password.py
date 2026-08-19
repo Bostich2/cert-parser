@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from sert_parser.api.auth import hash_password
+from cert_parser.api.auth import hash_password
 
 
 def main() -> int:
@@ -23,6 +23,16 @@ def main() -> int:
         default="user",
         help="Role when --username is set (default: user)",
     )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Write AUTH_USERS JSON to a file (recommended for Docker/Coolify deploy)",
+    )
+    parser.add_argument(
+        "--for-docker",
+        action="store_true",
+        help="Print a single AUTH_USERS= line with $ escaped for Docker Compose",
+    )
     args = parser.parse_args()
 
     password_hash = hash_password(args.password)
@@ -32,9 +42,17 @@ def main() -> int:
             "password_hash": password_hash,
             "role": args.role,
         }
-        print(json.dumps([entry], ensure_ascii=False, indent=2))
+        payload = json.dumps([entry], ensure_ascii=False, indent=2)
+        if args.output:
+            args.output.write_text(payload + "\n", encoding="utf-8")
+            print(f"Wrote {args.output}", file=sys.stderr)
+        elif args.for_docker:
+            line = json.dumps([entry], ensure_ascii=False, separators=(",", ":"))
+            print("AUTH_USERS=" + line.replace("$", "$$"))
+        else:
+            print(payload)
     else:
-        print(password_hash)
+        print(password_hash.replace("$", "$$") if args.for_docker else password_hash)
     return 0
 
 

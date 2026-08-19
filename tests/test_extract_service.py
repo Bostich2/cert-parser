@@ -5,9 +5,9 @@ from io import BytesIO
 import pytest
 from openpyxl import Workbook
 
-from sert_parser.application.export_service import ExportService
-from sert_parser.application.extract_service import ExtractService
-from sert_parser.config import Settings
+from cert_parser.application.export_service import ExportService
+from cert_parser.application.extract_service import ExtractService
+from cert_parser.config import Settings
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 

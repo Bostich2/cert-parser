@@ -78,7 +78,7 @@ def main() -> int:
     parser.add_argument(
         "--message",
         "-m",
-        help="Annotated tag message (default: sert-parser vX.Y.Z)",
+        help="Annotated tag message (default: cert-parser vX.Y.Z)",
     )
     parser.add_argument(
         "--push",
@@ -103,7 +103,7 @@ def main() -> int:
 
     next_version = bump_version(current, args.part)
     next_tag = format_version(next_version)
-    message = args.message or f"sert-parser {next_tag}"
+    message = args.message or f"cert-parser {next_tag}"
 
     print(f"Current tag: {tag or '(none)'}")
     print(f"Next tag:    {next_tag}")
@@ -122,7 +122,7 @@ def main() -> int:
 
         resolved = setuptools_scm.get_version(
             root=str(ROOT),
-            relative_to="src/sert_parser/version.py",
+            relative_to="src/cert_parser/version.py",
         )
         print(f"Resolved version: {resolved}")
     except Exception as exc:  # noqa: BLE001 - release helper

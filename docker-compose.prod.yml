@@ -16,7 +16,7 @@ services:
       AUTH_ENABLED: "true"
       AUTH_SECURE_COOKIES: "true"
     volumes:
-      - sert-parser-data:/app/data
+      - cert-parser-data:/app/data
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
@@ -40,6 +40,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  sert-parser-data:
+  cert-parser-data:
   caddy-data:
   caddy-config:

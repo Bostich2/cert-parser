@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
-from sert_parser.domain.certificate_number import compact_number, parse_certificate_number
-from sert_parser.domain.errors import AmbiguousMatchError, CertificateNotFoundError
-from sert_parser.infrastructure.registries.matching import is_safe_contained_match, pick_matching_item, record_from_light_item
+from cert_parser.domain.certificate_number import compact_number, parse_certificate_number
+from cert_parser.domain.errors import AmbiguousMatchError, CertificateNotFoundError
+from cert_parser.infrastructure.registries.matching import is_safe_contained_match, pick_matching_item, record_from_light_item
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 
@@ -36,7 +36,7 @@ def test_pick_match_without_union_prefix() -> None:
 
 
 def test_short_query_does_not_use_contained_match() -> None:
-    from sert_parser.domain.models import CertificateNumber
+    from cert_parser.domain.models import CertificateNumber
 
     number = CertificateNumber(
         raw="00276",

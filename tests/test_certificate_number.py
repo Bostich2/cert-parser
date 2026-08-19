@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from sert_parser.domain.certificate_number import (
+from cert_parser.domain.certificate_number import (
     compact_number,
     numbers_match,
     parse_certificate_number,
 )
-from sert_parser.domain.errors import InvalidNumberError
+from cert_parser.domain.errors import InvalidNumberError
 
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
@@ -79,7 +79,7 @@ def test_latin_and_cyrillic_certificate_mark_match() -> None:
 
 
 def test_extract_candidates_from_mixed_text() -> None:
-    from sert_parser.domain.certificate_number import extract_certificate_candidates
+    from cert_parser.domain.certificate_number import extract_certificate_candidates
 
     text = (
         "Документ ЕАЭС BY/112 02.01. ТР018 010.02 00276 выдан. "
@@ -92,7 +92,7 @@ def test_extract_candidates_from_mixed_text() -> None:
 
 
 def test_extract_ocr_garbled_belarus_header() -> None:
-    from sert_parser.domain.certificate_number import extract_certificate_candidates
+    from cert_parser.domain.certificate_number import extract_certificate_candidates
 
     text = "Ng EADC BY/112 02.01. TP018 010.02 00276"
     found = extract_certificate_candidates(text)
@@ -102,7 +102,7 @@ def test_extract_ocr_garbled_belarus_header() -> None:
 
 def test_extract_ocr_mixed_script_eaeu_prefix_no_space_after_numero() -> None:
     """№ is often glued to EAЭC in RapidOCR eslav output."""
-    from sert_parser.domain.certificate_number import extract_certificate_candidates
+    from cert_parser.domain.certificate_number import extract_certificate_candidates
 
     text = "СООТВЕТСТВИЯ №EAЭC BY/112 02.01. TP018 010.02 00276"
     found = extract_certificate_candidates(text)
@@ -110,7 +110,7 @@ def test_extract_ocr_mixed_script_eaeu_prefix_no_space_after_numero() -> None:
 
 
 def test_extract_does_not_keep_stray_c_from_mixed_eaeu() -> None:
-    from sert_parser.domain.certificate_number import extract_certificate_candidates
+    from cert_parser.domain.certificate_number import extract_certificate_candidates
 
     text = "EAC СЕРТИФИКАТ №EAЭC BY/112 02.01. TP018 010.02 00276"
     found = extract_certificate_candidates(text)
@@ -119,7 +119,7 @@ def test_extract_does_not_keep_stray_c_from_mixed_eaeu() -> None:
 
 
 def test_extract_ocr_ea3c_from_scanned_header() -> None:
-    from sert_parser.domain.certificate_number import extract_certificate_candidates
+    from cert_parser.domain.certificate_number import extract_certificate_candidates
 
     text = (
         "3 EAC EOT N EA3C BY/112 02.01. TP018 010.02 00276 "
@@ -140,7 +140,7 @@ def test_parse_eac_before_kz_normalizes_to_eaeu() -> None:
 
 
 def test_extract_dedupes_kz_ocr_variants() -> None:
-    from sert_parser.domain.certificate_number import extract_certificate_candidates
+    from cert_parser.domain.certificate_number import extract_certificate_candidates
 
     text = (
         "EAC KZ7500533.01.01.06080 EA9C "

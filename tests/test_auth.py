@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from sert_parser.api.app import create_app
-from sert_parser.api.auth import hash_password
-from sert_parser.config import get_settings
+from cert_parser.api.app import create_app
+from cert_parser.api.auth import hash_password, load_user_directory
+from cert_parser.config import get_settings
 
 
 def _auth_users_json() -> str:
@@ -44,6 +44,32 @@ def auth_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     with TestClient(app) as test_client:
         yield test_client
     get_settings.cache_clear()
+
+
+def test_load_user_directory_from_file(tmp_path: Path) -> None:
+    users_file = tmp_path / "auth_users.json"
+    users_file.write_text(
+        json.dumps(
+            [
+                {
+                    "username": "admin",
+                    "password_hash": hash_password("admin-pass"),
+                    "role": "admin",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    from cert_parser.config import Settings
+
+    cfg = Settings(
+        auth_enabled=True,
+        auth_secret_key="x" * 32,
+        auth_users_file=users_file,
+    )
+    directory = load_user_directory(cfg)
+    assert "admin" in directory
+    assert directory["admin"].role == "admin"
 
 
 def _login(client: TestClient, username: str, password: str, *, next_url: str = "/") -> None:

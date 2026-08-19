@@ -6,11 +6,11 @@ import httpx
 import pytest
 import respx
 
-from sert_parser.config import Settings
-from sert_parser.domain.certificate_number import parse_certificate_number
-from sert_parser.domain.errors import AmbiguousMatchError, CertificateNotFoundError
-from sert_parser.infrastructure.registries.kyrgyzstan import SwisProvider, _pick_row
-from sert_parser.infrastructure.registries.kyrgyzstan_html import SwisRow, parse_result_rows, status_label
+from cert_parser.config import Settings
+from cert_parser.domain.certificate_number import parse_certificate_number
+from cert_parser.domain.errors import AmbiguousMatchError, CertificateNotFoundError
+from cert_parser.infrastructure.registries.kyrgyzstan import SwisProvider, _pick_row
+from cert_parser.infrastructure.registries.kyrgyzstan_html import SwisRow, parse_result_rows, status_label
 
 FIXTURES = Path(__file__).parent / "fixtures"
 CERT_EXAMPLE = "ЕАЭС KG417/016.ru.02.04561"

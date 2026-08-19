@@ -5,8 +5,8 @@ from io import BytesIO
 import pytest
 from openpyxl import Workbook, load_workbook
 
-from sert_parser.domain.errors import XlsxReadError
-from sert_parser.infrastructure.xlsx import build_results_xlsx, extract_numbers_from_xlsx
+from cert_parser.domain.errors import XlsxReadError
+from cert_parser.infrastructure.xlsx import build_results_xlsx, extract_numbers_from_xlsx
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 SECOND = "ЕАЭС RU С-CN.СБ21.А.00039/19"

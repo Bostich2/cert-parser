@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sert_parser.domain.models import parse_iso_date
+from cert_parser.domain.models import parse_iso_date
 
 
 def test_parse_iso_date_russian_month_name() -> None:

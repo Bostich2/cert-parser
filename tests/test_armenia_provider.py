@@ -7,10 +7,10 @@ import httpx
 import pytest
 import respx
 
-from sert_parser.config import Settings
-from sert_parser.domain.certificate_number import parse_certificate_number
-from sert_parser.domain.errors import CertificateNotFoundError
-from sert_parser.infrastructure.registries.armenia import ArmeniaProvider
+from cert_parser.config import Settings
+from cert_parser.domain.certificate_number import parse_certificate_number
+from cert_parser.domain.errors import CertificateNotFoundError
+from cert_parser.infrastructure.registries.armenia import ArmeniaProvider
 
 FIXTURES = Path(__file__).parent / "fixtures"
 REAL_EXAMPLE = "ЕАЭС AM-008/S.A-0175-2018"

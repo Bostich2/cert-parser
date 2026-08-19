@@ -8,9 +8,9 @@ import pytest
 import respx
 from fastapi.testclient import TestClient
 
-from sert_parser.api.app import create_app
-from sert_parser.config import get_settings
-from sert_parser.version import get_version
+from cert_parser.api.app import create_app
+from cert_parser.config import get_settings
+from cert_parser.version import get_version
 
 ODATA_URL = "https://tech.eaeunion.org/odata/ConformityDocDetailsType"
 AM_EXAMPLE = "ЕАЭС AM C-CN.АБ12.В.00001/24"
@@ -205,7 +205,7 @@ def test_extract_pdf_stream_returns_error_envelope(client: TestClient, monkeypat
     def boom(_payload, _settings):
         raise RuntimeError("OCR exploded")
 
-    monkeypatch.setattr("sert_parser.application.extract_service.extract_numbers_from_pdf", boom)
+    monkeypatch.setattr("cert_parser.application.extract_service.extract_numbers_from_pdf", boom)
     response = client.post(
         "/api/extract-pdf/stream",
         files={"file": ("cert.pdf", b"%PDF-1.4", "application/pdf")},
@@ -348,7 +348,7 @@ def test_export_xlsx_returns_attachment(client: TestClient) -> None:
     assert response.headers["content-type"].startswith(
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    assert "attachment; filename=\"sert-parser-results.xlsx\"" in response.headers["content-disposition"]
+    assert "attachment; filename=\"cert-parser-results.xlsx\"" in response.headers["content-disposition"]
     assert response.content.startswith(b"PK")
 
 
@@ -369,7 +369,7 @@ def test_extract_pdf_reports_truncation(
         "ЕАЭС BY/112 02.01. ТР018 010.02 00278",
     ]
     monkeypatch.setattr(
-        "sert_parser.application.extract_service.extract_numbers_from_pdf",
+        "cert_parser.application.extract_service.extract_numbers_from_pdf",
         lambda _payload, _settings: list(numbers),
     )
     with TestClient(app) as test_client:
@@ -442,7 +442,7 @@ def test_reload_waits_for_in_flight_lookup(admin_client: TestClient, monkeypatch
     import threading
     import time
 
-    from sert_parser.application.lookup_service import LookupService
+    from cert_parser.application.lookup_service import LookupService
 
     original_lookup_one = LookupService.lookup_one
 
@@ -488,9 +488,9 @@ def test_reload_blocked_while_lookup_active(
     import threading
     import time
 
-    from sert_parser.application.lookup_service import LookupService
+    from cert_parser.application.lookup_service import LookupService
 
-    api_module = importlib.import_module("sert_parser.api.app")
+    api_module = importlib.import_module("cert_parser.api.app")
     monkeypatch.setattr(api_module, "RELOAD_WAIT_TIMEOUT_SECONDS", 0.05)
 
     original_lookup_one = LookupService.lookup_one
@@ -520,7 +520,7 @@ def test_stream_lookup_reserves_slot_before_work(
     import threading
     import time
 
-    api_module = importlib.import_module("sert_parser.api.app")
+    api_module = importlib.import_module("cert_parser.api.app")
     gate = threading.Event()
 
     original_stream = api_module.stream_async_work

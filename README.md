@@ -32,7 +32,7 @@ python -m venv .venv
 pip install -r requirements.txt
 copy .env.example .env
 set PYTHONPATH=src
-uvicorn sert_parser.api.app:app --reload --host 127.0.0.1 --port 8000
+uvicorn cert_parser.api.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Для сканов PDF нужен OCR: пакеты `rapidocr` и `onnxruntime` уже в `requirements.txt`. Распознавание сначала идёт кириллицей (`eslav`), если номер не собрался — латиницей.
@@ -65,11 +65,11 @@ python scripts/release.py minor --dry-run
 
 После тега обновите `ai_docs/changelog/CHANGELOG.md` и запушьте коммиты (если `--push` не использовали).
 
-**Первый релиз** (если тегов ещё нет): `git tag -a v0.2.0 -m "sert-parser v0.2.0"` и `git push origin v0.2.0`.
+**Первый релиз** (если тегов ещё нет): `git tag -a v0.2.0 -m "cert-parser v0.2.0"` и `git push origin v0.2.0`.
 
 Приоритет источников версии:
 
-1. `SERT_PARSER_VERSION` — явная переопределение (Docker, CI)
+1. `CERT_PARSER_VERSION` — явная переопределение (Docker, CI)
 2. git-тег + setuptools-scm (локально и в editable install)
 3. метаданные пакета после `pip install .`
 
@@ -149,8 +149,8 @@ POST /api/lookup
 - `CACHE_PATH`, `CACHE_TTL_SECONDS`, `MAX_BATCH_SIZE`, `LOOKUP_CONCURRENCY`.
 - `HTTP_SSL_VERIFY` — проверка TLS для всех исходящих HTTP-запросов к реестрам (`BELGISS_SSL_VERIFY` — устаревший alias).
 - `LOG_LEVEL`.
-- `SERT_PARSER_VERSION` — явная версия, если нет git-тега (Docker задаёт через `APP_VERSION`).
-- `AUTH_ENABLED`, `AUTH_SECRET_KEY`, `AUTH_USERS` — session-авторизация (см. Production deploy).
+- `CERT_PARSER_VERSION` — явная версия, если нет git-тега (Docker задаёт через `APP_VERSION`).
+- `AUTH_ENABLED`, `AUTH_SECRET_KEY`, `AUTH_USERS` / `AUTH_USERS_FILE` — session-авторизация (см. Production deploy).
 - `ALLOWED_HOSTS`, `ENV=production` — hardening для публичного деплоя.
 
 ## Production deploy (VPS + Docker)
@@ -161,9 +161,16 @@ POST /api/lookup
 4. Сгенерируйте секрет: `python -c "import secrets; print(secrets.token_hex(32))"` → `AUTH_SECRET_KEY`.
 5. Сгенерируйте пользователей:
    ```bash
-   python scripts/hash_password.py 'your-password' --username admin --role admin
+   python scripts/hash_password.py 'your-password' --username admin --role admin --output auth_users.json
    ```
-   Результат JSON вставьте в `AUTH_USERS`.
+   Файл `auth_users.json` монтируется в контейнер (см. `docker-compose.prod.yml`, переменная `AUTH_USERS_FILE`).
+
+   **Coolify / Docker Compose:** bcrypt-хеш содержит символы `$`, которые Compose воспринимает как переменные окружения (в логах — `The "E8YiMJ82..." variable is not set`). Не задавайте `AUTH_USERS` с «сырым» хешем. Используйте `AUTH_USERS_FILE` или экранируйте: `python scripts/hash_password.py ... --for-docker` и вставьте строку `AUTH_USERS=...` с `$$` вместо `$`.
+
+   **Coolify — минимальный набор переменных:**
+   - `ALLOWED_HOSTS` — ваш домен (например `cert.example.com`)
+   - `AUTH_SECRET_KEY` — 32+ символов (`python -c "import secrets; print(secrets.token_hex(32))"`)
+   - `AUTH_USERS` — только с экранированием `$$` (см. `--for-docker`) или `AUTH_USERS_FILE`
 6. Запуск:
    ```bash
    docker compose -f docker-compose.prod.yml up -d --build

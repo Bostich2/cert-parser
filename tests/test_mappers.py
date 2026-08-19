@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from datetime import date
 
-from sert_parser.api.mappers import lookup_result_to_api_dict
-from sert_parser.application.serializers import lookup_result_to_cache_payload
-from sert_parser.domain.models import LookupResult
+from cert_parser.api.mappers import lookup_result_to_api_dict
+from cert_parser.application.serializers import lookup_result_to_cache_payload
+from cert_parser.domain.models import LookupResult
 
 
 def test_lookup_result_to_api_dict_includes_trace() -> None:

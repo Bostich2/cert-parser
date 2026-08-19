@@ -7,6 +7,7 @@ __pycache__/
 .env.*
 !.env.example
 !deploy/.env.prod.example
+auth_users.json
 data/
 *.sqlite
 *.sqlite3
@@ -16,4 +17,4 @@ data/
 *.egg-info/
 dist/
 build/
-src/sert_parser/_version.py
+src/cert_parser/_version.py

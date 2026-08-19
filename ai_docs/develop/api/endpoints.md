@@ -2,7 +2,7 @@
 
 Базовый URL: `http://127.0.0.1:8000` (или хост из `HOST`/`PORT`).
 
-Версия приложения определяется **git-тегами** (`v0.2.0`) через `setuptools-scm` (`src/sert_parser/version.py`). В Docker можно задать `SERT_PARSER_VERSION` / `APP_VERSION`.
+Версия приложения определяется **git-тегами** (`v0.2.0`) через `setuptools-scm` (`src/cert_parser/version.py`). В Docker можно задать `CERT_PARSER_VERSION` / `APP_VERSION`.
 
 ## Поиск
 
@@ -104,7 +104,7 @@ UI использует этот endpoint для одиночных запрос
 }
 ```
 
-Ответ: бинарный файл `sert-parser-results.xlsx` (`Content-Disposition: attachment`).
+Ответ: бинарный файл `cert-parser-results.xlsx` (`Content-Disposition: attachment`).
 
 ## Сервис
 
@@ -193,4 +193,4 @@ UI использует этот endpoint для одиночных запрос
 
 ## Настройки
 
-См. `src/sert_parser/config.py` и `.env.example`.
+См. `src/cert_parser/config.py` и `.env.example`.

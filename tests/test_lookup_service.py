@@ -5,13 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from sert_parser.application.country_router import CountryRouter
-from sert_parser.application.lookup_service import LookupService
-from sert_parser.config import Settings
-from sert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
-from sert_parser.domain.models import CertificateNumber, LookupResult, RegistryRecord
-from sert_parser.infrastructure.cache import SqliteLookupCache
-from sert_parser.domain.ports import RegistryProvider
+from cert_parser.application.country_router import CountryRouter
+from cert_parser.application.lookup_service import LookupService
+from cert_parser.config import Settings
+from cert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
+from cert_parser.domain.models import CertificateNumber, LookupResult, RegistryRecord
+from cert_parser.infrastructure.cache import SqliteLookupCache
+from cert_parser.domain.ports import RegistryProvider
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 
@@ -69,8 +69,8 @@ async def test_lookup_success_and_cache(tmp_path: Path, sample_record: RegistryR
 async def test_legacy_cache_without_valid_from_is_refetched(
     tmp_path: Path, sample_record: RegistryRecord
 ) -> None:
-    from sert_parser.application.lookup_service import _cache_payload
-    from sert_parser.domain.certificate_number import parse_certificate_number
+    from cert_parser.application.lookup_service import _cache_payload
+    from cert_parser.domain.certificate_number import parse_certificate_number
 
     provider = FakeBelgiss(record=sample_record)
     service = _service(tmp_path, provider)
@@ -93,8 +93,8 @@ async def test_lookup_unsupported_country(tmp_path: Path, sample_record: Registr
 
 
 async def test_cached_unsupported_country_is_refetched(tmp_path: Path, sample_record: RegistryRecord) -> None:
-    from sert_parser.application.lookup_service import _cache_payload
-    from sert_parser.domain.certificate_number import parse_certificate_number
+    from cert_parser.application.lookup_service import _cache_payload
+    from cert_parser.domain.certificate_number import parse_certificate_number
 
     provider = FakeBelgiss(record=sample_record)
     service = _service(tmp_path, provider)
@@ -120,7 +120,7 @@ async def test_cached_unsupported_country_is_refetched(tmp_path: Path, sample_re
 
 
 async def test_unsupported_country_is_not_cached(tmp_path: Path, sample_record: RegistryRecord) -> None:
-    from sert_parser.domain.certificate_number import parse_certificate_number
+    from cert_parser.domain.certificate_number import parse_certificate_number
 
     service = _service(tmp_path, FakeBelgiss(record=sample_record))
     number = "ЕАЭС RU C-CN.АБ12.В.00001/24"
@@ -140,7 +140,7 @@ async def test_lookup_not_found(tmp_path: Path) -> None:
 async def test_cached_invalid_date_is_refetched(
     tmp_path: Path, sample_record: RegistryRecord
 ) -> None:
-    from sert_parser.domain.certificate_number import parse_certificate_number
+    from cert_parser.domain.certificate_number import parse_certificate_number
 
     provider = FakeBelgiss(record=sample_record)
     service = _service(tmp_path, provider)

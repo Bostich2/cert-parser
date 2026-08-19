@@ -165,7 +165,7 @@ curl -X POST http://127.0.0.1:8000/api/lookup ^
 
 ## Настройки, влияющие на поведение
 
-См. `src/sert_parser/config.py`, основные параметры:
+См. `src/cert_parser/config.py`, основные параметры:
 
 - `MAX_BATCH_SIZE`: ограничение размера массива `numbers`
 - `LOOKUP_CONCURRENCY`: ограничение параллельности внутри батча

@@ -33,7 +33,7 @@ copy .env.example .env
 
 ```bash
 set PYTHONPATH=src
-uvicorn sert_parser.api.app:app --reload --host 127.0.0.1 --port 8000
+uvicorn cert_parser.api.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Откройте в браузере: `http://127.0.0.1:8000`
@@ -100,7 +100,7 @@ curl -X POST http://127.0.0.1:8000/api/lookup ^
 
 ## Переменные окружения
 
-Сервис использует `Settings` из `src/sert_parser/config.py`. Все значения имеют дефолты (см. `.env.example`).
+Сервис использует `Settings` из `src/cert_parser/config.py`. Все значения имеют дефолты (см. `.env.example`).
 
 | Переменная | Назначение |
 |------------|------------|

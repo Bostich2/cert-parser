@@ -7,12 +7,12 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from sert_parser.api.app import create_app
-from sert_parser.api.auth import hash_password
-from sert_parser.config import get_settings
+from cert_parser.api.app import create_app
+from cert_parser.api.auth import hash_password
+from cert_parser.config import get_settings
 
 # Stable semver for tests and local runs without git tags.
-os.environ.setdefault("SERT_PARSER_VERSION", "0.2.0")
+os.environ.setdefault("CERT_PARSER_VERSION", "0.2.0")
 
 
 def _auth_users_json() -> str:
