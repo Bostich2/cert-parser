@@ -26,6 +26,7 @@ services:
       start_period: 40s
 
   caddy:
+    profiles: ["standalone"]
     build:
       context: ./deploy
       dockerfile: Dockerfile.caddy

@@ -26,6 +26,7 @@
 ### Changed
 
 - Production deploy: `Caddyfile` встроен в образ `caddy` (без bind mount) — совместимость с Coolify
+- Production deploy: Caddy вынесен в профиль `standalone` (для Coolify поднимается только `web:8000`)
 - PDF: разделены extract (`/api/extract-pdf`) и extract+lookup (`/api/lookup-pdf`); UI использует потоковый extract
 - Excel: извлечение номеров отделено от lookup (`/api/extract-xlsx` → `/api/lookup`)
 

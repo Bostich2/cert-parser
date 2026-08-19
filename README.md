@@ -171,21 +171,27 @@ POST /api/lookup
    - `ALLOWED_HOSTS` — ваш домен (например `cert.example.com`)
    - `AUTH_SECRET_KEY` — 32+ символов (`python -c "import secrets; print(secrets.token_hex(32))"`)
    - `AUTH_USERS` — только с экранированием `$$` (см. `--for-docker`) или `AUTH_USERS_FILE`
-6. Запуск:
+6. Запуск на VPS (с Caddy и TLS на 80/443):
    ```bash
-   docker compose -f docker-compose.prod.yml up -d --build
+   docker compose -f docker-compose.prod.yml --profile standalone up -d --build
    ```
 7. Откройте `https://your.domain` — войдите под созданным пользователем.
 
-Caddy получает TLS-сертификат Let's Encrypt автоматически. Приложение слушает только внутри Docker-сети (`web:8000`); снаружи доступен HTTPS через Caddy.
+Caddy (профиль `standalone`) получает TLS-сертификат Let's Encrypt автоматически. Приложение слушает только внутри Docker-сети (`web:8000`); снаружи доступен HTTPS через Caddy.
 
-**Coolify:** если деплой падал с ошибкой `mount ... Caddyfile ... not a directory`, на сервере могла остаться лишняя папка от старого bind mount. Удалите её и задеплойте снова:
+**Coolify:** не используйте профиль `standalone` — порты 80/443 уже заняты прокси Coolify. Деплой поднимает только сервис `web`. В настройках приложения Coolify:
+
+- укажите домен и HTTPS (Let's Encrypt через Coolify);
+- **Port Exposes / Ports Mappings → `8000`** для сервиса `web`;
+- задайте переменные окружения (см. выше).
+
+Если деплой падал с ошибкой `mount ... Caddyfile ... not a directory`, на сервере могла остаться лишняя папка от старого bind mount. Удалите её:
 
 ```bash
 sudo rm -rf /data/coolify/applications/<app-uuid>/deploy/Caddyfile
 ```
 
-Начиная с текущей версии `Caddyfile` встроен в образ `caddy` при сборке — отдельный bind mount не нужен.
+Если падал с `Bind for 0.0.0.0:80 failed: port is already allocated` — это конфликт Caddy с прокси Coolify; после обновления compose Caddy не запускается без `--profile standalone`.
 
 **Роли:** `admin` — сброс кэша и перезагрузка сервиса; `user` — поиск и экспорт.
 
