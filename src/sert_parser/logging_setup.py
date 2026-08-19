@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from contextvars import ContextVar
+from datetime import datetime
 
 logger = logging.getLogger("sert_parser")
 
 _steps: ContextVar[list[str] | None] = ContextVar("lookup_steps", default=None)
 _sink: ContextVar[Callable[[str], None] | None] = ContextVar("lookup_step_sink", default=None)
+_STEP_TIME_SEP = "\t"
 
 
 def configure_logging(level: str = "INFO") -> None:
@@ -37,9 +39,10 @@ def set_step_sink(callback: Callable[[str], None] | None) -> None:
 
 def log_step(message: str) -> None:
     logger.info(message)
+    stamped = f"{datetime.now():%H:%M:%S}{_STEP_TIME_SEP}{message}"
     items = _steps.get()
     if items is not None:
-        items.append(message)
+        items.append(stamped)
     sink = _sink.get()
     if sink is not None:
-        sink(message)
+        sink(stamped)

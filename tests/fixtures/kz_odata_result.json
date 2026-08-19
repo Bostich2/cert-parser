@@ -1,0 +1,13 @@
+{
+  "value": [
+    {
+      "docId": "ЕАЭС KZ 7500533.01.01.06080",
+      "docStartDate": "2025-06-24T00:00:00+03:00",
+      "docValidityDate": "2029-06-23T00:00:00+03:00",
+      "formNumberId": "0296712",
+      "Id": "685abfa330dcf80e6d4953c1",
+      "unifiedCountryCode": {"value": "KZ"},
+      "docStatusDetails": {"docStatusCode": "01"}
+    }
+  ]
+}

@@ -23,6 +23,9 @@
                 </p>
             </div>
             <div class="top__actions">
+                {% if auth_enabled and username %}
+                <span class="app-user" title="Текущий пользователь">{{ username }}</span>
+                {% endif %}
                 <span id="app-version" class="app-version" title="Версия приложения">v{{ version }}</span>
                 <div class="settings-menu">
                     <button type="button" id="settings-toggle" class="icon-btn settings-toggle"
@@ -37,12 +40,21 @@
                         </svg>
                     </button>
                     <div id="settings-dropdown" class="settings-dropdown" role="menu" hidden>
+                        {% if is_admin %}
                         <button type="button" id="clear-cache-btn" class="settings-dropdown__item" role="menuitem" data-keep-enabled>
                             Сбросить кэш
                         </button>
                         <button type="button" id="full-reload-btn" class="settings-dropdown__item" role="menuitem" data-keep-enabled>
                             Полная перезагрузка сервиса
                         </button>
+                        {% endif %}
+                        {% if auth_enabled %}
+                        <form id="logout-form" method="post" action="/logout" class="settings-dropdown__form">
+                            <button type="submit" class="settings-dropdown__item settings-dropdown__item--danger" role="menuitem">
+                                Выйти
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>

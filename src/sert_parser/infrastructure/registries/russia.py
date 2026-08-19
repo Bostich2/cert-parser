@@ -14,7 +14,7 @@ from sert_parser.domain.errors import (
     SourceUnavailableError,
 )
 from sert_parser.domain.models import CertificateNumber, RegistryRecord, parse_iso_date
-from sert_parser.infrastructure.registries.base import RegistryProvider
+from sert_parser.domain.ports import RegistryProvider
 from sert_parser.infrastructure.registries.matching import is_safe_contained_match
 from sert_parser.logging_setup import log_step
 

@@ -16,18 +16,6 @@ ODATA_URL = "https://tech.eaeunion.org/odata/ConformityDocDetailsType"
 AM_EXAMPLE = "ЕАЭС AM C-CN.АБ12.В.00001/24"
 
 
-@pytest.fixture
-def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
-    monkeypatch.setenv("CACHE_PATH", str(tmp_path / "cache.sqlite"))
-    monkeypatch.setenv("LOOKUP_DELAY_SECONDS", "0")
-    monkeypatch.setenv("PDF_OCR_ENABLED", "false")
-    get_settings.cache_clear()
-    app = create_app()
-    with TestClient(app) as test_client:
-        yield test_client
-    get_settings.cache_clear()
-
-
 def test_index_page(client: TestClient) -> None:
     version = get_version()
     response = client.get("/")
@@ -214,13 +202,10 @@ def test_extract_pdf_stream_emits_steps(client: TestClient) -> None:
 
 
 def test_extract_pdf_stream_returns_error_envelope(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
-    import importlib
-
     def boom(_payload, _settings):
         raise RuntimeError("OCR exploded")
 
-    api_module = importlib.import_module("sert_parser.api.app")
-    monkeypatch.setattr(api_module, "extract_numbers_from_pdf", boom)
+    monkeypatch.setattr("sert_parser.application.extract_service.extract_numbers_from_pdf", boom)
     response = client.post(
         "/api/extract-pdf/stream",
         files={"file": ("cert.pdf", b"%PDF-1.4", "application/pdf")},
@@ -375,6 +360,7 @@ def test_extract_pdf_reports_truncation(
     monkeypatch.setenv("LOOKUP_DELAY_SECONDS", "0")
     monkeypatch.setenv("MAX_BATCH_SIZE", "2")
     monkeypatch.setenv("PDF_OCR_ENABLED", "false")
+    monkeypatch.setenv("RATE_LIMIT_UPLOAD", "1000/minute")
     get_settings.cache_clear()
     app = create_app()
     numbers = [
@@ -382,12 +368,8 @@ def test_extract_pdf_reports_truncation(
         "ЕАЭС BY/112 02.01. ТР018 010.02 00277",
         "ЕАЭС BY/112 02.01. ТР018 010.02 00278",
     ]
-    import importlib
-
-    api_module = importlib.import_module("sert_parser.api.app")
     monkeypatch.setattr(
-        api_module,
-        "extract_numbers_from_pdf",
+        "sert_parser.application.extract_service.extract_numbers_from_pdf",
         lambda _payload, _settings: list(numbers),
     )
     with TestClient(app) as test_client:
@@ -432,6 +414,7 @@ def test_extract_xlsx_rejects_too_many_numbers(client: TestClient) -> None:
 
 def test_extract_xlsx_rejects_oversized_file(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("XLSX_MAX_BYTES", "10")
+    monkeypatch.setenv("RATE_LIMIT_UPLOAD", "1000/minute")
     get_settings.cache_clear()
     app = create_app()
     with TestClient(app) as test_client:

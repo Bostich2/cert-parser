@@ -11,7 +11,7 @@ from sert_parser.config import Settings
 from sert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
 from sert_parser.domain.models import CertificateNumber, LookupResult, RegistryRecord
 from sert_parser.infrastructure.cache import SqliteLookupCache
-from sert_parser.infrastructure.registries.base import RegistryProvider
+from sert_parser.domain.ports import RegistryProvider
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 

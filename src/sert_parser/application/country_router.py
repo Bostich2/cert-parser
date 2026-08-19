@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from sert_parser.domain.errors import UnsupportedCountryError
-from sert_parser.infrastructure.registries.base import RegistryProvider
+from sert_parser.domain.ports import RegistryProvider
 
 
 class CountryRouter:

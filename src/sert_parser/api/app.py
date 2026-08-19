@@ -5,28 +5,46 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncIterator
+from urllib.parse import urlparse
 
-from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.responses import Response
 
-from sert_parser.application.country_router import CountryRouter
+from sert_parser.api.auth import (
+    authenticate,
+    clear_session_user,
+    ensure_csrf_token,
+    get_session_user,
+    is_admin,
+    set_session_user,
+    validate_csrf_token,
+)
+from sert_parser.api.middleware import AuthMiddleware, SecurityHeadersMiddleware
+
+from sert_parser.api.mappers import lookup_result_to_api_dict
+from sert_parser.api.ndjson import STREAM_HEADERS, stream_async_work, stream_sync_work
+from sert_parser.application.export_service import ExportService
+from sert_parser.application.extract_service import ExtractService
 from sert_parser.application.lookup_service import LookupService
+from sert_parser.bootstrap import (
+    close_runtime,
+    configure_runtime,
+    reset_runtime_ocr_engines,
+    shutdown_runtime,
+)
 from sert_parser.config import Settings, get_settings
 from sert_parser.domain.errors import PdfReadError, XlsxReadError
-from sert_parser.infrastructure.cache import SqliteLookupCache
-from sert_parser.infrastructure.http import build_http_client
-from sert_parser.infrastructure.pdf import extract_numbers_from_pdf, reset_ocr_engines
-from sert_parser.infrastructure.xlsx import build_results_xlsx, extract_numbers_from_xlsx
-from sert_parser.infrastructure.registries.armenia import ArmeniaProvider
-from sert_parser.infrastructure.registries.belarus import BelgissProvider
-from sert_parser.infrastructure.registries.kazakhstan import EoknoProvider
-from sert_parser.infrastructure.registries.kyrgyzstan import SwisProvider
-from sert_parser.infrastructure.registries.russia import FsaProvider
-from sert_parser.api.ndjson import STREAM_HEADERS, stream_async_work, stream_sync_work
-from sert_parser.logging_setup import configure_logging, current_steps, logger, start_steps
+from sert_parser.domain.ports import LookupCache
+from sert_parser.logging_setup import current_steps, logger, start_steps
 from sert_parser.version import get_version
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -65,81 +83,6 @@ _RELOAD_BLOCKED_DETAIL = (
 )
 
 
-async def configure_runtime(app: FastAPI) -> None:
-    get_settings.cache_clear()
-    settings = get_settings()
-    configure_logging(settings.log_level)
-    cache = SqliteLookupCache(settings.cache_path, settings.cache_ttl_seconds)
-    belgiss_client = build_http_client(settings)
-    fsa_client = build_http_client(
-        settings,
-        extra_headers={
-            "Origin": settings.fsa_base_url.rstrip("/"),
-            "Referer": f"{settings.fsa_base_url.rstrip('/')}/rss/certificate",
-        },
-    )
-    eokno_client = build_http_client(
-        settings,
-        extra_headers={
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Referer": settings.eokno_register_url,
-        },
-    )
-    swis_client = build_http_client(
-        settings,
-        extra_headers={
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Referer": f"{settings.swis_base_url.rstrip('/')}/Registry/CertificateOfConformity",
-        },
-    )
-    eaeu_client = build_http_client(
-        settings,
-        extra_headers={
-            "Accept": "application/json",
-            "Referer": "https://tech.eaeunion.org/tech/registers/35-1/ru/registryList/conformityDocs",
-        },
-    )
-    belgiss = BelgissProvider(belgiss_client, settings)
-    fsa = FsaProvider(fsa_client, settings)
-    eokno = EoknoProvider(eokno_client, settings)
-    swis = SwisProvider(swis_client, settings)
-    armenia = ArmeniaProvider(eaeu_client, settings)
-    router = CountryRouter({"BY": belgiss, "RU": fsa, "KZ": eokno, "KG": swis, "AM": armenia})
-    app.state.settings = settings
-    app.state.cache = cache
-    app.state.http_clients = [belgiss_client, fsa_client, eokno_client, swis_client, eaeu_client]
-    app.state.providers = {
-        "belgiss": belgiss,
-        "fsa": fsa,
-        "eokno": eokno,
-        "swis": swis,
-        "eaeu": armenia,
-    }
-    app.state.lookup_service = LookupService(router, cache, settings)
-    app.state.runtime_generation = int(getattr(app.state, "runtime_generation", 0)) + 1
-
-
-async def shutdown_runtime(app: FastAPI) -> None:
-    await _close_runtime(
-        getattr(app.state, "http_clients", []) or [],
-        getattr(app.state, "cache", None),
-    )
-    app.state.http_clients = []
-    app.state.providers = {}
-    app.state.lookup_service = None
-    app.state.cache = None
-
-
-async def _close_runtime(
-    http_clients: list,
-    cache: SqliteLookupCache | None,
-) -> None:
-    for client in http_clients:
-        await client.aclose()
-    if cache is not None:
-        cache.close()
-
-
 async def _wait_for_active_lookups(app: FastAPI) -> bool:
     deadline = time.monotonic() + RELOAD_WAIT_TIMEOUT_SECONDS
     while int(getattr(app.state, "active_lookups", 0)) > 0:
@@ -168,6 +111,22 @@ def _require_lookup_service(request: Request) -> LookupService:
     if getattr(request.app.state, "reload_in_progress", False):
         raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
     service = request.app.state.lookup_service
+    if service is None:
+        raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+    return service
+
+
+def _require_extract_service(request: Request) -> ExtractService:
+    if getattr(request.app.state, "reload_in_progress", False):
+        raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+    service = request.app.state.extract_service
+    if service is None:
+        raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+    return service
+
+
+def _require_export_service(request: Request) -> ExportService:
+    service = request.app.state.export_service
     if service is None:
         raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
     return service
@@ -220,33 +179,151 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         await shutdown_runtime(app)
 
 
+def _safe_next_url(next_url: str | None) -> str:
+    if not next_url:
+        return "/"
+    parsed = urlparse(next_url)
+    if parsed.scheme or parsed.netloc:
+        return "/"
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        return "/"
+    return next_url
+
+
 def create_app() -> FastAPI:
+    settings = get_settings()
+    limiter = Limiter(key_func=get_remote_address)
     app = FastAPI(
         title="Парсер сертификатов ЕАЭС",
         version=get_version(),
         lifespan=lifespan,
+        docs_url=None if settings.is_production else "/docs",
+        redoc_url=None if settings.is_production else "/redoc",
     )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+    app.add_middleware(AuthMiddleware)
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.auth_secret_key or "dev-insecure-secret",
+        max_age=settings.auth_session_max_age,
+        https_only=settings.auth_secure_cookies,
+        same_site="lax",
+    )
+    app.add_middleware(SecurityHeadersMiddleware)
+    if settings.allowed_host_list != ["*"]:
+        app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_host_list)
+
     app.mount("/static", StaticFiles(directory=str(WEB_DIR / "static")), name="static")
     app.add_api_route("/", index_page, methods=["GET"], response_class=HTMLResponse)
-    app.add_api_route("/api/lookup", lookup_certificates, methods=["POST"])
-    app.add_api_route("/api/lookup/stream", lookup_certificates_stream, methods=["POST"])
-    app.add_api_route("/api/lookup-pdf", lookup_pdf, methods=["POST"])
-    app.add_api_route("/api/extract-pdf", extract_pdf, methods=["POST"])
-    app.add_api_route("/api/extract-pdf/stream", extract_pdf_stream, methods=["POST"])
-    app.add_api_route("/api/extract-xlsx", extract_xlsx, methods=["POST"])
-    app.add_api_route("/api/export-xlsx", export_xlsx, methods=["POST"])
+    app.add_api_route(
+        "/login",
+        limiter.limit(lambda: get_settings().rate_limit_login)(login_page),
+        methods=["GET", "POST"],
+        response_class=HTMLResponse,
+        response_model=None,
+    )
+    app.add_api_route("/logout", logout, methods=["POST"])
+    app.add_api_route("/api/lookup", limiter.limit(_lookup_rate_limit)(lookup_certificates), methods=["POST"])
+    app.add_api_route("/api/lookup/stream", limiter.limit(_lookup_rate_limit)(lookup_certificates_stream), methods=["POST"])
+    app.add_api_route("/api/lookup-pdf", limiter.limit(_upload_rate_limit)(lookup_pdf), methods=["POST"])
+    app.add_api_route("/api/extract-pdf", limiter.limit(_upload_rate_limit)(extract_pdf), methods=["POST"])
+    app.add_api_route("/api/extract-pdf/stream", limiter.limit(_upload_rate_limit)(extract_pdf_stream), methods=["POST"])
+    app.add_api_route("/api/extract-xlsx", limiter.limit(_upload_rate_limit)(extract_xlsx), methods=["POST"])
+    app.add_api_route("/api/export-xlsx", limiter.limit(_lookup_rate_limit)(export_xlsx), methods=["POST"])
     app.add_api_route("/api/cache/clear", clear_cache, methods=["POST"])
     app.add_api_route("/api/reload", reload_service, methods=["POST"])
+    app.add_api_route("/health/live", health_live, methods=["GET"])
     app.add_api_route("/health", health, methods=["GET"])
     return app
 
 
 async def index_page(request: Request) -> HTMLResponse:
+    settings: Settings = request.app.state.settings
+    user = get_session_user(request)
     return templates.TemplateResponse(
         request,
         "index.html",
-        {"version": get_version()},
+        {
+            "version": get_version(),
+            "auth_enabled": settings.auth_enabled,
+            "username": user.username if user else None,
+            "is_admin": True if not settings.auth_enabled else is_admin(user),
+        },
     )
+
+
+async def login_page(
+    request: Request,
+    username: str = Form(default=""),
+    password: str = Form(default=""),
+    csrf_token: str = Form(default=""),
+    next_url: str = Form(default="/"),
+) -> Response:
+    settings: Settings = request.app.state.settings
+    if not settings.auth_enabled:
+        return RedirectResponse(url="/", status_code=303)
+
+    query_next = request.query_params.get("next", "/")
+    if request.method == "GET":
+        existing = get_session_user(request)
+        if existing is not None:
+            return RedirectResponse(url=_safe_next_url(query_next), status_code=303)
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "version": get_version(),
+                "csrf_token": ensure_csrf_token(request),
+                "next_url": _safe_next_url(query_next),
+                "error": None,
+            },
+        )
+
+    if not validate_csrf_token(request, csrf_token):
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "version": get_version(),
+                "csrf_token": ensure_csrf_token(request),
+                "next_url": _safe_next_url(next_url),
+                "error": "Неверный CSRF-токен. Обновите страницу и попробуйте снова.",
+            },
+            status_code=400,
+        )
+
+    directory = getattr(request.app.state, "auth_users", {})
+    user = authenticate(username, password, directory)
+    if user is None:
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "version": get_version(),
+                "csrf_token": ensure_csrf_token(request),
+                "next_url": _safe_next_url(next_url),
+                "error": "Неверный логин или пароль",
+            },
+            status_code=401,
+        )
+
+    set_session_user(request, user)
+    return RedirectResponse(url=_safe_next_url(next_url), status_code=303)
+
+
+async def logout(request: Request) -> RedirectResponse:
+    clear_session_user(request)
+    return RedirectResponse(url="/login", status_code=303)
+
+
+def _lookup_rate_limit() -> str:
+    return get_settings().rate_limit_lookup
+
+
+def _upload_rate_limit() -> str:
+    return get_settings().rate_limit_upload
 
 
 async def lookup_certificates(request: Request, payload: LookupRequest) -> dict:
@@ -262,7 +339,7 @@ async def lookup_certificates(request: Request, payload: LookupRequest) -> dict:
     service = _require_lookup_service(request)
     logger.info("POST /api/lookup: %s номер(ов)", len(numbers))
     results = await _run_lookup(request, service.lookup_many(numbers))
-    return {"results": [item.to_api_dict() for item in results]}
+    return {"results": [lookup_result_to_api_dict(item) for item in results]}
 
 
 async def lookup_certificates_stream(request: Request, payload: LookupRequest) -> StreamingResponse:
@@ -284,7 +361,7 @@ async def lookup_certificates_stream(request: Request, payload: LookupRequest) -
 
     async def work() -> dict:
         result = await service.lookup_one(raw)
-        return {"type": "done", "result": result.to_api_dict()}
+        return {"type": "done", "result": lookup_result_to_api_dict(result)}
 
     async def stream_body():
         try:
@@ -307,11 +384,12 @@ async def _extract_pdf_payload(
     log_prefix: str,
 ) -> tuple[list[str], list[str], dict[str, object]]:
     settings: Settings = request.app.state.settings
+    extract_service = _require_extract_service(request)
     payload = await file.read()
     start_steps()
     logger.info("%s: %s, %s байт", log_prefix, file.filename, len(payload))
     try:
-        numbers = extract_numbers_from_pdf(payload, settings)
+        numbers = extract_service.extract_from_pdf(payload)
     except PdfReadError as exc:
         raise HTTPException(status_code=400, detail=exc.message) from exc
     extract_trace = current_steps()
@@ -343,12 +421,13 @@ async def extract_pdf(request: Request, file: UploadFile = File(...)) -> dict:
 
 async def extract_pdf_stream(request: Request, file: UploadFile = File(...)) -> StreamingResponse:
     settings: Settings = request.app.state.settings
+    extract_service = _require_extract_service(request)
     payload = await file.read()
     logger.info("POST /api/extract-pdf/stream: %s, %s байт", file.filename, len(payload))
 
     def work() -> dict:
         try:
-            numbers = extract_numbers_from_pdf(payload, settings)
+            numbers = extract_service.extract_from_pdf(payload)
         except PdfReadError as exc:
             return {"type": "error", "detail": exc.message}
         numbers, limit_meta = _limit_pdf_numbers(numbers, settings.max_batch_size)
@@ -392,7 +471,7 @@ async def lookup_pdf(request: Request, file: UploadFile = File(...)) -> dict:
     results = await _run_lookup(request, service.lookup_many(numbers))
     return {
         "extracted_numbers": numbers,
-        "results": [item.to_api_dict() for item in results],
+        "results": [lookup_result_to_api_dict(item) for item in results],
         "error": None,
         "error_code": None,
         "extract_trace": extract_trace,
@@ -402,16 +481,14 @@ async def lookup_pdf(request: Request, file: UploadFile = File(...)) -> dict:
 
 async def extract_xlsx(request: Request, file: UploadFile = File(...)) -> dict:
     settings: Settings = request.app.state.settings
+    extract_service = _require_extract_service(request)
     payload = await file.read()
     logger.info("POST /api/extract-xlsx: %s, %s байт", file.filename, len(payload))
     if len(payload) > settings.xlsx_max_bytes:
         max_mb = settings.xlsx_max_bytes // (1024 * 1024)
         raise HTTPException(status_code=400, detail=f"Excel больше {max_mb} МБ")
     try:
-        numbers = extract_numbers_from_xlsx(
-            payload,
-            max_batch_size=settings.max_batch_size,
-        )
+        numbers = extract_service.extract_from_xlsx(payload)
     except XlsxReadError as exc:
         raise HTTPException(status_code=400, detail=exc.message) from exc
     if not numbers:
@@ -423,9 +500,10 @@ async def extract_xlsx(request: Request, file: UploadFile = File(...)) -> dict:
     return {"numbers": numbers, "error": None, "error_code": None}
 
 
-async def export_xlsx(payload: ExportRequest) -> StreamingResponse:
+async def export_xlsx(request: Request, payload: ExportRequest) -> StreamingResponse:
+    export_service = _require_export_service(request)
     rows = [item.model_dump() for item in payload.results]
-    content = build_results_xlsx(rows)
+    content = export_service.build_results_xlsx(rows)
     headers = {
         "Content-Disposition": 'attachment; filename="sert-parser-results.xlsx"',
     }
@@ -439,7 +517,7 @@ async def export_xlsx(payload: ExportRequest) -> StreamingResponse:
 async def clear_cache(request: Request) -> dict:
     if getattr(request.app.state, "reload_in_progress", False):
         raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
-    cache: SqliteLookupCache = request.app.state.cache
+    cache: LookupCache = request.app.state.cache
     deleted = cache.clear()
     logger.info("POST /api/cache/clear: removed %s entries", deleted)
     return {
@@ -461,11 +539,11 @@ async def reload_service(request: Request) -> dict:
                 raise HTTPException(status_code=409, detail=_RELOAD_BLOCKED_DETAIL)
             old_clients = list(getattr(app.state, "http_clients", []) or [])
             old_cache = getattr(app.state, "cache", None)
-            reset_ocr_engines()
+            reset_runtime_ocr_engines()
             await configure_runtime(app)
         finally:
             app.state.reload_in_progress = False
-        await _close_runtime(old_clients, old_cache)
+        await close_runtime(old_clients, old_cache)
         generation = int(app.state.runtime_generation)
         logger.info("POST /api/reload: ready, generation %s, version %s", generation, get_version())
     version = get_version()
@@ -476,6 +554,14 @@ async def reload_service(request: Request) -> dict:
             f"Сервис перезапущен (v{version}, generation {generation}): "
             "HTTP-сессии, провайдеры и OCR сброшены"
         ),
+    }
+
+
+async def health_live(request: Request) -> dict:
+    return {
+        "status": "ok",
+        "version": get_version(),
+        "generation": int(getattr(request.app.state, "runtime_generation", 0)),
     }
 
 

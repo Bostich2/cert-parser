@@ -9,7 +9,11 @@ import respx
 from sert_parser.config import Settings
 from sert_parser.domain.certificate_number import parse_certificate_number
 from sert_parser.domain.errors import CertificateNotFoundError
-from sert_parser.infrastructure.registries.kazakhstan import EoknoProvider
+from sert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider
+from sert_parser.infrastructure.registries.kazakhstan import (
+    EoknoProvider,
+    KazakhstanProvider,
+)
 from sert_parser.infrastructure.registries.kazakhstan_html import (
     extract_search_form,
     is_certificate_row,
@@ -18,12 +22,29 @@ from sert_parser.infrastructure.registries.kazakhstan_html import (
 
 FIXTURES = Path(__file__).parent / "fixtures"
 EXAMPLE = "ЕАЭС KZ 1100317.05.01.05103"
+FALLBACK_EXAMPLE = "ЕАЭС KZ 7500533.01.01.06080"
 URL = "https://eokno.gov.kz/public-register/register-ktrm.xhtml"
+ODATA_URL = "https://tech.eaeunion.org/odata/ConformityDocDetailsType"
 
 
 def _provider() -> EoknoProvider:
     settings = Settings(lookup_delay_seconds=0)
     return EoknoProvider(httpx.AsyncClient(timeout=5.0), settings)
+
+
+def _kazakhstan_provider() -> KazakhstanProvider:
+    settings = Settings(lookup_delay_seconds=0)
+    client = httpx.AsyncClient(timeout=5.0)
+    eokno = EoknoProvider(client, settings)
+    eaeu = EaeuOdataProvider(client, settings, country_code="KZ")
+    return KazakhstanProvider(eokno, eaeu)
+
+
+def _odata_response(name: str) -> httpx.Response:
+    import json
+
+    payload = json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+    return httpx.Response(200, json=payload)
 
 
 def test_extract_form_discovers_filter_from_header_context() -> None:
@@ -112,3 +133,63 @@ def test_eokno_unrelated_rows_are_not_found() -> None:
     ]
     with pytest.raises(CertificateNotFoundError):
         _pick_row(rows, number)
+
+
+@respx.mock
+async def test_kazakhstan_fallback_to_eaeu_when_eokno_unrelated() -> None:
+    respx.get(URL).mock(
+        return_value=httpx.Response(
+            200,
+            text=(FIXTURES / "eokno_form.html").read_text(encoding="utf-8"),
+        )
+    )
+    respx.post(URL).mock(
+        return_value=httpx.Response(
+            200,
+            text=(FIXTURES / "eokno_unrelated.xml").read_text(encoding="utf-8"),
+        )
+    )
+    respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
+    provider = _kazakhstan_provider()
+    record = await provider.lookup(parse_certificate_number(FALLBACK_EXAMPLE))
+    assert record.registry_id == "685abfa330dcf80e6d4953c1"
+    assert record.official_number == FALLBACK_EXAMPLE
+    assert str(record.valid_from) == "2025-06-24"
+    assert str(record.valid_until) == "2029-06-23"
+    assert record.status_code == "01"
+    assert "tech.eaeunion.org" in record.url
+    await provider._eokno._client.aclose()
+
+
+@respx.mock
+async def test_kazakhstan_prefers_eokno_when_found() -> None:
+    respx.get(URL).mock(
+        return_value=httpx.Response(
+            200,
+            text=(FIXTURES / "eokno_form.html").read_text(encoding="utf-8"),
+        )
+    )
+    respx.post(URL).mock(
+        return_value=httpx.Response(
+            200,
+            text=(FIXTURES / "eokno_filtered.xml").read_text(encoding="utf-8"),
+        )
+    )
+    odata_route = respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
+    provider = _kazakhstan_provider()
+    record = await provider.lookup(parse_certificate_number(EXAMPLE))
+    assert record.registry_id == "3849075"
+    assert "eokno.gov.kz" in record.url
+    assert not odata_route.called
+    await provider._eokno._client.aclose()
+
+
+@respx.mock
+async def test_kazakhstan_fallback_when_eokno_unavailable() -> None:
+    respx.get(URL).mock(return_value=httpx.Response(503))
+    respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
+    provider = _kazakhstan_provider()
+    record = await provider.lookup(parse_certificate_number(FALLBACK_EXAMPLE))
+    assert record.registry_id == "685abfa330dcf80e6d4953c1"
+    assert "tech.eaeunion.org" in record.url
+    await provider._eokno._client.aclose()

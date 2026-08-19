@@ -108,6 +108,18 @@ UI использует этот endpoint для одиночных запрос
 
 ## Сервис
 
+### `GET /health/live`
+
+Публичный liveness-endpoint (без ping провайдеров). Используется Docker healthcheck и UI для синхронизации версии.
+
+```json
+{
+  "status": "ok",
+  "version": "0.2.0",
+  "generation": 1
+}
+```
+
 ### `GET /health`
 
 ```json
@@ -125,6 +137,8 @@ UI использует этот endpoint для одиночных запрос
 
 `version` — semver релиза (git-тег `vX.Y.Z` через setuptools-scm). `generation` увеличивается после `POST /api/reload`.
 
+При `AUTH_ENABLED=true` endpoint доступен только пользователям с ролью `admin`.
+
 ### `POST /api/reload`
 
 Перезапуск рантайма без остановки uvicorn: закрывает HTTP-клиенты, перечитывает `.env`, пересоздаёт провайдеры, сбрасывает OCR. SQLite-кэш **не** очищается. Во время reload новые lookup-запросы получают `503`; текущие должны завершиться (ожидание до 30 с). Если активные lookup не завершились — `409` с текстом «активны запросы поиска».
@@ -139,7 +153,7 @@ UI использует этот endpoint для одиночных запрос
 
 ### `POST /api/cache/clear`
 
-Очищает SQLite-кэш поиска (`CACHE_PATH`). Во время reload — `503`.
+Очищает SQLite-кэш поиска (`CACHE_PATH`). Во время reload — `503`. При `AUTH_ENABLED=true` — только роль `admin`.
 
 ```json
 {
@@ -147,6 +161,19 @@ UI использует этот endpoint для одиночных запрос
   "message": "Кэш очищен (42 записей)"
 }
 ```
+
+## Авторизация
+
+При `AUTH_ENABLED=true` (production) все маршруты кроме `/login`, `/health/live` и `/static/*` требуют session-cookie после входа.
+
+| Метод | Путь | Доступ |
+|-------|------|--------|
+| `GET/POST` | `/login` | публичный |
+| `POST` | `/logout` | авторизованный |
+
+Пользователи задаются JSON в `AUTH_USERS` (bcrypt-хеши паролей). Генерация: `python scripts/hash_password.py 'password' --username name --role admin|user`.
+
+Админ-действия (`POST /api/cache/clear`, `POST /api/reload`, `GET /health`) — только роль `admin`.
 
 ## Коды ошибок (`error_code`)
 

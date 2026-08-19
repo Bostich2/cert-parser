@@ -13,7 +13,7 @@ from sert_parser.domain.errors import (
     SourceUnavailableError,
 )
 from sert_parser.domain.models import CertificateNumber, RegistryRecord
-from sert_parser.infrastructure.registries.base import RegistryProvider
+from sert_parser.domain.ports import RegistryProvider
 from sert_parser.infrastructure.registries.matching import is_safe_contained_match
 from sert_parser.infrastructure.registries.kazakhstan_html import (
     EoknoRow,
@@ -25,6 +25,35 @@ from sert_parser.infrastructure.registries.kazakhstan_html import (
     status_label,
 )
 from sert_parser.logging_setup import log_step
+
+
+class KazakhstanProvider(RegistryProvider):
+    """Kazakhstan: eokno.gov.kz first, tech.eaeunion.org OData as fallback."""
+
+    def __init__(
+        self,
+        eokno: EoknoProvider,
+        eaeu: RegistryProvider,
+    ) -> None:
+        self._eokno = eokno
+        self._eaeu = eaeu
+
+    async def lookup(self, number: CertificateNumber) -> RegistryRecord:
+        try:
+            return await self._eokno.lookup(number)
+        except CertificateNotFoundError:
+            log_step("KZ: eokno.gov.kz — не найден, пробуем tech.eaeunion.org")
+            return await self._eaeu.lookup(number)
+        except SourceUnavailableError as exc:
+            log_step(
+                f"KZ: eokno.gov.kz недоступен ({exc.message}), пробуем tech.eaeunion.org"
+            )
+            return await self._eaeu.lookup(number)
+
+    async def ping(self) -> bool:
+        eokno_ok = await self._eokno.ping()
+        eaeu_ok = await self._eaeu.ping()
+        return eokno_ok or eaeu_ok
 
 
 class EoknoProvider(RegistryProvider):

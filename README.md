@@ -104,7 +104,10 @@ python scripts/release.py minor --dry-run
 | `POST` | `/api/export-xlsx` | Скачать результаты как `.xlsx` |
 | `POST` | `/api/cache/clear` | Очистить SQLite-кэш |
 | `POST` | `/api/reload` | Перезагрузить HTTP-сессии и провайдеры |
-| `GET` | `/health` | Статус провайдеров и `generation` |
+| `GET` | `/health/live` | Liveness (публичный): `status`, `version`, `generation` |
+| `GET` | `/health` | Детальный статус провайдеров (admin при включённой auth) |
+| `GET/POST` | `/login` | Страница входа (публичная при включённой auth) |
+| `POST` | `/logout` | Выход из сессии |
 
 Подробнее: [ai_docs/develop/api/endpoints.md](ai_docs/develop/api/endpoints.md).
 
@@ -147,6 +150,31 @@ POST /api/lookup
 - `HTTP_SSL_VERIFY` — проверка TLS для всех исходящих HTTP-запросов к реестрам (`BELGISS_SSL_VERIFY` — устаревший alias).
 - `LOG_LEVEL`.
 - `SERT_PARSER_VERSION` — явная версия, если нет git-тега (Docker задаёт через `APP_VERSION`).
+- `AUTH_ENABLED`, `AUTH_SECRET_KEY`, `AUTH_USERS` — session-авторизация (см. Production deploy).
+- `ALLOWED_HOSTS`, `ENV=production` — hardening для публичного деплоя.
+
+## Production deploy (VPS + Docker)
+
+1. DNS A-запись домена → IP сервера.
+2. Скопируйте [`deploy/.env.prod.example`](deploy/.env.prod.example) в `.env.prod` в корне проекта.
+3. Укажите домен в [`deploy/Caddyfile`](deploy/Caddyfile) (`example.com` → ваш домен).
+4. Сгенерируйте секрет: `python -c "import secrets; print(secrets.token_hex(32))"` → `AUTH_SECRET_KEY`.
+5. Сгенерируйте пользователей:
+   ```bash
+   python scripts/hash_password.py 'your-password' --username admin --role admin
+   ```
+   Результат JSON вставьте в `AUTH_USERS`.
+6. Запуск:
+   ```bash
+   docker compose -f docker-compose.prod.yml up -d --build
+   ```
+7. Откройте `https://your.domain` — войдите под созданным пользователем.
+
+Caddy получает TLS-сертификат Let's Encrypt автоматически. Приложение слушает только внутри Docker-сети (`web:8000`); снаружи доступен HTTPS через Caddy.
+
+**Роли:** `admin` — сброс кэша и перезагрузка сервиса; `user` — поиск и экспорт.
+
+Rate limiting включён в приложении (`RATE_LIMIT_*`). OpenAPI (`/docs`) отключён при `ENV=production`.
 
 ## Тесты
 

@@ -1,0 +1,20 @@
+# Replace example.com with your domain before deploy.
+# Email is used by Let's Encrypt for certificate notifications.
+
+{
+	email admin@example.com
+}
+
+example.com {
+	encode gzip zstd
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	reverse_proxy web:8000
+}

@@ -5,17 +5,18 @@ from dataclasses import replace
 from datetime import date
 
 from sert_parser.application.country_router import CountryRouter
+from sert_parser.application.serializers import lookup_result_to_cache_payload
 from sert_parser.config import Settings
 from sert_parser.domain.certificate_number import parse_certificate_number
 from sert_parser.domain.errors import SertParserError
 from sert_parser.domain.models import LookupResult, RegistryRecord
-from sert_parser.infrastructure.cache import SqliteLookupCache
+from sert_parser.domain.ports import LookupCache
 from sert_parser.logging_setup import current_steps, log_step, start_steps
 
 _COUNTRY_SOURCES = {
     "BY": "Беларусь, api.belgiss.by",
     "RU": "Россия, pub.fsa.gov.ru",
-    "KZ": "Казахстан, eokno.gov.kz (JSF, часто 10–30 с)",
+    "KZ": "Казахстан, eokno.gov.kz (JSF), при отсутствии — tech.eaeunion.org",
     "KG": "Кыргызстан, swis.trade.kg",
     "AM": "Армения, ARMNAB (armnab.am), поиск через OData tech.eaeunion.org",
 }
@@ -25,7 +26,7 @@ class LookupService:
     def __init__(
         self,
         router: CountryRouter,
-        cache: SqliteLookupCache,
+        cache: LookupCache,
         settings: Settings,
     ) -> None:
         self._router = router
@@ -123,9 +124,7 @@ def _with_trace(result: LookupResult) -> LookupResult:
 
 
 def _cache_payload(result: LookupResult) -> dict:
-    payload = result.to_api_dict()
-    payload.pop("trace", None)
-    return payload
+    return lookup_result_to_cache_payload(result)
 
 
 def _success_summary(record: RegistryRecord) -> str:

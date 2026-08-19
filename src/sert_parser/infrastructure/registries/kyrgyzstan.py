@@ -13,7 +13,7 @@ from sert_parser.domain.errors import (
     SourceUnavailableError,
 )
 from sert_parser.domain.models import CertificateNumber, RegistryRecord
-from sert_parser.infrastructure.registries.base import RegistryProvider
+from sert_parser.domain.ports import RegistryProvider
 from sert_parser.infrastructure.registries.matching import is_safe_contained_match
 from sert_parser.infrastructure.registries.kyrgyzstan_html import (
     SwisRow,

@@ -62,24 +62,6 @@ class LookupResult:
     cached: bool = False
     trace: tuple[str, ...] = ()
 
-    def to_api_dict(self) -> dict:
-        return {
-            "query": self.query,
-            "normalized": self.normalized,
-            "country_code": self.country_code,
-            "url": self.url,
-            "valid_from": self.valid_from.isoformat() if self.valid_from else None,
-            "valid_until": self.valid_until.isoformat() if self.valid_until else None,
-            "status": self.status,
-            "status_code": self.status_code,
-            "registry_id": self.registry_id,
-            "official_number": self.official_number,
-            "error": self.error,
-            "error_code": self.error_code,
-            "cached": self.cached,
-            "trace": list(self.trace),
-        }
-
 
 def parse_iso_date(value: str | None) -> date | None:
     if not value:

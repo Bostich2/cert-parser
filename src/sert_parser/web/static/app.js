@@ -31,6 +31,20 @@ const clearCacheBtn = document.getElementById("clear-cache-btn");
 const fullReloadBtn = document.getElementById("full-reload-btn");
 const appVersionEl = document.getElementById("app-version");
 
+function redirectToLogin() {
+    const next = encodeURIComponent(`${window.location.pathname}${window.location.search}`);
+    window.location.href = `/login?next=${next}`;
+}
+
+async function apiFetch(url, options = {}) {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+        redirectToLogin();
+        throw new Error("Unauthorized");
+    }
+    return response;
+}
+
 function getAppVersion() {
     return document.querySelector('meta[name="app-version"]')?.content || "";
 }
@@ -57,7 +71,7 @@ function updateAppVersionLabel(version, generation) {
 
 async function syncRuntimeInfo() {
     try {
-        const response = await fetch("/health");
+        const response = await apiFetch("/health/live");
         if (!response.ok) {
             return;
         }
@@ -84,6 +98,15 @@ let pendingTraceLines = [];
 let extractPdfEndpoint = null;
 let extractPdfStreamEndpoint = null;
 let lookupStreamEndpoint = null;
+const retryingRows = new Set();
+let openRowMenuIndex = null;
+
+const NON_RETRIABLE_ERROR_CODES = new Set([
+    "no_numbers_in_pdf",
+    "no_numbers_in_xlsx",
+    "invalid_number",
+    "unsupported_country",
+]);
 
 pageSizeEl.addEventListener("change", () => {
     currentPage = 1;
@@ -111,17 +134,38 @@ exportBtn.addEventListener("click", async () => {
     await exportResults();
 });
 
+resultsBody.addEventListener("click", async (event) => {
+    const toggle = event.target.closest(".row-menu__toggle");
+    if (toggle) {
+        event.stopPropagation();
+        const index = Number(toggle.dataset.rowIndex);
+        if (!Number.isNaN(index)) {
+            toggleRowMenu(index);
+        }
+        return;
+    }
+    const retryBtn = event.target.closest(".retry-btn");
+    if (retryBtn && !retryBtn.disabled) {
+        event.stopPropagation();
+        closeRowMenus();
+        const index = Number(retryBtn.dataset.rowIndex);
+        if (!Number.isNaN(index)) {
+            await retryRow(index);
+        }
+    }
+});
+
 settingsToggle.addEventListener("click", (event) => {
     event.stopPropagation();
     toggleSettingsMenu(!isSettingsMenuOpen());
 });
 
-clearCacheBtn.addEventListener("click", async () => {
+clearCacheBtn?.addEventListener("click", async () => {
     closeSettingsMenu();
     await clearServerCache();
 });
 
-fullReloadBtn.addEventListener("click", async () => {
+fullReloadBtn?.addEventListener("click", async () => {
     closeSettingsMenu();
     await reloadService();
 });
@@ -130,11 +174,15 @@ document.addEventListener("click", (event) => {
     if (!event.target.closest(".settings-menu")) {
         closeSettingsMenu();
     }
+    if (!event.target.closest(".row-menu")) {
+        closeRowMenus();
+    }
 });
 
 document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
         closeSettingsMenu();
+        closeRowMenus();
     }
 });
 
@@ -397,7 +445,7 @@ async function lookupChunk(numbers, onStep) {
 }
 
 async function lookupChunkStream(numbers, onStep) {
-    const response = await fetch("/api/lookup/stream", {
+    const response = await apiFetch("/api/lookup/stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ numbers }),
@@ -429,7 +477,7 @@ async function lookupChunkStream(numbers, onStep) {
 }
 
 async function lookupChunkJson(numbers, onStep) {
-    const response = await fetch("/api/lookup", {
+    const response = await apiFetch("/api/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ numbers }),
@@ -457,7 +505,7 @@ async function runXlsxLookup(file) {
     try {
         const body = new FormData();
         body.append("file", file);
-        const response = await fetch("/api/extract-xlsx", { method: "POST", body });
+        const response = await apiFetch("/api/extract-xlsx", { method: "POST", body });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
             const detail = payload.detail || `Ошибка сервера (${response.status})`;
@@ -608,7 +656,7 @@ async function extractPdfFile(file, onStep) {
 async function extractPdfFileStream(file, onStep) {
     const body = new FormData();
     body.append("file", file);
-    const response = await fetch("/api/extract-pdf/stream", { method: "POST", body });
+    const response = await apiFetch("/api/extract-pdf/stream", { method: "POST", body });
     if (response.status === 404) {
         extractPdfStreamEndpoint = false;
         throw new Error("Not Found");
@@ -649,7 +697,7 @@ async function extractPdfFileStream(file, onStep) {
 async function extractPdfFileJson(file, onStep) {
     const body = new FormData();
     body.append("file", file);
-    const response = await fetch("/api/extract-pdf", { method: "POST", body });
+    const response = await apiFetch("/api/extract-pdf", { method: "POST", body });
     if (response.status === 404) {
         extractPdfEndpoint = false;
         return lookupPdfLegacy(file);
@@ -685,7 +733,7 @@ async function lookupPdfLegacy(file) {
     ]);
     const body = new FormData();
     body.append("file", file);
-    const response = await fetch("/api/lookup-pdf", { method: "POST", body });
+    const response = await apiFetch("/api/lookup-pdf", { method: "POST", body });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
         throw new Error(httpErrorMessage(response, payload));
@@ -719,9 +767,62 @@ function renderRows(results) {
         resultsBody.innerHTML = '<tr class="empty"><td colspan="7">Пока ничего не искали</td></tr>';
         return;
     }
+    closeRowMenus();
     const start = (currentPage - 1) * pageSize();
     const pageRows = currentResults.slice(start, start + pageSize());
-    resultsBody.innerHTML = pageRows.map(rowHtml).join("");
+    resultsBody.innerHTML = pageRows.map((item, localIndex) => rowHtml(item, start + localIndex)).join("");
+}
+
+function isRetriableRow(item) {
+    if (!item || !item.error || !item.query) {
+        return false;
+    }
+    if (item.error_code && NON_RETRIABLE_ERROR_CODES.has(item.error_code)) {
+        return false;
+    }
+    return true;
+}
+
+async function retryRow(globalIndex) {
+    if (retryingRows.has(globalIndex) || busy) {
+        return;
+    }
+    const item = currentResults[globalIndex];
+    if (!item || !isRetriableRow(item)) {
+        return;
+    }
+    const number = item.query;
+    retryingRows.add(globalIndex);
+    renderRows(currentResults);
+    try {
+        appendTraceLine(`— Повтор: ${number} —`);
+        showProgress("Повтор", waitingHint(number));
+        const chunk = await lookupChunk([number], (step) => {
+            appendTraceLine(step);
+            showProgress("Повтор", step);
+        });
+        const result = chunk[0] || {
+            query: number,
+            error: "Сервер не вернул результат поиска",
+            error_code: "client_error",
+        };
+        currentResults[globalIndex] = result;
+        appendTraceSteps(result, false, number);
+    } catch (error) {
+        clearPendingTrace();
+        const failed = {
+            query: number,
+            error: humanizeError(error),
+            error_code: "client_error",
+            trace: [humanizeError(error)],
+        };
+        currentResults[globalIndex] = failed;
+        appendTraceSteps(failed, false, number);
+    } finally {
+        retryingRows.delete(globalIndex);
+        hideProgress();
+        renderRows(currentResults);
+    }
 }
 
 function updateResultsControls(total, pages) {
@@ -761,7 +862,7 @@ function pluralizeRecords(total) {
 async function exportResults() {
     setBusy(true);
     try {
-        const response = await fetch("/api/export-xlsx", {
+        const response = await apiFetch("/api/export-xlsx", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ results: currentResults }),
@@ -794,22 +895,44 @@ function resetTrace() {
     renderTraceView();
 }
 
+const TRACE_TIME_RE = /^(\d{2}:\d{2}:\d{2})\t(.*)$/s;
+
+function formatTraceTime(date = new Date()) {
+    const pad = (value) => String(value).padStart(2, "0");
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function stampTraceLine(line) {
+    if (TRACE_TIME_RE.test(line)) {
+        return line;
+    }
+    return `${formatTraceTime()}\t${line}`;
+}
+
+function parseTraceLine(line) {
+    const match = TRACE_TIME_RE.exec(line);
+    if (match) {
+        return { time: match[1], text: match[2] };
+    }
+    return { time: formatTraceTime(), text: line };
+}
+
 function appendTraceLine(line) {
     if (!line) {
         return;
     }
     pendingTraceLines = [];
-    traceLines.push(line);
+    traceLines.push(stampTraceLine(line));
     renderTraceView();
 }
 
 function appendTraceSection(header, steps) {
     if (header) {
-        traceLines.push(header);
+        traceLines.push(stampTraceLine(header));
     }
     for (const step of steps || []) {
         if (step) {
-            traceLines.push(step);
+            traceLines.push(stampTraceLine(step));
         }
     }
     renderTraceView();
@@ -824,9 +947,9 @@ function appendTraceSteps(item, withHeader, headerFallback) {
         return;
     }
     if (withHeader) {
-        traceLines.push(`— ${traceItemLabel(item, headerFallback)} —`);
+        traceLines.push(stampTraceLine(`— ${traceItemLabel(item, headerFallback)} —`));
     }
-    traceLines.push(...steps);
+    traceLines.push(...steps.map(stampTraceLine));
     renderTraceView();
 }
 
@@ -888,7 +1011,7 @@ function clearPendingTrace() {
 function renderTraceView() {
     const lines = [...traceLines];
     if (pendingTraceLines.length) {
-        lines.push(...pendingTraceLines);
+        lines.push(...pendingTraceLines.map(stampTraceLine));
     }
     if (!lines.length) {
         traceLogEl.innerHTML = '<li class="muted">Здесь появятся шаги: разбор номера, страна, GET/POST в реестр, сколько строк вернулось.</li>';
@@ -896,14 +1019,16 @@ function renderTraceView() {
         return;
     }
     traceLogEl.innerHTML = lines.map((line, index) => {
+        const { time, text } = parseTraceLine(line);
         const pending = index >= traceLines.length;
-        const cssClass = pending ? ' class="pending"' : "";
-        return `<li${cssClass}>${escapeHtml(line)}</li>`;
+        const cssClass = pending ? " trace-line pending" : " trace-line";
+        const stepNumber = index + 1;
+        return `<li class="${cssClass.trim()}"><span class="trace-time">${escapeHtml(time)}</span><span class="trace-index">${stepNumber}.</span><span class="trace-text">${escapeHtml(text)}</span></li>`;
     }).join("");
     scrollTraceToBottom();
 }
 
-function rowHtml(item) {
+function rowHtml(item, globalIndex) {
     const number = escapeHtml(item.official_number || item.normalized || item.query || "—");
     const country = escapeHtml(item.country_code || "—");
     const link = item.url
@@ -913,16 +1038,85 @@ function rowHtml(item) {
     const validUntil = escapeHtml(formatDate(item.valid_until));
     const statusClass = statusCss(item.status_code);
     const status = escapeHtml(item.status || "—");
-    const error = item.error ? `<span class="error">${escapeHtml(item.error)}</span>` : "—";
-    return `<tr>
+    const errorContent = item.error ? `<span class="error">${escapeHtml(item.error)}</span>` : "—";
+    const rowClasses = ["result-row"];
+    if (retryingRows.has(globalIndex)) {
+        rowClasses.push("row-retrying");
+    }
+    if (isRetriableRow(item)) {
+        rowClasses.push("result-row--has-menu");
+    }
+    const menu = rowMenuHtml(item, globalIndex);
+    return `<tr class="${rowClasses.join(" ")}">
         <td>${number}</td>
         <td>${country}</td>
         <td>${link}</td>
         <td>${validFrom}</td>
         <td>${validUntil}</td>
         <td class="${statusClass}">${status}</td>
-        <td>${error}</td>
+        <td class="error-cell">${errorContent}${menu}</td>
     </tr>`;
+}
+
+function rowMenuHtml(item, globalIndex) {
+    if (!isRetriableRow(item)) {
+        return "";
+    }
+    const retrying = retryingRows.has(globalIndex);
+    const disabled = busy || retrying ? " disabled" : "";
+    const retryLabel = retrying ? "Повтор…" : "Повторить";
+    return `<div class="row-menu" data-row-index="${globalIndex}">
+        <button type="button" class="row-menu__toggle" title="Действия" aria-label="Действия строки"
+                aria-haspopup="menu" aria-expanded="false" data-row-index="${globalIndex}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="currentColor" aria-hidden="true">
+                <circle cx="12" cy="5" r="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <circle cx="12" cy="19" r="2"/>
+            </svg>
+        </button>
+        <div class="row-menu__dropdown" role="menu" hidden>
+            <button type="button" class="row-menu__item retry-btn" role="menuitem"
+                    data-row-index="${globalIndex}"${disabled}>${retryLabel}</button>
+        </div>
+    </div>`;
+}
+
+function closeRowMenus() {
+    openRowMenuIndex = null;
+    for (const menu of document.querySelectorAll(".row-menu")) {
+        const toggle = menu.querySelector(".row-menu__toggle");
+        const dropdown = menu.querySelector(".row-menu__dropdown");
+        menu.classList.remove("is-open");
+        if (dropdown) {
+            dropdown.hidden = true;
+        }
+        if (toggle) {
+            toggle.setAttribute("aria-expanded", "false");
+        }
+    }
+}
+
+function toggleRowMenu(globalIndex) {
+    const menu = document.querySelector(`.row-menu[data-row-index="${globalIndex}"]`);
+    if (!menu) {
+        return;
+    }
+    const isOpen = openRowMenuIndex === globalIndex;
+    closeRowMenus();
+    if (isOpen) {
+        return;
+    }
+    const toggle = menu.querySelector(".row-menu__toggle");
+    const dropdown = menu.querySelector(".row-menu__dropdown");
+    openRowMenuIndex = globalIndex;
+    menu.classList.add("is-open");
+    if (dropdown) {
+        dropdown.hidden = false;
+    }
+    if (toggle) {
+        toggle.setAttribute("aria-expanded", "true");
+    }
 }
 
 function statusCss(code) {
@@ -949,7 +1143,7 @@ function formatDate(value) {
 function waitingHint(number) {
     const upper = String(number || "").toUpperCase();
     if (/\bKZ\b/.test(upper)) {
-        return "Казахстан, eokno.gov.kz. JSF-форма, ответ часто 10–30 секунд — кнопки заблокированы, пока реестр не ответит.";
+        return "Казахстан, eokno.gov.kz; если не найден — tech.eaeunion.org. JSF-форма, ответ часто 10–30 секунд.";
     }
     if (/\bRU\b/.test(upper)) {
         return "Россия, pub.fsa.gov.ru. Сначала анонимный вход, затем поиск по номеру.";
@@ -1027,7 +1221,7 @@ function closeSettingsMenu() {
 
 async function clearServerCache() {
     try {
-        const response = await fetch("/api/cache/clear", { method: "POST" });
+        const response = await apiFetch("/api/cache/clear", { method: "POST" });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
             throw new Error(httpErrorMessage(response, payload));
@@ -1048,7 +1242,7 @@ async function reloadService() {
         "Закрываю соединения с реестрами, перечитываю настройки, сбрасываю OCR.",
     ]);
     try {
-        const response = await fetch("/api/reload", { method: "POST" });
+        const response = await apiFetch("/api/reload", { method: "POST" });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
             throw new Error(httpErrorMessage(response, payload));

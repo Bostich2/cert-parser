@@ -8,7 +8,7 @@ import httpx
 from sert_parser.config import Settings
 from sert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
 from sert_parser.domain.models import CertificateNumber, RegistryRecord
-from sert_parser.infrastructure.registries.base import RegistryProvider
+from sert_parser.domain.ports import RegistryProvider
 from sert_parser.infrastructure.registries.matching import pick_matching_item, record_from_light_item
 from sert_parser.logging_setup import log_step
 
