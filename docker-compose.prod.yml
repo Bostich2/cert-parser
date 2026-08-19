@@ -26,12 +26,16 @@ services:
       start_period: 40s
 
   caddy:
-    image: caddy:2-alpine
+    build:
+      context: ./deploy
+      dockerfile: Dockerfile.caddy
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      CADDY_DOMAIN: ${ALLOWED_HOSTS:-example.com}
+      CADDY_ACME_EMAIL: ${CADDY_ACME_EMAIL:-admin@example.com}
     volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:

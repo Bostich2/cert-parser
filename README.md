@@ -157,7 +157,7 @@ POST /api/lookup
 
 1. DNS A-запись домена → IP сервера.
 2. Скопируйте [`deploy/.env.prod.example`](deploy/.env.prod.example) в `.env.prod` в корне проекта.
-3. Укажите домен в [`deploy/Caddyfile`](deploy/Caddyfile) (`example.com` → ваш домен).
+3. Задайте домен в `.env.prod` через `ALLOWED_HOSTS` (Caddy подхватит его автоматически). Для нескольких доменов отредактируйте [`deploy/Caddyfile`](deploy/Caddyfile) и пересоберите образ `caddy`.
 4. Сгенерируйте секрет: `python -c "import secrets; print(secrets.token_hex(32))"` → `AUTH_SECRET_KEY`.
 5. Сгенерируйте пользователей:
    ```bash
@@ -178,6 +178,14 @@ POST /api/lookup
 7. Откройте `https://your.domain` — войдите под созданным пользователем.
 
 Caddy получает TLS-сертификат Let's Encrypt автоматически. Приложение слушает только внутри Docker-сети (`web:8000`); снаружи доступен HTTPS через Caddy.
+
+**Coolify:** если деплой падал с ошибкой `mount ... Caddyfile ... not a directory`, на сервере могла остаться лишняя папка от старого bind mount. Удалите её и задеплойте снова:
+
+```bash
+sudo rm -rf /data/coolify/applications/<app-uuid>/deploy/Caddyfile
+```
+
+Начиная с текущей версии `Caddyfile` встроен в образ `caddy` при сборке — отдельный bind mount не нужен.
 
 **Роли:** `admin` — сброс кэша и перезагрузка сервиса; `user` — поиск и экспорт.
 
