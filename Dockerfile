@@ -6,6 +6,7 @@ ARG APP_VERSION=0.2.0
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
         curl \
         libgomp1 \
         libglib2.0-0 \

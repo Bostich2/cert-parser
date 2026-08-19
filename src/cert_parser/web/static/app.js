@@ -1150,7 +1150,7 @@ function waitingHint(number) {
         return "Россия, pub.fsa.gov.ru. Сначала анонимный вход, затем поиск по номеру.";
     }
     if (/\bBY\b/.test(upper)) {
-        return "Беларусь, api.belgiss.by. Идёт запрос в JSON API.";
+        return "Беларусь, api.belgiss.by; если недоступен — tech.eaeunion.org. Идёт запрос в JSON API.";
     }
     return "Идёт поиск в реестре…";
 }

@@ -13,7 +13,7 @@ from cert_parser.infrastructure.cache import SqliteLookupCache
 from cert_parser.infrastructure.http import build_http_client
 from cert_parser.infrastructure.pdf import reset_ocr_engines
 from cert_parser.infrastructure.registries.armenia import ArmeniaProvider
-from cert_parser.infrastructure.registries.belarus import BelgissProvider
+from cert_parser.infrastructure.registries.belarus import BelarusProvider, BelgissProvider
 from cert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider
 from cert_parser.infrastructure.registries.kazakhstan import EoknoProvider, KazakhstanProvider
 from cert_parser.infrastructure.registries.kyrgyzstan import SwisProvider
@@ -58,11 +58,13 @@ async def configure_runtime(app: FastAPI) -> None:
     belgiss = BelgissProvider(belgiss_client, settings)
     fsa = FsaProvider(fsa_client, settings)
     eokno = EoknoProvider(eokno_client, settings)
+    eaeu_by = EaeuOdataProvider(eaeu_client, settings, country_code="BY")
     eaeu_kz = EaeuOdataProvider(eaeu_client, settings, country_code="KZ")
+    belarus = BelarusProvider(belgiss, eaeu_by)
     kazakhstan = KazakhstanProvider(eokno, eaeu_kz)
     swis = SwisProvider(swis_client, settings)
     armenia = ArmeniaProvider(eaeu_client, settings)
-    router = CountryRouter({"BY": belgiss, "RU": fsa, "KZ": kazakhstan, "KG": swis, "AM": armenia})
+    router = CountryRouter({"BY": belarus, "RU": fsa, "KZ": kazakhstan, "KG": swis, "AM": armenia})
     extract_service = ExtractService(settings)
     export_service = ExportService()
     app.state.settings = settings
@@ -70,6 +72,8 @@ async def configure_runtime(app: FastAPI) -> None:
     app.state.http_clients = [belgiss_client, fsa_client, eokno_client, swis_client, eaeu_client]
     app.state.providers = {
         "belgiss": belgiss,
+        "eaeu_by": eaeu_by,
+        "belarus": belarus,
         "fsa": fsa,
         "eokno": eokno,
         "eaeu_kz": eaeu_kz,

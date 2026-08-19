@@ -14,7 +14,7 @@ from cert_parser.domain.ports import LookupCache
 from cert_parser.logging_setup import current_steps, log_step, start_steps
 
 _COUNTRY_SOURCES = {
-    "BY": "Беларусь, api.belgiss.by",
+    "BY": "Беларусь, api.belgiss.by, при недоступности — tech.eaeunion.org",
     "RU": "Россия, pub.fsa.gov.ru",
     "KZ": "Казахстан, eokno.gov.kz (JSF), при отсутствии — tech.eaeunion.org",
     "KG": "Кыргызстан, swis.trade.kg",

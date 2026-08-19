@@ -9,10 +9,40 @@ from cert_parser.config import Settings
 from cert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
 from cert_parser.domain.models import CertificateNumber, RegistryRecord
 from cert_parser.domain.ports import RegistryProvider
+from cert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider
 from cert_parser.infrastructure.registries.matching import pick_matching_item, record_from_light_item
 from cert_parser.logging_setup import log_step
 
 logger = logging.getLogger(__name__)
+
+
+class BelarusProvider(RegistryProvider):
+    """Belarus: api.belgiss.by first, tech.eaeunion.org OData as fallback."""
+
+    def __init__(
+        self,
+        belgiss: BelgissProvider,
+        eaeu: EaeuOdataProvider,
+    ) -> None:
+        self._belgiss = belgiss
+        self._eaeu = eaeu
+
+    async def lookup(self, number: CertificateNumber) -> RegistryRecord:
+        try:
+            return await self._belgiss.lookup(number)
+        except CertificateNotFoundError:
+            log_step("BY: api.belgiss.by — не найден, пробуем tech.eaeunion.org")
+            return await self._eaeu.lookup(number)
+        except SourceUnavailableError as exc:
+            log_step(
+                f"BY: api.belgiss.by недоступен ({exc.message}), пробуем tech.eaeunion.org"
+            )
+            return await self._eaeu.lookup(number)
+
+    async def ping(self) -> bool:
+        belgiss_ok = await self._belgiss.ping()
+        eaeu_ok = await self._eaeu.ping()
+        return belgiss_ok or eaeu_ok
 
 
 class BelgissProvider(RegistryProvider):
@@ -81,7 +111,10 @@ class BelgissProvider(RegistryProvider):
             raise SourceUnavailableError("Реестр БелГИСС вернул ошибку") from exc
         except httpx.HTTPError as exc:
             logger.warning("Belgiss request failed: %s", exc)
-            raise SourceUnavailableError() from exc
+            message = "Реестр БелГИСС недоступен"
+            if isinstance(exc, httpx.ConnectError):
+                message = f"Реестр БелГИСС недоступен: {exc}"
+            raise SourceUnavailableError(message) from exc
         except ValueError as exc:
             raise SourceUnavailableError("Реестр БелГИСС вернул некорректный ответ") from exc
         if not isinstance(data, dict):
