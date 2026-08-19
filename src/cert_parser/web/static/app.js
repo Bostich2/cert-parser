@@ -1144,13 +1144,16 @@ function formatDate(value) {
 function waitingHint(number) {
     const upper = String(number || "").toUpperCase();
     if (/\bKZ\b/.test(upper)) {
-        return "Казахстан, eokno.gov.kz; если не найден — tech.eaeunion.org. JSF-форма, ответ часто 10–30 секунд.";
+        return "Казахстан, tech.eaeunion.org; если не найден — eokno.gov.kz (JSF, 10–30 с).";
     }
     if (/\bRU\b/.test(upper)) {
-        return "Россия, pub.fsa.gov.ru. Сначала анонимный вход, затем поиск по номеру.";
+        return "Россия, tech.eaeunion.org; если не найден — pub.fsa.gov.ru.";
     }
     if (/\bBY\b/.test(upper)) {
-        return "Беларусь, api.belgiss.by; если недоступен — tech.eaeunion.org. Идёт запрос в JSON API.";
+        return "Беларусь, tech.eaeunion.org; если не найден — api.belgiss.by.";
+    }
+    if (/\bKG\b/.test(upper)) {
+        return "Кыргызстан, tech.eaeunion.org; если не найден — swis.trade.kg.";
     }
     return "Идёт поиск в реестре…";
 }

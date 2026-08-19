@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     request_timeout_seconds: float = 30.0
     lookup_concurrency: int = 2
     lookup_delay_seconds: float = 0.25
+    lookup_eaeu_first: bool = True
     cache_ttl_seconds: int = 86400
     cache_path: Path = Path("data/cache.sqlite")
     max_batch_size: int = 100

@@ -9,10 +9,10 @@ import respx
 from cert_parser.config import Settings
 from cert_parser.domain.certificate_number import parse_certificate_number
 from cert_parser.domain.errors import CertificateNotFoundError
+from cert_parser.infrastructure.registries.chained import build_lookup_chain
 from cert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider
 from cert_parser.infrastructure.registries.kazakhstan import (
     EoknoProvider,
-    KazakhstanProvider,
 )
 from cert_parser.infrastructure.registries.kazakhstan_html import (
     extract_search_form,
@@ -32,12 +32,19 @@ def _provider() -> EoknoProvider:
     return EoknoProvider(httpx.AsyncClient(timeout=5.0), settings)
 
 
-def _kazakhstan_provider() -> KazakhstanProvider:
+def _kazakhstan_provider(*, eaeu_first: bool = True):
     settings = Settings(lookup_delay_seconds=0)
     client = httpx.AsyncClient(timeout=5.0)
     eokno = EoknoProvider(client, settings)
     eaeu = EaeuOdataProvider(client, settings, country_code="KZ")
-    return KazakhstanProvider(eokno, eaeu)
+    return build_lookup_chain(
+        "KZ",
+        eaeu,
+        eokno,
+        eaeu_label="tech.eaeunion.org",
+        national_label="eokno.gov.kz",
+        eaeu_first=eaeu_first,
+    )
 
 
 def _odata_response(name: str) -> httpx.Response:
@@ -136,6 +143,18 @@ def test_eokno_unrelated_rows_are_not_found() -> None:
 
 
 @respx.mock
+async def test_kazakhstan_eaeu_first_returns_odata_when_found() -> None:
+    respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
+    eokno_get = respx.get(URL).mock(return_value=httpx.Response(503))
+    provider = _kazakhstan_provider(eaeu_first=True)
+    record = await provider.lookup(parse_certificate_number(FALLBACK_EXAMPLE))
+    assert record.registry_id == "685abfa330dcf80e6d4953c1"
+    assert "tech.eaeunion.org" in record.url
+    assert not eokno_get.called
+    await provider._steps[0][0]._client.aclose()
+
+
+@respx.mock
 async def test_kazakhstan_fallback_to_eaeu_when_eokno_unrelated() -> None:
     respx.get(URL).mock(
         return_value=httpx.Response(
@@ -150,7 +169,7 @@ async def test_kazakhstan_fallback_to_eaeu_when_eokno_unrelated() -> None:
         )
     )
     respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
-    provider = _kazakhstan_provider()
+    provider = _kazakhstan_provider(eaeu_first=False)
     record = await provider.lookup(parse_certificate_number(FALLBACK_EXAMPLE))
     assert record.registry_id == "685abfa330dcf80e6d4953c1"
     assert record.official_number == FALLBACK_EXAMPLE
@@ -158,11 +177,11 @@ async def test_kazakhstan_fallback_to_eaeu_when_eokno_unrelated() -> None:
     assert str(record.valid_until) == "2029-06-23"
     assert record.status_code == "01"
     assert "tech.eaeunion.org" in record.url
-    await provider._eokno._client.aclose()
+    await provider._steps[0][0]._client.aclose()
 
 
 @respx.mock
-async def test_kazakhstan_prefers_eokno_when_found() -> None:
+async def test_kazakhstan_prefers_eokno_when_found_and_national_first() -> None:
     respx.get(URL).mock(
         return_value=httpx.Response(
             200,
@@ -176,20 +195,20 @@ async def test_kazakhstan_prefers_eokno_when_found() -> None:
         )
     )
     odata_route = respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
-    provider = _kazakhstan_provider()
+    provider = _kazakhstan_provider(eaeu_first=False)
     record = await provider.lookup(parse_certificate_number(EXAMPLE))
     assert record.registry_id == "3849075"
     assert "eokno.gov.kz" in record.url
     assert not odata_route.called
-    await provider._eokno._client.aclose()
+    await provider._steps[0][0]._client.aclose()
 
 
 @respx.mock
 async def test_kazakhstan_fallback_when_eokno_unavailable() -> None:
-    respx.get(URL).mock(return_value=httpx.Response(503))
     respx.get(ODATA_URL).mock(return_value=_odata_response("kz_odata_result.json"))
-    provider = _kazakhstan_provider()
+    respx.get(URL).mock(return_value=httpx.Response(503))
+    provider = _kazakhstan_provider(eaeu_first=False)
     record = await provider.lookup(parse_certificate_number(FALLBACK_EXAMPLE))
     assert record.registry_id == "685abfa330dcf80e6d4953c1"
     assert "tech.eaeunion.org" in record.url
-    await provider._eokno._client.aclose()
+    await provider._steps[0][0]._client.aclose()

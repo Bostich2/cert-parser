@@ -13,9 +13,10 @@ from cert_parser.infrastructure.cache import SqliteLookupCache
 from cert_parser.infrastructure.http import build_http_client
 from cert_parser.infrastructure.pdf import reset_ocr_engines
 from cert_parser.infrastructure.registries.armenia import ArmeniaProvider
-from cert_parser.infrastructure.registries.belarus import BelarusProvider, BelgissProvider
+from cert_parser.infrastructure.registries.belarus import BelgissProvider
+from cert_parser.infrastructure.registries.chained import build_lookup_chain
 from cert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider
-from cert_parser.infrastructure.registries.kazakhstan import EoknoProvider, KazakhstanProvider
+from cert_parser.infrastructure.registries.kazakhstan import EoknoProvider
 from cert_parser.infrastructure.registries.kyrgyzstan import SwisProvider
 from cert_parser.infrastructure.registries.russia import FsaProvider
 from cert_parser.logging_setup import configure_logging
@@ -58,13 +59,48 @@ async def configure_runtime(app: FastAPI) -> None:
     belgiss = BelgissProvider(belgiss_client, settings)
     fsa = FsaProvider(fsa_client, settings)
     eokno = EoknoProvider(eokno_client, settings)
+    swis = SwisProvider(swis_client, settings)
     eaeu_by = EaeuOdataProvider(eaeu_client, settings, country_code="BY")
     eaeu_kz = EaeuOdataProvider(eaeu_client, settings, country_code="KZ")
-    belarus = BelarusProvider(belgiss, eaeu_by)
-    kazakhstan = KazakhstanProvider(eokno, eaeu_kz)
-    swis = SwisProvider(swis_client, settings)
+    eaeu_ru = EaeuOdataProvider(eaeu_client, settings, country_code="RU")
+    eaeu_kg = EaeuOdataProvider(eaeu_client, settings, country_code="KG")
+    eaeu_first = settings.lookup_eaeu_first
+    belarus = build_lookup_chain(
+        "BY",
+        eaeu_by,
+        belgiss,
+        eaeu_label="tech.eaeunion.org",
+        national_label="api.belgiss.by",
+        eaeu_first=eaeu_first,
+    )
+    kazakhstan = build_lookup_chain(
+        "KZ",
+        eaeu_kz,
+        eokno,
+        eaeu_label="tech.eaeunion.org",
+        national_label="eokno.gov.kz",
+        eaeu_first=eaeu_first,
+    )
+    russia = build_lookup_chain(
+        "RU",
+        eaeu_ru,
+        fsa,
+        eaeu_label="tech.eaeunion.org",
+        national_label="pub.fsa.gov.ru",
+        eaeu_first=eaeu_first,
+    )
+    kyrgyzstan = build_lookup_chain(
+        "KG",
+        eaeu_kg,
+        swis,
+        eaeu_label="tech.eaeunion.org",
+        national_label="swis.trade.kg",
+        eaeu_first=eaeu_first,
+    )
     armenia = ArmeniaProvider(eaeu_client, settings)
-    router = CountryRouter({"BY": belarus, "RU": fsa, "KZ": kazakhstan, "KG": swis, "AM": armenia})
+    router = CountryRouter(
+        {"BY": belarus, "RU": russia, "KZ": kazakhstan, "KG": kyrgyzstan, "AM": armenia}
+    )
     extract_service = ExtractService(settings)
     export_service = ExportService()
     app.state.settings = settings
@@ -75,10 +111,14 @@ async def configure_runtime(app: FastAPI) -> None:
         "eaeu_by": eaeu_by,
         "belarus": belarus,
         "fsa": fsa,
+        "eaeu_ru": eaeu_ru,
+        "russia": russia,
         "eokno": eokno,
         "eaeu_kz": eaeu_kz,
         "kazakhstan": kazakhstan,
         "swis": swis,
+        "eaeu_kg": eaeu_kg,
+        "kyrgyzstan": kyrgyzstan,
         "eaeu": armenia,
     }
     app.state.lookup_service = LookupService(router, cache, settings)

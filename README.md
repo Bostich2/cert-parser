@@ -73,7 +73,15 @@ python scripts/release.py minor --dry-run
 2. git-тег + setuptools-scm (локально и в editable install)
 3. метаданные пакета после `pip install .`
 
-Коммиты после тега получают dev-версию вида `0.2.1.dev3+gabc1234`.
+Коммиты после тега получают dev-версию вида `0.2.1.dev3+gabc1234` (число после `dev` — счётчик коммитов с последнего тега).
+
+**Автообновление `_version.py` после коммита** (один раз на машине):
+
+```bash
+python scripts/install_git_hooks.py
+```
+
+Хук перегенерирует `src/cert_parser/_version.py` после каждого commit / merge / checkout. Вручную: `python scripts/write_version.py`.
 
 ## Как пользоваться (UI)
 

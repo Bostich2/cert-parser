@@ -13,11 +13,22 @@ from cert_parser.domain.models import LookupResult, RegistryRecord
 from cert_parser.domain.ports import LookupCache
 from cert_parser.logging_setup import current_steps, log_step, start_steps
 
-_COUNTRY_SOURCES = {
-    "BY": "Беларусь, api.belgiss.by, при недоступности — tech.eaeunion.org",
-    "RU": "Россия, pub.fsa.gov.ru",
-    "KZ": "Казахстан, eokno.gov.kz (JSF), при отсутствии — tech.eaeunion.org",
-    "KG": "Кыргызстан, swis.trade.kg",
+_COUNTRY_NAMES = {
+    "BY": "Беларусь",
+    "RU": "Россия",
+    "KZ": "Казахстан",
+    "KG": "Кыргызстан",
+    "AM": "Армения",
+}
+
+_CHAIN_SOURCES = {
+    "BY": ("tech.eaeunion.org", "api.belgiss.by"),
+    "RU": ("tech.eaeunion.org", "pub.fsa.gov.ru"),
+    "KZ": ("tech.eaeunion.org", "eokno.gov.kz (JSF)"),
+    "KG": ("tech.eaeunion.org", "swis.trade.kg"),
+}
+
+_STATIC_SOURCES = {
     "AM": "Армения, ARMNAB (armnab.am), поиск через OData tech.eaeunion.org",
 }
 
@@ -31,6 +42,7 @@ class LookupService:
     ) -> None:
         self._router = router
         self._cache = cache
+        self._settings = settings
         self._concurrency = max(1, settings.lookup_concurrency)
         self._delay_seconds = max(0.0, settings.lookup_delay_seconds)
 
@@ -86,10 +98,7 @@ class LookupService:
                 )
             )
 
-        source = _COUNTRY_SOURCES.get(
-            number.country_code,
-            f"страна {number.country_code}",
-        )
+        source = _country_source(number.country_code, self._settings.lookup_eaeu_first)
         log_step(f"Провайдер: {source}")
         try:
             provider = self._router.get(number.country_code)
@@ -195,3 +204,15 @@ def _result_from_payload(payload: dict, cached_flag: bool) -> LookupResult:
         error_code=payload.get("error_code"),
         cached=cached_flag,
     )
+
+
+def _country_source(country_code: str, eaeu_first: bool) -> str:
+    static = _STATIC_SOURCES.get(country_code)
+    if static is not None:
+        return static
+    chain = _CHAIN_SOURCES.get(country_code)
+    if chain is None:
+        return f"страна {country_code}"
+    primary, fallback = chain if eaeu_first else (chain[1], chain[0])
+    name = _COUNTRY_NAMES.get(country_code, country_code)
+    return f"{name}, {primary}, при отсутствии — {fallback}"

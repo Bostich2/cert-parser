@@ -24,6 +24,14 @@ def test_http_ssl_verify_env(monkeypatch: pytest.MonkeyPatch) -> None:
     get_settings.cache_clear()
 
 
+def test_lookup_eaeu_first_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LOOKUP_EAEU_FIRST", "false")
+    get_settings.cache_clear()
+    settings = Settings()
+    assert settings.lookup_eaeu_first is False
+    get_settings.cache_clear()
+
+
 def test_production_requires_auth(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ENV", "production")
     monkeypatch.setenv("AUTH_ENABLED", "false")

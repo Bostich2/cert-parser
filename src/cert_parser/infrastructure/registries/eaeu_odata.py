@@ -109,6 +109,10 @@ def _doc_id_candidates(number: CertificateNumber) -> list[str]:
 def _contains_suffix(number: CertificateNumber, country_code: str) -> str | None:
     if country_code == "KZ":
         return _kz_contains_suffix(number)
+    if country_code == "KG":
+        return _kg_contains_suffix(number)
+    if country_code == "RU":
+        return _ru_contains_suffix(number)
     return _am_contains_suffix(number)
 
 
@@ -117,6 +121,30 @@ def _kz_contains_suffix(number: CertificateNumber) -> str | None:
         match = re.search(r"KZ[.\s]+(\d[\d.]{10,})", candidate, re.IGNORECASE)
         if match:
             return match.group(1)
+    return None
+
+
+def _kg_contains_suffix(number: CertificateNumber) -> str | None:
+    for candidate in _doc_id_candidates(number):
+        match = re.search(r"KG\d+/[^/\s]+/([^/\s]+)", candidate, re.IGNORECASE)
+        if match:
+            suffix = match.group(1).strip()
+            if len(suffix) >= 5 and any(ch.isdigit() for ch in suffix):
+                return suffix
+        if "/" in candidate:
+            suffix = candidate.rsplit("/", 1)[-1].strip()
+            if len(suffix) >= 5 and any(ch.isdigit() for ch in suffix):
+                return suffix
+    return None
+
+
+def _ru_contains_suffix(number: CertificateNumber) -> str | None:
+    for candidate in _doc_id_candidates(number):
+        match = re.search(r"RU\s+([^\s]+/[^\s]+)$", candidate, re.IGNORECASE)
+        if match:
+            suffix = match.group(1).strip()
+            if len(suffix) >= 5:
+                return suffix
     return None
 
 
