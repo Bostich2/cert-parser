@@ -39,6 +39,7 @@ def test_index_page(client: TestClient) -> None:
     assert "Экспорт в Excel" in response.text
     assert 'class="file-label">Файлы</span>' not in response.text
     assert "Действует с" in response.text
+    assert "<th>PDF</th>" in response.text
     assert "<h2>Один номер</h2>" not in response.text
     assert "<h2>Список номеров</h2>" not in response.text
 
@@ -425,6 +426,29 @@ def test_extract_xlsx_rejects_oversized_file(client: TestClient, monkeypatch: py
     get_settings.cache_clear()
     assert response.status_code == 413
     assert "больше" in response.json()["detail"]
+
+
+def test_certificate_pdf_streams_eaeu_file(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    import importlib
+
+    pdf_bytes = b"%PDF-1.4 from-test"
+    app_module = importlib.import_module("cert_parser.api.app")
+
+    async def fake_fetch(_client, registry_id: str, _settings):
+        assert registry_id == "abc123"
+        return pdf_bytes
+
+    monkeypatch.setattr(app_module, "fetch_eaeu_card_pdf", fake_fetch)
+    response = client.get("/api/certificate-pdf", params={"source": "eaeu", "registry_id": "abc123"})
+    assert response.status_code == 200
+    assert response.content == pdf_bytes
+    assert response.headers["content-type"] == "application/pdf"
+    assert "attachment" in response.headers.get("content-disposition", "")
+
+
+def test_certificate_pdf_rejects_unknown_source(client: TestClient) -> None:
+    response = client.get("/api/certificate-pdf", params={"source": "unknown", "registry_id": "1"})
+    assert response.status_code == 400
 
 
 def test_lookup_during_reload_returns_503(client: TestClient) -> None:

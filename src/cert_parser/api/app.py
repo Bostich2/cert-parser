@@ -47,9 +47,11 @@ from cert_parser.bootstrap import (
     shutdown_runtime,
 )
 from cert_parser.config import Settings, get_settings
-from cert_parser.domain.errors import PdfReadError, XlsxReadError
+from cert_parser.domain.errors import CertificateNotFoundError, PdfReadError, SourceUnavailableError, XlsxReadError
 from cert_parser.domain.ports import LookupCache
 from cert_parser.logging_setup import current_steps, logger, start_steps
+from cert_parser.infrastructure.registries.eaeu_pdf import fetch_eaeu_card_pdf
+from cert_parser.infrastructure.registries.fsa_pdf import fetch_fsa_certificate_pdf
 from cert_parser.version import get_version
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
@@ -65,6 +67,7 @@ class ExportRow(BaseModel):
     normalized: str | None = None
     country_code: str | None = None
     url: str | None = None
+    pdf_url: str | None = None
     valid_from: str | None = None
     valid_until: str | None = None
     status: str | None = None
@@ -238,6 +241,11 @@ def create_app() -> FastAPI:
     app.add_api_route("/api/extract-pdf/stream", limiter.limit(_upload_rate_limit)(extract_pdf_stream), methods=["POST"])
     app.add_api_route("/api/extract-xlsx", limiter.limit(_upload_rate_limit)(extract_xlsx), methods=["POST"])
     app.add_api_route("/api/export-xlsx", limiter.limit(_lookup_rate_limit)(export_xlsx), methods=["POST"])
+    app.add_api_route(
+        "/api/certificate-pdf",
+        limiter.limit(_lookup_rate_limit)(certificate_pdf),
+        methods=["GET"],
+    )
     app.add_api_route("/api/cache/clear", clear_cache, methods=["POST"])
     app.add_api_route("/api/reload", reload_service, methods=["POST"])
     app.add_api_route("/health/live", health_live, methods=["GET"])
@@ -333,6 +341,10 @@ def _upload_rate_limit() -> str:
     return get_settings().rate_limit_upload
 
 
+def _api_base_url(request: Request) -> str:
+    return str(request.base_url)
+
+
 async def lookup_certificates(request: Request, payload: LookupRequest) -> dict:
     settings: Settings = request.app.state.settings
     numbers = [item for item in payload.numbers if str(item).strip()]
@@ -346,7 +358,8 @@ async def lookup_certificates(request: Request, payload: LookupRequest) -> dict:
     service = _require_lookup_service(request)
     logger.info("POST /api/lookup: %s номер(ов)", len(numbers))
     results = await _run_lookup(request, service.lookup_many(numbers))
-    return {"results": [lookup_result_to_api_dict(item) for item in results]}
+    base_url = _api_base_url(request)
+    return {"results": [lookup_result_to_api_dict(item, base_url=base_url) for item in results]}
 
 
 async def lookup_certificates_stream(request: Request, payload: LookupRequest) -> StreamingResponse:
@@ -368,7 +381,10 @@ async def lookup_certificates_stream(request: Request, payload: LookupRequest) -
 
     async def work() -> dict:
         result = await service.lookup_one(raw)
-        return {"type": "done", "result": lookup_result_to_api_dict(result)}
+        return {
+            "type": "done",
+            "result": lookup_result_to_api_dict(result, base_url=_api_base_url(request)),
+        }
 
     async def stream_body():
         try:
@@ -489,14 +505,54 @@ async def lookup_pdf(request: Request, file: UploadFile = File(...)) -> dict:
         }
     service = _require_lookup_service(request)
     results = await _run_lookup(request, service.lookup_many(numbers))
+    base_url = _api_base_url(request)
     return {
         "extracted_numbers": numbers,
-        "results": [lookup_result_to_api_dict(item) for item in results],
+        "results": [lookup_result_to_api_dict(item, base_url=base_url) for item in results],
         "error": None,
         "error_code": None,
         "extract_trace": extract_trace,
         **_pdf_limit_fields(limit_meta),
     }
+
+
+async def certificate_pdf(
+    request: Request,
+    source: str,
+    registry_id: str,
+) -> Response:
+    normalized_source = source.strip().lower()
+    normalized_id = registry_id.strip()
+    if not normalized_id:
+        raise HTTPException(status_code=400, detail="Укажите registry_id")
+    if normalized_source not in {"eaeu", "fsa"}:
+        raise HTTPException(status_code=400, detail="Неподдерживаемый source")
+
+    settings: Settings = request.app.state.settings
+    clients = getattr(request.app.state, "registry_clients", None) or {}
+    filename = f"certificate-{normalized_id}.pdf"
+
+    try:
+        if normalized_source == "eaeu":
+            client = clients.get("eaeu")
+            if client is None:
+                raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+            payload = await fetch_eaeu_card_pdf(client, normalized_id, settings)
+        else:
+            client = clients.get("fsa")
+            if client is None:
+                raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+            payload = await fetch_fsa_certificate_pdf(client, normalized_id, settings)
+    except CertificateNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=exc.message) from exc
+    except SourceUnavailableError as exc:
+        raise HTTPException(status_code=502, detail=exc.message) from exc
+
+    headers = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Cache-Control": "no-store",
+    }
+    return Response(content=payload, media_type="application/pdf", headers=headers)
 
 
 async def extract_xlsx(request: Request, file: UploadFile = File(...)) -> dict:

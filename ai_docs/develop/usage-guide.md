@@ -58,7 +58,7 @@ docker compose up --build
 
 ### Результаты
 
-Таблица: номер, страна (флаги в шапке), ссылка, «действует с» / «действует до», статус, ошибка.
+Таблица: номер, страна (флаги в шапке), ссылка на карточку, **PDF** (скачивание из реестра), «действует с» / «действует до», статус, ошибка.
 
 - **Пагинация** — выбор «записей на страницу» (10 / 20 / 50).
 - **Экспорт в Excel** — скачивает текущие результаты через `POST /api/export-xlsx`.
@@ -66,7 +66,13 @@ docker compose up --build
 
 ### Ход поиска
 
-Блок «Ход поиска» показывает шаги текущего запроса (разбор номера, GET/POST, сколько строк). Те же строки пишутся в консоль uvicorn. Для Казахстана (eokno.gov.kz) ответ часто занимает 10–30 секунд — кнопки в это время неактивны.
+Блок «Ход поиска» показывает шаги текущего запроса (разбор номера, GET/POST, сколько строк). Те же строки пишутся в консоль uvicorn.
+
+Для **BY, RU, KZ, KG** поиск идёт **цепочкой из двух источников**. По умолчанию (`LOOKUP_EAEU_FIRST=true`) сначала OData [tech.eaeunion.org](https://tech.eaeunion.org), при `not_found` или недоступности источника — национальный реестр. При `LOOKUP_EAEU_FIRST=false` порядок обратный. Армения (AM) использует только OData ЕАЭС.
+
+В trace первый шаг цепочки выглядит так: «Провайдер: Беларусь, tech.eaeunion.org, при отсутствии — api.belgiss.by». При fallback в trace появятся строки вида «BY: tech.eaeunion.org — не найден, пробуем api.belgiss.by».
+
+Для Казахстана (eokno.gov.kz) ответ часто занимает 10–30 секунд — кнопки в это время неактивны.
 
 UI для одиночных запросов и PDF использует **потоковые** endpoint'ы (`/api/lookup/stream`, `/api/extract-pdf/stream`), чтобы шаги появлялись сразу.
 
@@ -110,9 +116,11 @@ curl -X POST http://127.0.0.1:8000/api/lookup ^
 | `EOKNO_REGISTER_URL` | Казахстан |
 | `SWIS_BASE_URL` | Кыргызстан |
 | `EAEU_ODATA_URL`, `EAEU_REGISTER_VIEW_URL` | Армения (OData ЕАЭС) |
+| `EAEU_PLATFORM_URL`, `EAEU_CARD_PDF_PROCESS_ID` | Экспорт PDF карточки через tech.eaeunion.org |
 | `REQUEST_TIMEOUT_SECONDS` | Таймаут HTTP |
 | `LOOKUP_CONCURRENCY` | Параллельность внутри батча |
 | `LOOKUP_DELAY_SECONDS` | Задержка после успешного lookup |
+| `LOOKUP_EAEU_FIRST` | Порядок цепочки для BY/RU/KZ/KG: `true` — сначала OData ЕАЭС, `false` — сначала национальный реестр (по умолчанию `true`) |
 | `CACHE_PATH`, `CACHE_TTL_SECONDS` | SQLite-кэш |
 | `MAX_BATCH_SIZE` | Лимит номеров в батче (по умолчанию 100) |
 | `PDF_MAX_BYTES`, `PDF_OCR_MAX_PAGES`, `PDF_OCR_ENABLED`, `PDF_OCR_REC_LANG` | PDF/OCR |
@@ -121,10 +129,21 @@ curl -X POST http://127.0.0.1:8000/api/lookup ^
 | `BELGISS_SSL_VERIFY` | Устаревший alias для `HTTP_SSL_VERIFY` |
 | `LOG_LEVEL` | Уровень логов (`INFO` по умолчанию) |
 
+### Git hooks для версии
+
+После `git commit` / `merge` / `checkout` можно автоматически перегенерировать `src/cert_parser/_version.py`:
+
+```bash
+python scripts/install_git_hooks.py
+```
+
+Подробнее — раздел «Версионирование» в [README.md](../../README.md).
+
 ## Ограничения и допущения
 
 - Парсер номера извлекает страну из кода в строке (`BY`, `RU`, `KZ`, `AM`, `KG`).
-- Армения: национальный реестр [ARMNAB](https://armnab.am/ru/eaeu/certificates); автоматический поиск — OData [tech.eaeunion.org](https://tech.eaeunion.org) (часто 5–15 с).
+- **BY, RU, KZ, KG** — цепочка OData ЕАЭС + национальный реестр (`ChainedRegistryProvider`, см. `src/cert_parser/infrastructure/registries/chained.py`). Национальные источники: БелГИСС (BY), pub.fsa.gov.ru (RU), eokno.gov.kz (KZ), swis.trade.kg (KG).
+- **Армения (AM)** — только OData [tech.eaeunion.org](https://tech.eaeunion.org) (карточки ARMNAB; часто 5–15 с).
 - PDF: текстовый слой, затем OCR (`PDF_OCR_ENABLED`, язык `eslav` по умолчанию).
 - Excel: первый лист, столбец A; первая строка отбрасывается, если похожа на заголовок.
 - Ошибки одного элемента батча не прерывают обработку остальных.

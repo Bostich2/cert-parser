@@ -43,6 +43,7 @@ class RegistryRecord:
     status_label: str
     registry_id: str
     official_number: str
+    pdf_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -51,6 +52,7 @@ class LookupResult:
     normalized: str | None = None
     country_code: str | None = None
     url: str | None = None
+    pdf_url: str | None = None
     valid_from: date | None = None
     valid_until: date | None = None
     status: str | None = None

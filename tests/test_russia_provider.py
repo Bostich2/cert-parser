@@ -56,6 +56,7 @@ async def test_fsa_lookup_returns_card_and_validity() -> None:
     record = await provider.lookup(parse_certificate_number("ЕАЭС RU C-CN.СБ21.А.00039/19"))
     assert record.registry_id == "2360455"
     assert record.url == f"{BASE}/rss/certificate/view/2360455/baseInfo"
+    assert record.pdf_url == f"/api/certificate-pdf?source=fsa&registry_id=2360455"
     assert str(record.valid_from) == "2024-01-15"
     assert str(record.valid_until) == "2029-12-31"
     assert record.status_label == "Действует"

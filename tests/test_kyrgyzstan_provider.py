@@ -58,6 +58,7 @@ async def test_swis_lookup_certificate() -> None:
     assert str(record.valid_from) == "2026-07-01"
     assert str(record.valid_until) == "2031-06-30"
     assert record.status_label == "Действует"
+    assert record.pdf_url == f"{BASE}/Doc/06c84841-72f1-4e14-ac9f-0cbffa30a283"
     assert "RegisterNumber=" in record.url
     await provider._client.aclose()
 

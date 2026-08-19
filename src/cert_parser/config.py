@@ -49,6 +49,12 @@ class Settings(BaseSettings):
     eaeu_register_view_url: str = (
         "https://tech.eaeunion.org/tech/registers/35-1/ru/registryList/conformityDocs/view"
     )
+    eaeu_platform_url: str = "https://tech.eaeunion.org/platformsvc"
+    eaeu_card_pdf_process_id: str = "592344f3-1b37-4837-9bea-a1df3702cf72"
+    eaeu_card_pdf_registry_key: str = "r035_1"
+    eaeu_card_pdf_section: str = "ОП 36"
+    eaeu_card_pdf_registry: str = "conformityDocs"
+    eaeu_card_pdf_collection: str = "service-prop-35_1-conformityDocDetailsType"
     pdf_max_bytes: int = 15 * 1024 * 1024
     xlsx_max_bytes: int = 15 * 1024 * 1024
     pdf_ocr_max_pages: int = 5

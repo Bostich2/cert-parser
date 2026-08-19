@@ -4,7 +4,12 @@ import pytest
 
 from cert_parser.domain.certificate_number import compact_number, parse_certificate_number
 from cert_parser.domain.errors import AmbiguousMatchError, CertificateNotFoundError
-from cert_parser.infrastructure.registries.matching import is_safe_contained_match, pick_matching_item, record_from_light_item
+from cert_parser.infrastructure.registries.matching import (
+    is_safe_contained_match,
+    pick_matching_item,
+    record_from_light_item,
+    record_from_odata_item,
+)
 
 EXAMPLE = "ЕАЭС BY/112 02.01. ТР018 010.02 00276"
 
@@ -75,6 +80,21 @@ def test_is_safe_contained_match_requires_length_and_ratio() -> None:
 def test_record_builds_public_card_url() -> None:
     record = record_from_light_item(_item(EXAMPLE), "https://tsouz.belgiss.by")
     assert record.url == "https://tsouz.belgiss.by/#!/tsouz/certifs/3345084/view"
+    assert record.pdf_url is None
     assert str(record.valid_from) == "2024-05-29"
     assert str(record.valid_until) == "2029-05-29"
     assert record.status_label == "действует"
+
+
+def test_record_from_odata_item_includes_pdf_proxy_url() -> None:
+    record = record_from_odata_item(
+        {
+            "Id": "683995d030dcf80e6d482f40",
+            "docId": EXAMPLE,
+            "docStartDate": "2024-05-29",
+            "docValidityDate": "2029-05-29",
+            "docStatusDetails": {"docStatusCode": "01"},
+        },
+        "https://tech.eaeunion.org/view",
+    )
+    assert record.pdf_url == "/api/certificate-pdf?source=eaeu&registry_id=683995d030dcf80e6d482f40"

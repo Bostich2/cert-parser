@@ -6,6 +6,7 @@ from typing import Any
 from cert_parser.domain.certificate_number import compact_number, numbers_match
 from cert_parser.domain.errors import AmbiguousMatchError, CertificateNotFoundError
 from cert_parser.domain.models import CertificateNumber, RegistryRecord, parse_iso_date
+from cert_parser.infrastructure.registries.eaeu_pdf import build_eaeu_pdf_proxy_url
 
 STATUS_LABELS = {
     "01": "действует",
@@ -82,6 +83,7 @@ def record_from_odata_item(item: dict[str, Any], view_base_url: str) -> Registry
         status_label=STATUS_LABELS.get(status_code or "", status_code or "не указан"),
         registry_id=registry_id,
         official_number=official_number,
+        pdf_url=build_eaeu_pdf_proxy_url(registry_id),
     )
 
 

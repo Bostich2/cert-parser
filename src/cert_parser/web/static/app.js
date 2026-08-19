@@ -764,7 +764,7 @@ function renderRows(results) {
     currentPage = Math.min(Math.max(currentPage, 1), pages);
     updateResultsControls(currentResults.length, pages);
     if (!currentResults.length) {
-        resultsBody.innerHTML = '<tr class="empty"><td colspan="7">Пока ничего не искали</td></tr>';
+        resultsBody.innerHTML = '<tr class="empty"><td colspan="8">Пока ничего не искали</td></tr>';
         return;
     }
     closeRowMenus();
@@ -1035,6 +1035,14 @@ function rowHtml(item, globalIndex) {
     const link = safeUrl
         ? `<a href="${escapeAttr(safeUrl)}" target="_blank" rel="noopener noreferrer">Открыть карточку</a>`
         : "—";
+    const safePdfUrl = safeHref(item.pdf_url);
+    const pdfLink = safePdfUrl
+        ? `<a class="pdf-download" href="${escapeAttr(safePdfUrl)}" target="_blank" rel="noopener noreferrer" download title="Скачать PDF">
+            <span class="pdf-download__icon" aria-hidden="true">PDF</span>
+            <span class="pdf-download__arrow" aria-hidden="true">↓</span>
+            <span class="visually-hidden">Скачать PDF</span>
+           </a>`
+        : "—";
     const validFrom = escapeHtml(formatDate(item.valid_from));
     const validUntil = escapeHtml(formatDate(item.valid_until));
     const statusClass = statusCss(item.status_code);
@@ -1052,6 +1060,7 @@ function rowHtml(item, globalIndex) {
         <td>${number}</td>
         <td>${country}</td>
         <td>${link}</td>
+        <td class="pdf-cell">${pdfLink}</td>
         <td>${validFrom}</td>
         <td>${validUntil}</td>
         <td class="${statusClass}">${status}</td>

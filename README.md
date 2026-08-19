@@ -4,10 +4,10 @@
 
 Поддерживаются:
 
-- **Беларусь (BY)** — [БелГИСС](https://tsouz.belgiss.by/#!/tsouz/certifs)
-- **Россия (RU)** — [Росаккредитация](https://pub.fsa.gov.ru/rss/certificate)
-- **Казахстан (KZ)** — [eokno.gov.kz](https://eokno.gov.kz/public-register/register-ktrm.xhtml)
-- **Кыргызстан (KG)** — [swis.trade.kg](https://swis.trade.kg/Registry/CertificateOfConformity)
+- **Беларусь (BY)** — [БелГИСС](https://tsouz.belgiss.by/#!/tsouz/certifs); поиск: OData [tech.eaeunion.org](https://tech.eaeunion.org) → БелГИСС (порядок — `LOOKUP_EAEU_FIRST`)
+- **Россия (RU)** — [Росаккредитация](https://pub.fsa.gov.ru/rss/certificate); OData ЕАЭС → FSA
+- **Казахстан (KZ)** — [eokno.gov.kz](https://eokno.gov.kz/public-register/register-ktrm.xhtml); OData ЕАЭС → eokno
+- **Кыргызстан (KG)** — [swis.trade.kg](https://swis.trade.kg/Registry/CertificateOfConformity); OData ЕАЭС → SWIS
 - **Армения (AM)** — [armnab.am](https://armnab.am/ru/eaeu/certificates) (поиск через OData [tech.eaeunion.org](https://tech.eaeunion.org/tech/registers/35-1/ru/registryList/conformityDocs))
 
 Примеры номеров:
@@ -91,7 +91,7 @@ python scripts/install_git_hooks.py
 - **Из Excel** — `.xlsx`/`.xlsm`, столбец A первого листа.
 - **Из PDF** — файлы или папка (выбор, drag-and-drop); OCR при необходимости.
 
-Таблица результатов: ссылка, срок действия, статус, ошибка. Есть пагинация и **экспорт в Excel**.
+Таблица результатов: ссылка на карточку, PDF, срок действия, статус, ошибка. Есть пагинация и **экспорт в Excel**.
 
 Блок «Ход поиска» показывает шаги (разбор номера, GET/POST, сколько строк). Те же строки пишутся в консоль uvicorn.
 
@@ -110,6 +110,7 @@ python scripts/install_git_hooks.py
 | `POST` | `/api/lookup-pdf` | PDF → извлечение + поиск |
 | `POST` | `/api/extract-xlsx` | Извлечь номера из Excel |
 | `POST` | `/api/export-xlsx` | Скачать результаты как `.xlsx` |
+| `GET` | `/api/certificate-pdf` | Скачать PDF сертификата из реестра (`source`, `registry_id`) |
 | `POST` | `/api/cache/clear` | Очистить SQLite-кэш |
 | `POST` | `/api/reload` | Перезагрузить HTTP-сессии и провайдеры |
 | `GET` | `/health/live` | Liveness (публичный): `status`, `version`, `generation` |
@@ -136,9 +137,17 @@ POST /api/lookup
   "version": "0.2.0",
   "generation": 1,
   "belgiss": "ok | unavailable",
+  "eaeu_by": "ok | unavailable",
+  "belarus": "ok | unavailable",
   "fsa": "ok | unavailable",
+  "eaeu_ru": "ok | unavailable",
+  "russia": "ok | unavailable",
   "eokno": "ok | unavailable",
+  "eaeu_kz": "ok | unavailable",
+  "kazakhstan": "ok | unavailable",
   "swis": "ok | unavailable",
+  "eaeu_kg": "ok | unavailable",
+  "kyrgyzstan": "ok | unavailable",
   "eaeu": "ok | unavailable"
 }
 ```
@@ -150,6 +159,7 @@ POST /api/lookup
 См. `.env.example`. Важно:
 
 - `FSA_BASE_URL` — реестр РФ. С не-российского IP часто 403; задайте `HTTPS_PROXY`.
+- `LOOKUP_EAEU_FIRST` — порядок цепочки BY/RU/KZ/KG (`true` — сначала OData ЕАЭС, по умолчанию).
 - `EOKNO_REGISTER_URL`, `SWIS_BASE_URL` — реестры KZ и KG.
 - `EAEU_ODATA_URL`, `EAEU_REGISTER_VIEW_URL` — единый реестр ЕАЭС для AM.
 - `PDF_MAX_BYTES`, `PDF_OCR_MAX_PAGES`, `PDF_OCR_REC_LANG` — лимиты и язык OCR.

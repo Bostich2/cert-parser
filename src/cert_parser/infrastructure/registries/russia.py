@@ -15,6 +15,7 @@ from cert_parser.domain.errors import (
 )
 from cert_parser.domain.models import CertificateNumber, RegistryRecord, parse_iso_date
 from cert_parser.domain.ports import RegistryProvider
+from cert_parser.infrastructure.registries.fsa_pdf import build_fsa_pdf_proxy_url
 from cert_parser.infrastructure.registries.matching import is_safe_contained_match
 from cert_parser.logging_setup import log_step
 
@@ -55,6 +56,7 @@ class FsaProvider(RegistryProvider):
             status_label=status_label,
             registry_id=registry_id,
             official_number=str(match.get("number") or number.normalized),
+            pdf_url=build_fsa_pdf_proxy_url(registry_id),
         )
 
     async def ping(self) -> bool:

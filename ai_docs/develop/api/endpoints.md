@@ -66,6 +66,19 @@ UI использует этот endpoint для одиночных запрос
 
 Если номеров нет: `error_code=no_numbers_in_pdf`, `results=[]`.
 
+### `GET /api/certificate-pdf`
+
+Скачивание PDF сертификата из реестра (proxy для источников с сессионным экспортом).
+
+Query-параметры:
+
+- `source` — `eaeu` или `fsa`
+- `registry_id` — идентификатор записи в соответствующем реестре
+
+Успех: `200`, `Content-Type: application/pdf`, `Content-Disposition: attachment`.
+
+Ошибки: `400` (неизвестный source), `404` (PDF не найден), `502` (реестр недоступен).
+
 ## Excel
 
 ### `POST /api/extract-xlsx`
@@ -122,20 +135,30 @@ UI использует этот endpoint для одиночных запрос
 
 ### `GET /health`
 
+Полный healthcheck: ping всех провайдеров реестров (национальные, OData по стране, составные цепочки).
+
 ```json
 {
   "status": "ok | degraded",
   "version": "0.2.0",
   "generation": 1,
   "belgiss": "ok | unavailable",
+  "eaeu_by": "ok | unavailable",
+  "belarus": "ok | unavailable",
   "fsa": "ok | unavailable",
+  "eaeu_ru": "ok | unavailable",
+  "russia": "ok | unavailable",
   "eokno": "ok | unavailable",
+  "eaeu_kz": "ok | unavailable",
+  "kazakhstan": "ok | unavailable",
   "swis": "ok | unavailable",
+  "eaeu_kg": "ok | unavailable",
+  "kyrgyzstan": "ok | unavailable",
   "eaeu": "ok | unavailable"
 }
 ```
 
-`version` — semver релиза (git-тег `vX.Y.Z` через setuptools-scm). `generation` увеличивается после `POST /api/reload`.
+`version` — semver релиза (git-тег `vX.Y.Z` через setuptools-scm). `generation` увеличивается после `POST /api/reload`. Ключ `eaeu` — провайдер Армении (`ArmeniaProvider`). Составные ключи (`belarus`, `russia`, `kazakhstan`, `kyrgyzstan`) — цепочки `ChainedRegistryProvider`: `ok`, если ping успешен хотя бы у одного шага.
 
 При `AUTH_ENABLED=true` endpoint доступен только пользователям с ролью `admin`.
 

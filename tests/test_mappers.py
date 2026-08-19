@@ -12,16 +12,21 @@ def test_lookup_result_to_api_dict_includes_trace() -> None:
         query="raw",
         normalized="norm",
         country_code="BY",
+        pdf_url="/api/certificate-pdf?source=eaeu&registry_id=abc",
         valid_from=date(2024, 1, 15),
         valid_until=date(2029, 1, 14),
         status="Действует",
         cached=True,
         trace=("step one", "step two"),
     )
-    payload = lookup_result_to_api_dict(result)
+    payload = lookup_result_to_api_dict(
+        result,
+        base_url="https://example.test/",
+    )
     assert payload["query"] == "raw"
     assert payload["normalized"] == "norm"
     assert payload["country_code"] == "BY"
+    assert payload["pdf_url"] == "https://example.test/api/certificate-pdf?source=eaeu&registry_id=abc"
     assert payload["valid_from"] == "2024-01-15"
     assert payload["valid_until"] == "2029-01-14"
     assert payload["status"] == "Действует"

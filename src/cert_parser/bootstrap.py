@@ -106,6 +106,10 @@ async def configure_runtime(app: FastAPI) -> None:
     app.state.settings = settings
     app.state.cache = cache
     app.state.http_clients = [belgiss_client, fsa_client, eokno_client, swis_client, eaeu_client]
+    app.state.registry_clients = {
+        "eaeu": eaeu_client,
+        "fsa": fsa_client,
+    }
     app.state.providers = {
         "belgiss": belgiss,
         "eaeu_by": eaeu_by,
@@ -137,6 +141,7 @@ async def shutdown_runtime(app: FastAPI) -> None:
         getattr(app.state, "cache", None),
     )
     app.state.http_clients = []
+    app.state.registry_clients = {}
     app.state.providers = {}
     app.state.lookup_service = None
     app.state.extract_service = None

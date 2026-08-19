@@ -63,6 +63,7 @@ class SwisProvider(RegistryProvider):
                 )
                 code, label = status_label(match.status_raw)
                 registry_id = match.doc_path.rsplit("/", 1)[-1]
+                doc_url = f"{self._base}{match.doc_path}"
                 return RegistryRecord(
                     url=_result_url(url, term),
                     valid_from=row_valid_from(match),
@@ -71,6 +72,7 @@ class SwisProvider(RegistryProvider):
                     status_label=label,
                     registry_id=registry_id,
                     official_number=match.official_number,
+                    pdf_url=doc_url,
                 )
         raise CertificateNotFoundError(number.normalized)
 

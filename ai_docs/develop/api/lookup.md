@@ -47,6 +47,7 @@ Content-Type: `application/json`
       "normalized": "…",
       "country_code": "BY",
       "url": "https://tsouz.belgiss.by/#!/tsouz/certifs/<id>/view",
+      "pdf_url": "http://127.0.0.1:8000/api/certificate-pdf?source=eaeu&registry_id=<id>",
       "valid_from": "2024-05-29",
       "valid_until": "2029-05-29",
       "status": "действует",
@@ -59,7 +60,8 @@ Content-Type: `application/json`
       "trace": [
         "Поиск: «…»",
         "Нормализован: …, страна BY",
-        "Провайдер: Беларусь, api.belgiss.by"
+        "Провайдер: Беларусь, tech.eaeunion.org, при отсутствии — api.belgiss.by",
+        "BY: tech.eaeunion.org — не найден, пробуем api.belgiss.by"
       ]
     }
   ]
@@ -72,6 +74,7 @@ Content-Type: `application/json`
 - `normalized`: нормализованное представление номера (или `null` при ошибке парсинга)
 - `country_code`: код страны (`BY`, `RU`, `KZ`, `AM`, `KG`) или `null`
 - `url`: ссылка на карточку реестра (или `null`)
+- `pdf_url`: ссылка на PDF сертификата из реестра (или `null`). Для ЕАЭС и FSA — proxy `GET /api/certificate-pdf`; для KG (SWIS) — прямая ссылка на `/Doc/{uuid}`
 - `valid_from`: дата начала действия в ISO-формате `YYYY-MM-DD` или `null`
 - `valid_until`: дата окончания действия в ISO-формате `YYYY-MM-DD` или `null`
 - `status`: человекочитаемый статус (например, `действует`) или `null`
@@ -81,7 +84,9 @@ Content-Type: `application/json`
 - `error`: текст ошибки или `null`
 - `error_code`: код ошибки или `null`
 - `cached`: `true`, если результат получен из SQLite-кэша (`CACHE_PATH`)
-- `trace`: шаги поиска (разбор номера, провайдер, HTTP, сколько строк). Те же строки пишутся в консоль.
+- `trace`: шаги поиска (разбор номера, провайдер/цепочка, HTTP, fallback между источниками). Те же строки пишутся в консоль.
+
+При `LOOKUP_EAEU_FIRST=false` строка «Провайдер» меняет порядок: «Беларусь, api.belgiss.by, при отсутствии — tech.eaeunion.org».
 
 ## error_code
 
@@ -90,7 +95,7 @@ Content-Type: `application/json`
 - `invalid_number` — не удалось распарсить формат номера
 - `unsupported_country` — страна распознана, но соответствующий реестр не подключён (сейчас поддержаны `BY`, `RU`, `KZ`, `KG`, `AM`)
 - `not_found` — в реестре не найдено соответствие
-- `source_unavailable` — внешний источник (БелГИСС) недоступен или вернул ошибку
+- `source_unavailable` — внешний источник (OData ЕАЭС или национальный реестр) недоступен или вернул ошибку; при цепочке fallback срабатывает только если оба источника недоступны или последний шаг цепочки упал
 - `ambiguous` — найдены несколько кандидатов; требуется указать номер целиком
 
 Примечание про кэш:
@@ -141,19 +146,29 @@ UI использует потоковые варианты, чтобы шаги
 }
 ```
 
-`GET /health` возвращает то же поле `generation`:
+`GET /health` возвращает поле `generation` и статус ping каждого провайдера из `bootstrap.py` (отдельные национальные, OData по стране и составные цепочки):
 
 ```json
 {
   "status": "ok | degraded",
   "generation": 1,
   "belgiss": "ok | unavailable",
+  "eaeu_by": "ok | unavailable",
+  "belarus": "ok | unavailable",
   "fsa": "ok | unavailable",
+  "eaeu_ru": "ok | unavailable",
+  "russia": "ok | unavailable",
   "eokno": "ok | unavailable",
+  "eaeu_kz": "ok | unavailable",
+  "kazakhstan": "ok | unavailable",
   "swis": "ok | unavailable",
+  "eaeu_kg": "ok | unavailable",
+  "kyrgyzstan": "ok | unavailable",
   "eaeu": "ok | unavailable"
 }
 ```
+
+Составные ключи (`belarus`, `russia`, …) — `ChainedRegistryProvider`: `ok`, если доступен хотя бы один шаг цепочки.
 
 ## Пример запроса (curl)
 
@@ -167,9 +182,10 @@ curl -X POST http://127.0.0.1:8000/api/lookup ^
 
 См. `src/cert_parser/config.py`, основные параметры:
 
+- `LOOKUP_EAEU_FIRST`: порядок цепочки для BY/RU/KZ/KG (`true` — сначала OData ЕАЭС, по умолчанию)
 - `MAX_BATCH_SIZE`: ограничение размера массива `numbers`
 - `LOOKUP_CONCURRENCY`: ограничение параллельности внутри батча
 - `LOOKUP_DELAY_SECONDS`: задержка после успешного lookup
 - `CACHE_PATH`, `CACHE_TTL_SECONDS`: SQLite-кэш
-- `BELGISS_SSL_VERIFY`: управление TLS-проверкой для БелГИСС
+- `HTTP_SSL_VERIFY` (alias `BELGISS_SSL_VERIFY`): TLS-проверка для исходящих запросов к реестрам
 
