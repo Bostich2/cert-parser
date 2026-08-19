@@ -1,0 +1,2293 @@
+{
+	"i18_sources": [
+		"ui-sdk/assets/i18n/",
+		"eaue-lib/assets/i18n/",
+		"../../opendata/assets/i18n/menu/",
+		"../../opendata/assets/i18n/footer/",
+		"assets/i18n/data/"
+	],
+	"metrikaConfig": {
+		"isEnable": true,
+		"configs": [
+			{
+				"id": 105746350,
+				"webvisor": false,
+				"clickmap": false
+			}
+		]
+	},
+	"headerSettings": {
+		"localization": false,
+		"acceptRequests": false,
+		"acceptRequestsMail": "test@testmail.ru"
+	},
+	"defaultLang": "ru",
+	"languages": [
+		{
+			"code": "рус",
+			"key": "ru"
+		},
+		{
+			"code": "en",
+			"key": "en"
+		}
+	],
+	"blockList": [
+		"registers"
+	],
+	"platformUrl": "https://tech.eaeunion.org/platformsvc",
+	"apiUrl": "https://tech.eaeunion.org/spd2",
+	"fileStorageApiUrl": "https://tech.eaeunion.org/platformsvc",
+	"classifierServiceUrl": "https://tech.eaeunion.org",
+	"authorizationSettings": {
+		"enable": true,
+		"redirectErrorTimeout": 500,
+		"redirectSuccessTimeout": 0,
+		"mainPublicPageUrl": "https://tech.eaeunion.org/tech",
+		"apiURL": "https://tech.eaeunion.org/platformsvc",
+		"oauthAuthorizationendPoint": "https://goszakupki.eaeunion.org/auth/realms/eec/protocol/openid-connect/auth",
+		"oAuthClientId": "workflowprod",
+		"oAuthLoginRedirectPath": "/redirect",
+		"formDataRequestEndsWith": [],
+		"logoutUrl": "https://tech.eaeunion.org/tech",
+		"applicationDomain": "eaeunion.org"
+	},
+	"redirectTo": {
+		"op35_1": "https://tech.eaeunion.org/tech/registers/35-1/ru",
+		"op36_old": "https://portal.eaeunion.org/sites/commonprocesses/ru-ru/Pages/ConformityAuthorityDetails_old.aspx",
+		"measurement": "https://measurement.eaeunion.org/measurement/ru"
+	},
+	"processes": {
+		"QA": {
+			"dragNdrop": {
+				"pod_qa": {
+					"registrykey": "r014",
+					"id": "1484b95e-48ba-4c91-ab0a-d0d827fdfb77"
+				},
+				"pod_qa_sections": {
+					"registrykey": "r014",
+					"id": "a7121df5-a4e6-42cb-aed8-06a89a2118a9"
+				}
+			},
+			"answerQuestionSettings": {
+				"add": {
+					"id": "14120ddb-5561-496a-ba74-a523c87650c6",
+					"registrykey": "r014"
+				},
+				"update": {
+					"id": "62e0368c-b9b9-45b1-b960-3591c9d35e03",
+					"registrykey": "r014"
+				},
+				"delete": {
+					"id": "bd8502c4-8772-42dc-b043-2644a1246148",
+					"registrykey": "r014"
+				},
+				"dataCollection": "technicalregulation.v_sectionquestionsrecords"
+			},
+			"rubricsSettings": {
+				"add": {
+					"id": "ee369e09-d9b4-4831-9b90-e3bda8afd940",
+					"registrykey": "r013"
+				},
+				"update": {
+					"id": "6f1f6d4c-6aaf-4d99-95e2-599a948faf0a",
+					"registrykey": "r013"
+				},
+				"delete": {
+					"id": "5a03ceba-a407-4c9b-860c-bbd73a84de75",
+					"registrykey": "r013"
+				},
+				"dataCollection": "technicalregulation.v_sectionquestionscategories"
+			},
+			"permissions": [
+				"/Техническое регулирование/Редактор контента"
+			]
+		}
+	},
+	"registers": {
+		"rubrics": {
+			"rubricsHeaders": [
+				{
+					"key": "registry",
+					"rubric": "Реестр",
+					"customTemplate": true,
+					"templateName": "firstPageTemplate"
+				},
+				{
+					"key": "graphics",
+					"rubric": "Инфографика",
+					"customTemplate": true,
+					"templateName": "secondPageTemplate"
+				},
+				{
+					"key": "card",
+					"rubric": "Карточка ресурса",
+					"customTemplate": true,
+					"templateName": "thirdPageTemplate"
+				}
+			]
+		},
+		"registerConformity": {
+			"conformityAuthority": {
+				"name": "conformityAuthority",
+				"search": "kbdread.service-prop-36-v_conformityAssessmentBodyInformationDetailsType_organization",
+				"cols": [
+					{
+						"field": "unifiedCountryCode.value",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_1",
+						"width": 90,
+						"searchType": "country",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Армения",
+									"code": "AM"
+								},
+								{
+									"name": "Беларусь",
+									"code": "BY"
+								},
+								{
+									"name": "Казахстан",
+									"code": "KZ"
+								},
+								{
+									"name": "Кыргызстан",
+									"code": "KG"
+								},
+								{
+									"name": "Россия",
+									"code": "RU"
+								}
+							]
+						},
+						"name": "country"
+					},
+					{
+						"field": "unifiedCountryCode.value",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_1",
+						"width": 90,
+						"searchType": "country",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "countryWithEAEU",
+						"defaultValue": [
+							"EAEU"
+						],
+						"customFilter": "countryWithEAEU"
+					},
+					{
+						"field": "conformityAuthorityId",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_2",
+						"width": 90,
+						"searchType": "like",
+						"name": "conformityAuthorityId"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.businessEntityUnitName",
+						"sortable": true,
+						"header": "registerConformity.conformityAuthority.prod_3_header",
+						"translation": "registerConformity.conformityAuthority.prod_3",
+						"width": 90,
+						"searchType": "like",
+						"name": "businessEntityUnitName",
+						"customFunction": "businessEntityUnitName"
+					},
+					{
+						"field": "statusV2Details.statusCode.value",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_4",
+						"width": 90,
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Действует",
+									"code": "01"
+								},
+								{
+									"name": "Исключен",
+									"code": "02"
+								}
+							]
+						},
+						"name": "statusCode"
+					},
+					{
+						"field": "accreditationCertificateDetails.statusV2Details.statusCode.value",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_16",
+						"width": 90,
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Действует",
+									"code": "01"
+								},
+								{
+									"name": "Частично приостановлена",
+									"code": "02"
+								},
+								{
+									"name": "Приостановлена",
+									"code": "03"
+								},
+								{
+									"name": "Прекращена",
+									"code": "04"
+								}
+							]
+						},
+						"name": "statusCode_acc"
+					},
+					{
+						"field": "accreditationCertificateDetails.docId",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_5",
+						"width": 90,
+						"searchType": "like",
+						"name": "docId",
+						"customFunction": "docId",
+						"customFilter": "docId"
+					},
+					{
+						"field": "accreditationCertificateDetails.docCreationDate",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_6",
+						"width": 90,
+						"searchType": "date",
+						"name": "docCreationDate"
+					},
+					{
+						"field": "accreditationCertificateDetails.docValidityDate",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_7",
+						"width": 90,
+						"searchType": "date",
+						"name": "docValidityDate"
+					},
+					{
+						"field": "accreditationCertificateDetails.docValidityDate",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_7_card",
+						"width": 90,
+						"searchType": "date",
+						"name": "docValidityDateCard"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.address",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_8",
+						"width": 90,
+						"searchType": "like",
+						"name": "address_1",
+						"customFunction": "address_1"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.address",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_9",
+						"width": 90,
+						"searchType": "like",
+						"name": "address_4",
+						"customFunction": "address_4"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.fullNameDetails.lastName",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_10",
+						"width": 90,
+						"searchType": "like",
+						"name": "lastName",
+						"customFunction": "lastName"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.communicationDetails.communicationChannelId",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_11",
+						"width": 130,
+						"searchType": "like",
+						"name": "communicationChannelId",
+						"customFunction": "communicationChannelId"
+					},
+					{
+						"field": "accreditationAreaDetails.technicalRegulationId",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_12",
+						"width": 90,
+						"searchType": "like",
+						"name": "technicalRegulationId"
+					},
+					{
+						"field": "accreditationAreaDetails.technicalRegulationId",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_47",
+						"width": 90,
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": true,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "technicalRegulationId_class",
+						"customFunction": "technicalRegulationId_class"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectName",
+						"sortable": true,
+						"header": "registerConformity.conformityAuthority.prod_13_head",
+						"translation": "registerConformity.conformityAuthority.prod_13",
+						"width": 90,
+						"searchType": "like",
+						"name": "conformityObjectName",
+						"customFunction": "conformityObjectName"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectName",
+						"translation": "registerConformity.conformityAuthority.prod_13_head_organization0",
+						"searchType": "like",
+						"name": "conformityObjectNameFilterName",
+						"customFilter": "conformityObjectNameFilterName"
+					},
+					{
+						"field": "accreditationAreaDetails.technicalRegulationId",
+						"sortable": true,
+						"header": "registerConformity.conformityAuthority.prod_14_head",
+						"translation": "registerConformity.conformityAuthority.prod_14",
+						"width": 90,
+						"searchType": "like",
+						"name": "tnved",
+						"customFunction": "tnved"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityObjectCharacteristicName",
+						"sortable": true,
+						"header": "registerConformity.conformityAuthority.prod_15_head",
+						"translation": "registerConformity.conformityAuthority.prod_15",
+						"width": 90,
+						"searchType": "like",
+						"name": "conformityObjectCharacteristicName",
+						"customFunction": "conformityObjectCharacteristicName"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityObjectCharacteristicName",
+						"sortable": true,
+						"header": "registerConformity.conformityAuthority.prod_15_head",
+						"translation": "registerConformity.conformityAuthority.prod_15",
+						"width": 90,
+						"searchType": "like",
+						"name": "conformityObjectCharacteristicNameCard",
+						"customFunction": "conformityObjectCharacteristicNameCard"
+					},
+					{
+						"field": "organizations",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_17",
+						"width": 90,
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Органы по сертификации по единому перечню",
+									"code": "1",
+									"tooltip": "Органы по сертификации, осуществляющие работы по оценке соответствия продукции, включенной в единый перечень продукции, подлежащей обязательному подтверждению соответствия с выдачей сертификатов соответствия и деклараций о соответствии по единой форме"
+								},
+								{
+									"name": "Испытательные лаборатории (центры) по единому перечню",
+									"code": "2",
+									"tooltip": "Испытательные лаборатории (центры), осуществляющие испытания продукции, включенной в единый перечень продукции, подлежащей обязательному подтверждению соответствия с выдачей сертификатов соответствия и деклараций о соответствии по единой форме"
+								},
+								{
+									"name": "Органы по сертификации по ТР ЕАЭС",
+									"code": "3",
+									"tooltip": "Органы по сертификации, осуществляющие работы по оценке соответствия продукции, подлежащей оценке соответствия требованиям технических регламентов Союза"
+								},
+								{
+									"name": "Испытательные лаборатории (центры) по ТР ЕАЭС",
+									"code": "4",
+									"tooltip": "Испытательные лаборатории (центры), осуществляющие испытания продукции, подлежащей оценке соответствия требованиям технических регламентов Союза"
+								},
+								{
+									"name": "Органы инспекции по ТР ЕАЭС",
+									"code": "5",
+									"tooltip": "Органы инспекции, осуществляющие работы по оценке соответствия продукции требованиям технических регламентов Союза после выпуска ее в обращение в форме оценки технического состояния (технического освидетельствования) или обследования"
+								},
+								{
+									"name": "СФС-лаборатории",
+									"code": "6",
+									"tooltip": "Аккредитованные испытательные лаборатории (центры), осуществляющие испытания продукции на соответствие единым санитарно-эпидемиологическим и гигиеническим требованиям, единым ветеринарно-санитарным требованиям и (или) единым карантинным фитосанитарным требованиям"
+								}
+							]
+						},
+						"name": "organizations",
+						"customFilter": "organizations",
+						"customFunction": "organizations"
+					},
+					{
+						"field": "accreditationAreaDetails.productKindCode",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_18",
+						"width": 90,
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "продукция, подлежащая оценке соответствия требованиям технических регламентов Союза",
+									"code": "01"
+								},
+								{
+									"name": "продукция, включенная в единый перечень продукции, подлежащей обязательному подтверждению соответствия с выдачей сертификатов соответствия и деклараций о соответствии по единой форме",
+									"code": "02"
+								},
+								{
+									"name": "продукция, подлежащая испытаниям на соответствие единым санитарно-эпидемиологическим и гигиеническим требованиям, единым ветеринарно-санитарным требованиям и (или) единым карантинным фитосанитарным требованиям",
+									"code": "03"
+								}
+							]
+						},
+						"name": "productKindCode",
+						"customFunction": "productKindCode"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.businessEntityUnitName",
+						"sortable": true,
+						"width": 90,
+						"searchType": "like",
+						"translation": "registerConformity.conformityAuthority.prod_20",
+						"name": "businessEntityUnitName_card"
+					},
+					{
+						"field": "conformityAuthorityKindCode",
+						"sortable": true,
+						"width": 90,
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_19",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "орган по сертификации",
+									"code": "01"
+								},
+								{
+									"name": "испытательная лаборатория (центр)",
+									"code": "02"
+								},
+								{
+									"name": "орган инспекции",
+									"code": "03"
+								}
+							]
+						},
+						"name": "conformityAuthorityKindCode"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details",
+						"translation": "registerConformity.conformityAuthority.prod_21",
+						"searchType": "like",
+						"name": "address_card_full",
+						"customFunction": "address_card_full"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_22",
+						"width": 90,
+						"searchType": "like",
+						"name": "address_card_4",
+						"customFunction": "address_card_4"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_23",
+						"searchType": "like",
+						"name": "communicationChannelId_phone",
+						"customFunction": "communicationChannelId_phone"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_24",
+						"searchType": "like",
+						"name": "communicationChannelId_mail",
+						"customFunction": "communicationChannelId_mail"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_25",
+						"searchType": "like",
+						"name": "communicationChannelId_faks",
+						"customFunction": "communicationChannelId_faks"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_26",
+						"searchType": "like",
+						"name": "communicationChannelId_web",
+						"customFunction": "communicationChannelId_web"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.positionName",
+						"translation": "registerConformity.conformityAuthority.prod_27",
+						"searchType": "like",
+						"name": "positionName"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_23",
+						"searchType": "like",
+						"name": "ownerPhone",
+						"customFunction": "ownerPhone"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_24",
+						"searchType": "like",
+						"name": "ownerMail",
+						"customFunction": "ownerMail"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_25",
+						"searchType": "like",
+						"name": "ownerFaks",
+						"customFunction": "ownerFaks"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_26",
+						"searchType": "like",
+						"name": "ownerWeb",
+						"customFunction": "ownerWeb"
+					},
+					{
+						"field": "businessEntityDetails.unifiedCountryCode.value",
+						"translation": "registerConformity.conformityAuthority.prod_28",
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "organizationCountry"
+					},
+					{
+						"field": "businessEntityDetails.businessEntityName",
+						"translation": "registerConformity.conformityAuthority.prod_29",
+						"searchType": "like",
+						"name": "businessEntityName"
+					},
+					{
+						"field": "businessEntityDetails.businessEntityBriefName",
+						"translation": "registerConformity.conformityAuthority.prod_30",
+						"searchType": "like",
+						"name": "businessEntityBriefName"
+					},
+					{
+						"field": "businessEntityDetails.businessEntityTypeName",
+						"translation": "registerConformity.conformityAuthority.prod_31",
+						"searchType": "like",
+						"name": "businessEntityTypeName"
+					},
+					{
+						"field": "businessEntityDetails.businessEntityId.value",
+						"translation": "registerConformity.conformityAuthority.prod_32",
+						"searchType": "like",
+						"name": "businessEntityId",
+						"customFunction": "businessEntityId"
+					},
+					{
+						"field": "businessEntityDetails.businessEntityId.kindId",
+						"translation": "registerConformity.conformityAuthority.businessEntityIdkindId",
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "businessEntityIdkindId"
+					},
+					{
+						"field": "businessEntityDetails.addressV4Details.addressText",
+						"translation": "registerConformity.conformityAuthority.prod_33",
+						"searchType": "like",
+						"name": "organizationAddress",
+						"customFunction": "organizationAddress"
+					},
+					{
+						"field": "businessEntityDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_23",
+						"searchType": "like",
+						"name": "organoizationPhone",
+						"customFunction": "organoizationPhone"
+					},
+					{
+						"field": "businessEntityDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_24",
+						"searchType": "like",
+						"name": "organoizationMail",
+						"customFunction": "organoizationMail"
+					},
+					{
+						"field": "businessEntityDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_25",
+						"searchType": "like",
+						"name": "organoizationFaks",
+						"customFunction": "organoizationFaks"
+					},
+					{
+						"field": "businessEntityDetails.communicationDetails.communicationChannelId",
+						"translation": "registerConformity.conformityAuthority.prod_26",
+						"searchType": "like",
+						"name": "organoizationWeb",
+						"customFunction": "organoizationWeb"
+					},
+					{
+						"field": "relatedConformityAssessmentBodyDetails.conformityAuthorityKindCode",
+						"translation": "registerConformity.conformityAuthority.prod_34",
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "орган по сертификации",
+									"code": "01"
+								},
+								{
+									"name": "испытательная лаборатория (центр)",
+									"code": "02"
+								},
+								{
+									"name": "орган инспекции",
+									"code": "03"
+								}
+							]
+						},
+						"name": "relatedKindCode",
+						"customFunction": "relatedKindCode"
+					},
+					{
+						"field": "relatedConformityAssessmentBodyDetails.businessEntityUnitName",
+						"translation": "registerConformity.conformityAuthority.prod_35",
+						"searchType": "like",
+						"name": "relatedBusinessEntityUnitName"
+					},
+					{
+						"field": "relatedConformityAssessmentBodyDetails.docId",
+						"translation": "registerConformity.conformityAuthority.prod_36",
+						"searchType": "like",
+						"name": "relatedDocId",
+						"customFunction": "relatedDocId"
+					},
+					{
+						"field": "liabilityInsuranceDetails.liabilityInsuranceKindName",
+						"translation": "registerConformity.conformityAuthority.prod_37",
+						"searchType": "like",
+						"name": "liabilityInsuranceKindName"
+					},
+					{
+						"field": "GGGGGGGGGG",
+						"translation": "registerConformity.conformityAuthority.prod_38",
+						"searchType": "like",
+						"name": "GGGGGGGGGG",
+						"customFunction": "GGGGGGGGGG"
+					},
+					{
+						"field": "liabilityInsuranceDetails.docReferenceDetails.docName",
+						"translation": "registerConformity.conformityAuthority.prod_39",
+						"searchType": "like",
+						"name": "measureDocName"
+					},
+					{
+						"field": "liabilityInsuranceDetails.docReferenceDetails.docId",
+						"translation": "registerConformity.conformityAuthority.prod_40",
+						"searchType": "like",
+						"name": "measureDocId"
+					},
+					{
+						"field": "liabilityInsuranceDetails.docReferenceDetails.docCreationDate",
+						"translation": "registerConformity.conformityAuthority.prod_41",
+						"searchType": "date",
+						"name": "measureDocCreationDate"
+					},
+					{
+						"field": "liabilityInsuranceDetails.docReferenceDetails.docStartDate",
+						"translation": "registerConformity.conformityAuthority.prod_42",
+						"searchType": "date",
+						"name": "measureDocStartDate"
+					},
+					{
+						"field": "statusV2Details.eventDate",
+						"translation": "registerConformity.conformityAuthority.statusV2DetailseventDate",
+						"searchType": "date",
+						"name": "eventDate"
+					},
+					{
+						"field": "statusV2Details.docReferenceDetails.docCreationDate",
+						"translation": "registerConformity.conformityAuthority.statusV2DetailsdocCreationDate",
+						"searchType": "date",
+						"name": "statusV2DetailsdocCreationDate"
+					},
+					{
+						"field": "statusV2Details.noteText",
+						"translation": "registerConformity.conformityAuthority.statusV2DetailsnoteText",
+						"searchType": "like",
+						"name": "statusV2DetailsnoteText"
+					},
+					{
+						"field": "statusV2Details.eventDate",
+						"searchType": "dateSplit",
+						"translation": "registerConformity.conformityAuthority.prod_59",
+						"name": "eventDateGraphic",
+						"defaultValue": []
+					},
+					{
+						"field": "resourceItemStatusDetails.updateDateTime",
+						"searchType": "date",
+						"translation": "registerConformity.conformityAuthority.updateDateTime",
+						"name": "updateDateTime"
+					},
+					{
+						"field": "resourceItemStatusDetails.validityPeriodDetails.startDateTime",
+						"searchType": "date",
+						"translation": "registerConformity.conformityAuthority.startDateTime",
+						"name": "startDateTime"
+					},
+					{
+						"field": "resourceItemStatusDetails.validityPeriodDetails.endDateTime",
+						"translation": "registerConformity.conformityAuthority.endDateTime",
+						"searchType": "date",
+						"name": "endDateTime"
+					},
+					{
+						"field": "accreditationCertificateDetails.docStartDate",
+						"translation": "registerConformity.conformityAuthority.prod_43",
+						"searchType": "date",
+						"name": "docStartDate"
+					},
+					{
+						"field": "accreditationCertificateDetails.statusV2Details.eventDate",
+						"translation": "registerConformity.conformityAuthority.prod_44",
+						"searchType": "date",
+						"name": "accreditationEventDate"
+					},
+					{
+						"field": "accreditationCertificateDetails.statusV2Details.noteText",
+						"translation": "registerConformity.conformityAuthority.prod_45",
+						"searchType": "like",
+						"name": "accredetationReason"
+					},
+					{
+						"field": "accreditationCertificateDetails.statusV2Details.docReferenceDetails.docCreationDate",
+						"translation": "registerConformity.conformityAuthority.prod_46",
+						"searchType": "date",
+						"name": "accredetationReasonDate"
+					},
+					{
+						"field": "auditInformation.sourceCreate",
+						"searchType": "like",
+						"name": "sourceCreate",
+						"customFunction": "sourceCreate"
+					},
+					{
+						"field": "accreditationAreaDetails.suspendedIndicator",
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_47",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Приостановленная часть",
+									"code": "true"
+								},
+								{
+									"name": "Действующая часть",
+									"code": "false"
+								}
+							]
+						},
+						"name": "suspendedIndicator",
+						"customFunction": "suspendedIndicator"
+					},
+					{
+						"field": "accreditationAreaDetails.accreditationAreaText",
+						"translation": "registerConformity.conformityAuthority.prod_48",
+						"searchType": "like",
+						"name": "accreditationAreaText"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectName",
+						"translation": "registerConformity.conformityAuthority.prod_49",
+						"searchType": "like",
+						"name": "conformityObjectNameCard",
+						"customFunction": "conformityObjectNameCard"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.commodityCode.value",
+						"translation": "registerConformity.conformityAuthority.prod_50",
+						"searchType": "like",
+						"name": "tnvedCard",
+						"customFunction": "tnvedCard"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.physicalQuantityRangeText",
+						"translation": "registerConformity.conformityAuthority.prod_51",
+						"searchType": "like",
+						"name": "physicalQuantityRangeText"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.standardCode",
+						"translation": "registerConformity.conformityAuthority.prod_52",
+						"searchType": "like",
+						"name": "physicalQuantstandardCodeityRangeText"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.standardCode",
+						"translation": "registerConformity.conformityAuthority.prod_52",
+						"searchType": "like",
+						"name": "standardCodeArr"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.standardCode",
+						"translation": "registerConformity.conformityAuthority.normDoc",
+						"searchType": "like",
+						"name": "normDoc"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.docId",
+						"translation": "registerConformity.conformityAuthority.prod_53",
+						"searchType": "like",
+						"name": "docIdCard"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.docName",
+						"translation": "registerConformity.conformityAuthority.prod_54",
+						"searchType": "like",
+						"name": "docNameCard"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityAssessmentProcedureCode.codeListId",
+						"translation": "registerConformity.conformityAuthority.prod_55",
+						"searchType": "like",
+						"name": "codeListId"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityAssessmentProcedureName",
+						"translation": "registerConformity.conformityAuthority.prod_56",
+						"searchType": "like",
+						"name": "conformityAssessmentProcedureName"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityAssessmentProcedureNameArr",
+						"translation": "registerConformity.conformityAuthority.prod_56",
+						"searchType": "like",
+						"name": "conformityAssessmentProcedureNameArr"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityAssessmentMeasurementsCode.value",
+						"translation": "registerConformity.conformityAuthority.conformityAssessmentMeasurementsCode",
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "conformityAssessmentMeasurementsCode"
+					},
+					{
+						"field": "xdfsgfdgfgdf",
+						"translation": "registerConformity.conformityAuthority.prod_56",
+						"searchType": "like",
+						"name": "areaHead"
+					},
+					{
+						"name": "tableInfoConformityObjectCharacteristicDetails",
+						"customFunction": "tableInfoConformityObjectCharacteristicDetails"
+					},
+					{
+						"name": "tableInfoConformityObjectCharacteristicDetailsInspect",
+						"customFunction": "tableInfoConformityObjectCharacteristicDetailsInspect"
+					},
+					{
+						"name": "tableInfoConformityObjectCharacteristicDetailsOrgans",
+						"customFunction": "tableInfoConformityObjectCharacteristicDetailsOrgans"
+					},
+					{
+						"name": "tableliabilityInsuranceDitails",
+						"customFunction": "tableliabilityInsuranceDitails"
+					},
+					{
+						"field": "relatedConformityAssessmentBodyDetails.businessEntityUnitName",
+						"sortable": true,
+						"translation": "registerConformity.conformityAuthority.prod_3",
+						"width": 90,
+						"searchType": "like",
+						"name": "businessEntityUnitNameCardTop",
+						"customFunction": "businessEntityUnitNameCardTop"
+					},
+					{
+						"field": "masterId",
+						"name": "masterId"
+					},
+					{
+						"name": "organizationGroups",
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_57",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Единый перечень",
+									"code": "1"
+								},
+								{
+									"name": "Технический регламент",
+									"code": "2"
+								},
+								{
+									"name": "СФС лаборатория",
+									"code": "3"
+								}
+							]
+						},
+						"customFilter": "organizationGroups"
+					},
+					{
+						"name": "organizationGroupsThird",
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_57",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Единый перечень",
+									"code": "1"
+								},
+								{
+									"name": "Технический регламент",
+									"code": "2"
+								},
+								{
+									"name": "СФС лаборатория",
+									"code": "3"
+								}
+							]
+						},
+						"customFilter": "organizationGroups",
+						"defaultValue": [
+							"1"
+						]
+					},
+					{
+						"field": "organizations",
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_17",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Органы по сертификации по ТР ЕАЭС",
+									"code": "3"
+								},
+								{
+									"name": "Испытательные лаборатории (центры) по ТР ЕАЭС",
+									"code": "4"
+								},
+								{
+									"name": "Органы инспекции по ТР ЕАЭС",
+									"code": "5"
+								}
+							]
+						},
+						"name": "organizationsReduce"
+					},
+					{
+						"field": "conformityAuthorityKindCode",
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_60",
+						"comboboxSettings": {
+							"group": false,
+							"header": false,
+							"optionValue": "code",
+							"optionLabel": "name",
+							"options": [
+								{
+									"name": "Орган по сертификации",
+									"code": "01"
+								},
+								{
+									"name": "Испытательная лаборатория (центр)",
+									"code": "02"
+								},
+								{
+									"name": "Орган инспекции",
+									"code": "03"
+								}
+							]
+						},
+						"name": "organType"
+					},
+					{
+						"field": "accreditationAreaDetails.technicalRegulationId",
+						"searchType": "combobox",
+						"translation": "registerConformity.conformityAuthority.prod_58",
+						"comboboxSettings": {
+							"group": false,
+							"header": true,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "technicalRegulationIdGraphic"
+					},
+					{
+						"field": "statusV2Details.eventDate",
+						"translation": "registerConformity.conformityAuthority.prod_59",
+						"searchType": "dateSplit",
+						"name": "graphicEventDateFilter",
+						"defaultValue": []
+					},
+					{
+						"field": "orgStatusCode",
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": true,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "orgStatusCode"
+					},
+					{
+						"field": "orgStatusCode",
+						"searchType": "combobox",
+						"comboboxSettings": {
+							"group": false,
+							"header": true,
+							"optionValue": "code",
+							"optionLabel": "name"
+						},
+						"name": "orgStatusCode"
+					},
+					{
+						"field": "xsdModelVersion",
+						"name": "xsdModelVersion"
+					},
+					{
+						"field": "endDate_",
+						"searchType": "date",
+						"name": "endDate_"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.cityName",
+						"searchType": "like",
+						"name": "cityName"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.streetName",
+						"searchType": "like",
+						"name": "streetName"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.buildingNumberId",
+						"searchType": "like",
+						"name": "buildingNumberId"
+					},
+					{
+						"field": "accreditationCertificateDetails.noteText",
+						"searchType": "like",
+						"name": "noteText"
+					},
+					{
+						"field": "accreditationCertificateDetails.docReferenceDetails.docKindCode",
+						"searchType": "like",
+						"name": "docKindCode"
+					},
+					{
+						"field": "accreditationCertificateDetails.docReferenceDetails.docName",
+						"searchType": "like",
+						"name": "docName_search"
+					},
+					{
+						"field": "accreditationCertificateDetails.docReferenceDetails.docId",
+						"searchType": "like",
+						"name": "docId_search"
+					},
+					{
+						"field": "accreditationAreaDetails.technicalRegulationId.suspendedlndicator",
+						"searchType": "like",
+						"name": "suspendedlndicator"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.standardCode.value",
+						"searchType": "like",
+						"name": "standardCode_search"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.standardCode.codeListId",
+						"searchType": "like",
+						"name": "codeListId_search"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.conformityAssessmentProcedureCode.value",
+						"searchType": "like",
+						"name": "conformityAssessmentProcedureCode_search"
+					},
+					{
+						"field": "statusV2Details.noteText",
+						"searchType": "like",
+						"name": "noteText_search"
+					},
+					{
+						"field": "statusV2Details.docKindCode",
+						"searchType": "like",
+						"name": "docKindCode_search"
+					},
+					{
+						"field": "statusV2Details.docName",
+						"searchType": "like",
+						"name": "statusdocName_search"
+					},
+					{
+						"field": "statusV2Details.docId",
+						"searchType": "like",
+						"name": "statusdocId_search"
+					},
+					{
+						"field": "statusV2Details.docStartDate",
+						"searchType": "date",
+						"name": "statusdocStartDate_search"
+					},
+					{
+						"field": "statusV2Details.docCreationDate",
+						"searchType": "date",
+						"name": "statusdocCreationDate_search"
+					},
+					{
+						"field": "businessEntityDetails.addressV4Details.cityName",
+						"searchType": "like",
+						"name": "businessEntityDetails_cityName"
+					},
+					{
+						"field": "businessEntityDetails.addressV4Details.streetName",
+						"searchType": "like",
+						"name": "businessEntityDetails_streetName"
+					},
+					{
+						"field": "businessEntityDetails.addressV4Details.buildingNumberId",
+						"searchType": "like",
+						"name": "businessEntityDetails_buildingNumberId"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.fullNameDetails.firstName",
+						"searchType": "like",
+						"name": "firstName"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.officerDetails.fullNameDetails.middleName",
+						"searchType": "like",
+						"name": "middleName"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.postOfficeBoxId",
+						"searchType": "like",
+						"name": "postOfficeBoxId"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.businessEntityUnitName",
+						"searchType": "like",
+						"name": "businessEntityUnitName_search"
+					},
+					{
+						"field": "liabilityInsuranceDetails.docKindCode",
+						"searchType": "like",
+						"name": "liabilityInsuranceDetails_docKindCode"
+					},
+					{
+						"field": "accreditationCertificateDetails.accreditationCertificateId",
+						"searchType": "like",
+						"name": "accreditationCertificateId"
+					},
+					{
+						"field": "relatedConformityAssessmentBodyDetails.accreditationCertificateId",
+						"searchType": "like",
+						"name": "bodyDetailsAccreditationCertificateId"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.standardCodeArr",
+						"searchType": "like",
+						"name": "standardCodeAr_search"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.docReferenceDetails.docName",
+						"searchType": "like",
+						"name": "docName_search_new"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.docReferenceDetails.docId",
+						"searchType": "like",
+						"name": "docId_search_new"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.docReferenceDetails.docCreationDate",
+						"searchType": "date",
+						"name": "docCreationDate_search_new"
+					},
+					{
+						"field": "accreditationAreaDetails.conformityObjectDetails.conformityObjectCharacteristicDetails.docReferenceDetails.docCreationDate",
+						"searchType": "date",
+						"name": "graphicHistorySearch"
+					},
+					{
+						"field": "conformityAssessmentBodyDetails.addressV4Details.addressText",
+						"searchType": "like",
+						"name": "addressText_search"
+					},
+					{
+						"field": "_id.$oid",
+						"name": "id"
+					}
+				],
+				"tableColumns": [
+					"conformityAuthorityId",
+					"country",
+					"businessEntityUnitName",
+					"statusCode",
+					"statusCode_acc",
+					"docId",
+					"docCreationDate",
+					"docValidityDate",
+					"address_1",
+					"address_4",
+					"lastName",
+					"communicationChannelId",
+					"technicalRegulationId",
+					"conformityObjectName",
+					"tnved",
+					"conformityObjectCharacteristicName",
+					"organizations"
+				],
+				"sortedColumn": "eventDate",
+				"sortOrder": "desc",
+				"sort": [],
+				"exportListSettings": [
+					{
+						"type": "CSV",
+						"processId": "019e7162-2884-4aa4-a923-ffe03b8d1218",
+						"section": "ОП 36"
+					},
+					{
+						"type": "PDF",
+						"processId": "30e52976-02d4-47cd-afcb-128731d778ea",
+						"section": "ОП 36"
+					},
+					{
+						"type": "XML",
+						"processId": "cf6646b0-46bc-412f-8221-1487e68ba36f",
+						"section": "ОП 36"
+					}
+				],
+				"exportCardSettings": {
+					"type": "PDF",
+					"processId": "9c5bbda9-b5e6-4686-abd2-85878b315180",
+					"section": "ОП 36"
+				},
+				"classifierNames": [
+					"country",
+					"statusCode",
+					"statusCode_acc",
+					"organizations",
+					"organizationsReduce",
+					"technicalRegulationId_class",
+					"conformityAuthorityKindCode",
+					"organizationCountry",
+					"relatedKindCode",
+					"productKindCode",
+					"suspendedIndicator",
+					"technicalRegulationIdGraphic",
+					"orgStatusCode",
+					"countryWithEAEU",
+					"conformityAssessmentMeasurementsCode",
+					"businessEntityIdkindId",
+					"organType"
+				],
+				"classificators": [
+					{
+						"name": "country",
+						"code": "P.CLS.019",
+						"description": "Страны",
+						"values": [
+							{
+								"name": "Армения",
+								"code": "AM"
+							},
+							{
+								"name": "Беларусь",
+								"code": "BY"
+							},
+							{
+								"name": "Казахстан",
+								"code": "KZ"
+							},
+							{
+								"name": "Кыргызстан",
+								"code": "KG"
+							},
+							{
+								"name": "Россия",
+								"code": "RU"
+							}
+						]
+					},
+					{
+						"name": "countryWithEAEU",
+						"code": "P.CLS.019",
+						"description": "Страны",
+						"values": [
+							{
+								"name": "ЕАЭС",
+								"code": "EAEU"
+							},
+							{
+								"name": "Армения",
+								"code": "AM"
+							},
+							{
+								"name": "Беларусь",
+								"code": "BY"
+							},
+							{
+								"name": "Казахстан",
+								"code": "KZ"
+							},
+							{
+								"name": "Кыргызстан",
+								"code": "KG"
+							},
+							{
+								"name": "Россия",
+								"code": "RU"
+							}
+						]
+					},
+					{
+						"name": "organizationCountry",
+						"code": "P.CLS.019",
+						"description": "Страны"
+					},
+					{
+						"name": "statusCode_acc",
+						"code": "P.CLS.058",
+						"description": "Страны",
+						"values": [
+							{
+								"name": "Действует",
+								"code": "01"
+							},
+							{
+								"name": "Частично приостановлена",
+								"code": "02"
+							},
+							{
+								"name": "Приостановлена",
+								"code": "03"
+							},
+							{
+								"name": "Прекращена",
+								"code": "04"
+							}
+						]
+					},
+					{
+						"name": "statusCode",
+						"code": "P.CLS.019",
+						"description": "Страны",
+						"values": [
+							{
+								"name": "Действует",
+								"code": "01"
+							},
+							{
+								"name": "Исключен",
+								"code": "02"
+							}
+						]
+					},
+					{
+						"name": "organType",
+						"code": "P.CLS.019",
+						"description": "Тип органа",
+						"values": [
+							{
+								"name": "Орган по сертификации",
+								"code": "01"
+							},
+							{
+								"name": "Испытательная лаборатория (центр)",
+								"code": "02"
+							},
+							{
+								"name": "Орган инспекции",
+								"code": "03"
+							}
+						]
+					},
+					{
+						"name": "organizations",
+						"code": "P.CLS.019",
+						"description": "Страны",
+						"values": [
+							{
+								"name": "Органы по сертификации по единому перечню",
+								"code": "1",
+								"tooltip": "Органы по сертификации, осуществляющие работы по оценке соответствия продукции, включенной в единый перечень продукции, подлежащей обязательному подтверждению соответствия с выдачей сертификатов соответствия и деклараций о соответствии по единой форме"
+							},
+							{
+								"name": "Испытательные лаборатории (центры) по единому перечню",
+								"code": "2",
+								"tooltip": "Испытательные лаборатории (центры), осуществляющие испытания продукции, включенной в единый перечень продукции, подлежащей обязательному подтверждению соответствия с выдачей сертификатов соответствия и деклараций о соответствии по единой форме"
+							},
+							{
+								"name": "Органы по сертификации по ТР ЕАЭС",
+								"code": "3",
+								"tooltip": "Органы по сертификации, осуществляющие работы по оценке соответствия продукции, подлежащей оценке соответствия требованиям технических регламентов Союза"
+							},
+							{
+								"name": "Испытательные лаборатории (центры) по ТР ЕАЭС",
+								"code": "4",
+								"tooltip": "Испытательные лаборатории (центры), осуществляющие испытания продукции, подлежащей оценке соответствия требованиям технических регламентов Союза"
+							},
+							{
+								"name": "Органы инспекции по ТР ЕАЭС",
+								"code": "5",
+								"tooltip": "Органы инспекции, осуществляющие работы по оценке соответствия продукции требованиям технических регламентов Союза после выпуска ее в обращение в форме оценки технического состояния (технического освидетельствования) или обследования"
+							},
+							{
+								"name": "СФС-лаборатория",
+								"code": "6",
+								"tooltip": "Аккредитованные испытательные лаборатории (центры), осуществляющие испытания продукции на соответствие единым санитарно-эпидемиологическим и гигиеническим требованиям, единым ветеринарно-санитарным требованиям и (или) единым карантинным фитосанитарным требованиям"
+							}
+						]
+					},
+					{
+						"name": "technicalRegulationId_class",
+						"code": "1022",
+						"description": "technicalRegulationId_class"
+					},
+					{
+						"name": "businessEntityIdkindId",
+						"code": "1033",
+						"description": "businessEntityIdkindId"
+					},
+					{
+						"name": "conformityAuthorityKindCode",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "орган по сертификации",
+								"code": "01"
+							},
+							{
+								"name": "испытательная лаборатория (центр)",
+								"code": "02"
+							},
+							{
+								"name": "орган инспекции",
+								"code": "03"
+							}
+						]
+					},
+					{
+						"name": "relatedKindCode",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "орган по сертификации",
+								"code": "01"
+							},
+							{
+								"name": "испытательная лаборатория (центр)",
+								"code": "02"
+							},
+							{
+								"name": "орган инспекции",
+								"code": "03"
+							}
+						]
+					},
+					{
+						"name": "productKindCode",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "продукция, подлежащая оценке соответствия требованиям технических регламентов Союза",
+								"code": "01"
+							},
+							{
+								"name": "продукция, включенная в единый перечень продукции, подлежащей обязательному подтверждению соответствия с выдачей сертификатов соответствия и деклараций о соответствии по единой форме",
+								"code": "02"
+							},
+							{
+								"name": "продукция, подлежащая испытаниям на соответствие единым санитарно-эпидемиологическим и гигиеническим требованиям, единым ветеринарно-санитарным требованиям и (или) единым карантинным фитосанитарным требованиям",
+								"code": "03"
+							}
+						]
+					},
+					{
+						"name": "suspendedIndicator",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "Приостановленная часть",
+								"code": "true"
+							},
+							{
+								"name": "Действующая часть",
+								"code": "false"
+							}
+						]
+					},
+					{
+						"name": "organizationGroups",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "Единый перечень",
+								"code": "1"
+							},
+							{
+								"name": "Технический регламент",
+								"code": "2"
+							},
+							{
+								"name": "СФС лаборатория",
+								"code": "3"
+							}
+						]
+					},
+					{
+						"name": "organizationGroupsThird",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "Единый перечень",
+								"code": "1"
+							},
+							{
+								"name": "Технический регламент",
+								"code": "2"
+							},
+							{
+								"name": "СФС лаборатория",
+								"code": "3"
+							}
+						]
+					},
+					{
+						"name": "organizationsReduce",
+						"code": "P.CLS.019",
+						"description": "Органы",
+						"values": [
+							{
+								"name": "Органы по сертификации по ТР ЕАЭС",
+								"code": "3"
+							},
+							{
+								"name": "Испытательные лаборатории (центры) по ТР ЕАЭС",
+								"code": "4"
+							},
+							{
+								"name": "Органы инспекции по ТР ЕАЭС",
+								"code": "5"
+							}
+						]
+					},
+					{
+						"name": "technicalRegulationIdGraphic",
+						"code": "P.CLS.019",
+						"description": "Органы"
+					},
+					{
+						"name": "conformityAssessmentMeasurementsCode",
+						"code": "1047",
+						"description": "Органы"
+					},
+					{
+						"name": "orgStatusCode",
+						"code": "P.CLS.019",
+						"description": "Органы и статусы",
+						"values": [
+							{
+								"name": "Испытательные лаборатории (центры) по единому перечню (действует)",
+								"code": "1_01"
+							},
+							{
+								"name": "Испытательные лаборатории (центры) по единому перечню (исключен)",
+								"code": "1_02"
+							},
+							{
+								"name": "Органы по сертификации по единому перечню (действует)",
+								"code": "2_01"
+							},
+							{
+								"name": "Органы по сертификации по единому перечню (исключен)",
+								"code": "2_02"
+							},
+							{
+								"name": "Испытательные лаборатории (центры) по ТР ЕАЭС (действует)",
+								"code": "3_01"
+							},
+							{
+								"name": "Испытательные лаборатории (центры) по ТР ЕАЭС (исключен)",
+								"code": "3_02"
+							},
+							{
+								"name": "Органы по сертификации по ТР ЕАЭС (действует)",
+								"code": "4_01"
+							},
+							{
+								"name": "Органы по сертификации по ТР ЕАЭС (исключен)",
+								"code": "4_02"
+							},
+							{
+								"name": "Органы инспекции по ТР ЕАЭС (действует)",
+								"code": "5_01"
+							},
+							{
+								"name": "Органы инспекции по ТР ЕАЭС (исключен)",
+								"code": "5_02"
+							},
+							{
+								"name": "СФС-лаборатория (действует)",
+								"code": "6_01"
+							},
+							{
+								"name": "СФС-лаборатория (исключен)",
+								"code": "6_02"
+							}
+						]
+					}
+				],
+				"infographics": [
+					{
+						"header": "registerConformity.conformityAuthority.graphic.firstTitle",
+						"search": "kbdread.service-prop-36-v_conformityAssessmentBodyInformationDetailsTypeHistory_organizations",
+						"type": "bar",
+						"filters": [
+							"eventDateGraphic",
+							"organizationGroups",
+							"statusCode"
+						],
+						"splitField": "organizations",
+						"aggregateField": "country",
+						"hoverBackgroundColor": [
+							"#FFB2C650",
+							"#9CD3F750",
+							"#cff54750",
+							"#4edcf550",
+							"#fb040450",
+							"#fb04c550"
+						],
+						"datasetColors": [
+							"#FFB2C6",
+							"#9CD3F7",
+							"#cff547",
+							"#4edcf5",
+							"#fb0404",
+							"#fb04c5"
+						],
+						"chartDirection": "x",
+						"height": 500,
+						"displayYScale": true,
+						"width": 800,
+						"pluginOptions": {},
+						"aggregationsString": [
+							{
+								"$unwind": {
+									"path": "$organizations"
+								}
+							},
+							{
+								"$group": {
+									"_id": {
+										"organizations": "$organizations",
+										"country": "$unifiedCountryCode.value"
+									},
+									"total": {
+										"$sum": 1
+									}
+								}
+							},
+							{
+								"$sort": {
+									"total": -1
+								}
+							}
+						]
+					},
+					{
+						"header": "registerConformity.conformityAuthority.graphic.secondTitle",
+						"search": "kbdread.service-prop-36-v_conformityAssessmentBodyInformationDetailsTypeHistory_organizations",
+						"type": "bar",
+						"filters": [
+							"eventDateGraphic",
+							"country",
+							"statusCode_acc",
+							"organizationsReduce",
+							"technicalRegulationIdGraphic",
+							"statusCode",
+							"graphicHistorySearch"
+						],
+						"splitField": "country",
+						"aggregateField": "technicalRegulationId",
+						"hoverBackgroundColor": [
+							"#FFB2C650",
+							"#9CD3F750",
+							"#cff54750",
+							"#4edcf550",
+							"#fb040450",
+							"#fb04c550"
+						],
+						"datasetColors": [
+							"#FFB2C6",
+							"#9CD3F7",
+							"#cff547",
+							"#4edcf5",
+							"#fb0404",
+							"#fb04c5"
+						],
+						"chartDirection": "y",
+						"height": 1000,
+						"displayYScale": true,
+						"width": 1000,
+						"pluginOptions": {},
+						"aggregationsString": [
+							{
+								"$match": {
+									"$and": [
+										{
+											"organizations": {
+												"$in": [
+													"5",
+													"4",
+													"3"
+												]
+											}
+										}
+									]
+								}
+							},
+							{
+								"$addFields": {
+									"uniqueTechRegs": {
+										"$reduce": {
+											"input": "$accreditationAreaDetails",
+											"initialValue": [],
+											"in": {
+												"$cond": [
+													{
+														"$in": [
+															"$$this.technicalRegulationId",
+															"$$value"
+														]
+													},
+													"$$value",
+													{
+														"$concatArrays": [
+															"$$value",
+															[
+																"$$this.technicalRegulationId"
+															]
+														]
+													}
+												]
+											}
+										}
+									}
+								}
+							},
+							{
+								"$unwind": "$uniqueTechRegs"
+							},
+							{
+								"$group": {
+									"_id": {
+										"technicalRegulationId": "$uniqueTechRegs",
+										"country": "$unifiedCountryCode.value"
+									},
+									"total": {
+										"$sum": 1
+									}
+								}
+							},
+							{
+								"$sort": {
+									"total": -1
+								}
+							}
+						]
+					},
+					{
+						"header": "registerConformity.conformityAuthority.graphic.thirdTitle",
+						"search": "kbdread.service-prop-36-v_conformityAssessmentBodyInformationDetailsTypeHistory_organizations",
+						"type": "bar",
+						"pluginOptions": {},
+						"filters": [
+							"graphicEventDateFilter",
+							"countryWithEAEU",
+							"organizationGroupsThird"
+						],
+						"splitField": "orgStatusCode",
+						"aggregateField": "date",
+						"hoverBackgroundColor": [
+							"#FFB2C650",
+							"#9CD3F750",
+							"#68d81d50",
+							"#4edcf550",
+							"#fb040450",
+							"#92b90450",
+							"#1456cf50",
+							"#e7753350",
+							"#3a91f550",
+							"#f0c02250",
+							"#02eee250",
+							"#eff30950"
+						],
+						"datasetColors": [
+							"#FFB2C6",
+							"#9CD3F7",
+							"#68d81d",
+							"#4edcf5",
+							"#fb0404",
+							"#92b904",
+							"#1456cf",
+							"#e77533",
+							"#3a91f5",
+							"#f0c022",
+							"#02eee2",
+							"#eff309"
+						],
+						"chartDirection": "x",
+						"height": 1000,
+						"displayYScale": true,
+						"width": 1000,
+						"aggregationsString": [
+							{
+								"$unwind": {
+									"path": "$organizations"
+								}
+							},
+							{
+								"$match": {
+									"statusV2Details.eventDate": {
+										"$ne": null
+									},
+									"statusV2Details.statusCode.value": {
+										"$exists": true
+									}
+								}
+							},
+							{
+								"$addFields": {
+									"orgStatusCode": {
+										"$concat": [
+											"$organizations",
+											"_",
+											"$statusV2Details.statusCode.value"
+										]
+									},
+									"date": {
+										"$concat": [
+											{
+												"$toString": {
+													"$month": "$statusV2Details.eventDate"
+												}
+											},
+											".",
+											{
+												"$toString": {
+													"$year": "$statusV2Details.eventDate"
+												}
+											}
+										]
+									}
+								}
+							},
+							{
+								"$addFields": {
+									"upFlag": {
+										"$cond": [
+											{
+												"$eq": [
+													"$statusV2Details.statusCode.value",
+													"01"
+												]
+											},
+											1,
+											-1
+										]
+									}
+								}
+							},
+							{
+								"$group": {
+									"_id": {
+										"orgStatusCode": "$orgStatusCode",
+										"date": "$date",
+										"upFlag": "$upFlag"
+									},
+									"total": {
+										"$sum": 1
+									}
+								}
+							},
+							{
+								"$project": {
+									"_id.orgStatusCode": 1,
+									"_id.date": 1,
+									"total": {
+										"$multiply": [
+											"$total",
+											"$_id.upFlag"
+										]
+									}
+								}
+							},
+							{
+								"$sort": {
+									"total": -1
+								}
+							}
+						]
+					}
+				],
+				"searchColumns": [
+					"conformityAuthorityId",
+					"docId",
+					"statusCode_acc",
+					"docCreationDate",
+					"businessEntityUnitName",
+					"statusCode",
+					"conformityObjectNameFilterName",
+					"technicalRegulationId_class",
+					"tnved",
+					"organType",
+					"productKindCode"
+				],
+				"tilesSearchList": [
+					"organizations",
+					"country"
+				],
+				"contextSearchColumns": [
+					"conformityAuthorityId",
+					"docId",
+					"relatedBusinessEntityUnitName",
+					"relatedDocId",
+					"businessEntityUnitName",
+					"addressText_search",
+					"noteText",
+					"docKindCode",
+					"docName_search",
+					"docId_search",
+					"suspendedlndicator",
+					"productKindCode",
+					"conformityObjectCharacteristicName",
+					"physicalQuantityRangeText",
+					"standardCode_search",
+					"codeListId_search",
+					"conformityAssessmentProcedureCode_search",
+					"conformityAssessmentProcedureName",
+					"docIdCard",
+					"docNameCard",
+					"accreditationAreaText",
+					"conformityObjectName",
+					"tnved",
+					"tnvedCard",
+					"noteText_search",
+					"docKindCode_search",
+					"statusdocName_search",
+					"statusdocId_search",
+					"statusdocStartDate_search",
+					"statusdocCreationDate_search",
+					"organizationAddress",
+					"businessEntityId",
+					"businessEntityName",
+					"businessEntityBriefName",
+					"businessEntityTypeName",
+					"businessEntityId",
+					"organoizationPhone",
+					"positionName",
+					"lastName",
+					"firstName",
+					"middleName",
+					"communicationChannelId",
+					"communicationChannelId_phone",
+					"postOfficeBoxId",
+					"businessEntityUnitName_search",
+					"liabilityInsuranceKindName",
+					"liabilityInsuranceDetails_docKindCode",
+					"measureDocName",
+					"measureDocId",
+					"conformityAssessmentMeasurementsCode",
+					"standardCodeAr_search",
+					"bodyDetailsAccreditationCertificateId",
+					"accreditationCertificateId",
+					"docName_search_new",
+					"docId_search_new",
+					"docCreationDate_search_new",
+					"conformityObjectName"
+				],
+				"resourceCard": [
+					{
+						"field": "registerConformity.conformityAuthority.resourceCard.activityField",
+						"value": "registerConformity.conformityAuthority.resourceCard.activityFieldValue"
+					},
+					{
+						"field": "registerConformity.conformityAuthority.resourceCard.resourceGroup",
+						"value": "registerConformity.conformityAuthority.resourceCard.resourceGroupValue"
+					},
+					{
+						"field": "registerConformity.conformityAuthority.resourceCard.description",
+						"value": "registerConformity.conformityAuthority.resourceCard.descriptionValue"
+					},
+					{
+						"field": "registerConformity.conformityAuthority.resourceCard.shortname",
+						"value": "registerConformity.conformityAuthority.resourceCard.shortnameValue"
+					},
+					{
+						"field": "registerConformity.conformityAuthority.resourceCard.baseDocument",
+						"value": "registerConformity.conformityAuthority.resourceCard.baseDocumentValue",
+						"link": "https://docs.eaeunion.org/docs/ru-ru/01521044/cncd_21022019_100"
+					}
+				],
+				"apiList": [
+					{
+						"header": "accordion.apiDataHeader",
+						"link": "https://opendata.eaeunion.org/opendata/ru/api/apiodata",
+						"fieldList": [
+							{
+								"field": "accordion.method",
+								"value": "accordion.methodData"
+							},
+							{
+								"field": "accordion.link",
+								"value": "accordion.linkData",
+								"link": "https://tech.eaeunion.org/odata/Service_prop_36_conformityAssessmentBodyInformationDetailsType?$top=10"
+							},
+							{
+								"field": "accordion.description",
+								"value": "accordion.descriptionData",
+								"link": "https://opendata.eaeunion.org/opendata/ru/api/apiodata"
+							}
+						]
+					},
+					{
+						"header": "accordion.restApiHeader",
+						"link": "https://opendata.eaeunion.org/opendata/ru/api/restapi",
+						"fieldList": [
+							{
+								"field": "accordion.method",
+								"value": "accordion.methodRest"
+							},
+							{
+								"field": "accordion.link",
+								"value": "accordion.linkRest",
+								"link": "https://tech.eaeunion.org/spd/find?collection=kbdread.service-prop-36-v_conformityAssessmentBodyInformationDetailsType_organization_table&limit=10"
+							},
+							{
+								"field": "accordion.description",
+								"value": "accordion.descriptionRest",
+								"link": "https://opendata.eaeunion.org/opendata/ru/api/restapi"
+							}
+						]
+					}
+				],
+				"additionalSettings": {
+					"historySearch": "kbdread.service-prop-36-v_conformityAssessmentBodyInformationDetailsTypeHistory_organizations",
+					"versionSearch": true,
+					"graphicDirection": "column",
+					"docsHref": "https://tech.eaeunion.org/tech/registers/35-1/ru/registryList/conformityDocs",
+					"requiredFields": [
+						"organizations"
+					],
+					"numberToMonths": {
+						"1": "Январь",
+						"2": "Февраль",
+						"3": "Март",
+						"4": "Апрель",
+						"5": "Май",
+						"6": "Июнь",
+						"7": "Июль",
+						"8": "Август",
+						"9": "Сентябрь",
+						"10": "Октябрь",
+						"11": "Ноябрь",
+						"12": "Декабрь"
+					},
+					"organizationColumns": {
+						"0": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"communicationChannelId",
+							"conformityObjectName"
+						],
+						"1": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"conformityObjectName",
+							"tnved"
+						],
+						"2": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"conformityObjectName",
+							"conformityObjectCharacteristicName"
+						],
+						"3": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"technicalRegulationId",
+							"conformityObjectName",
+							"tnved"
+						],
+						"4": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"technicalRegulationId",
+							"conformityObjectName",
+							"conformityObjectCharacteristicName"
+						],
+						"5": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"technicalRegulationId",
+							"conformityObjectName"
+						],
+						"6": [
+							"conformityAuthorityId",
+							"country",
+							"businessEntityUnitName",
+							"statusCode",
+							"statusCode_acc",
+							"docId",
+							"docCreationDate",
+							"docValidityDate",
+							"address_1",
+							"address_4",
+							"lastName",
+							"conformityObjectName"
+						]
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,13 @@
+{
+  "value": [
+    {
+      "docId": "ЕАЭС AM C-CN.АБ12.В.00001/24",
+      "docStartDate": "2024-01-15T03:00:00+03:00",
+      "docValidityDate": "2029-01-14T03:00:00+03:00",
+      "formNumberId": "0000001",
+      "Id": "am-test-id-00001",
+      "unifiedCountryCode": {"value": "AM"},
+      "docStatusDetails": {"docStatusCode": "01"}
+    }
+  ]
+}

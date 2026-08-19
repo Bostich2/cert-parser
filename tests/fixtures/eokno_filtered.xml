@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<partial-response>
+    <changes>
+        <update id="dApplicationListOpened:ktrmListForm:listTable">
+            <![CDATA[
+            <table id="dApplicationListOpened:ktrmListForm:listTable">
+                <thead>
+                    <tr>
+                        <th>Тіркеу нөмірі</th>
+                        <th>бастап жарамды</th>
+                        <th>дейін жарамды</th>
+                        <th>Мәртебе</th>
+                        <th>Сәйкестікті растау құжатының типі</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-rk="3849075">
+                        <td>ЕАЭС KZ 1100317.05.01.05103</td>
+                        <td>01.01.2024</td>
+                        <td>31.12.2027</td>
+                        <td>ҚҰЖАТ БЕРІЛДІ</td>
+                        <td>сертификат соответствия ТР ЕАЭС</td>
+                    </tr>
+                </tbody>
+            </table>
+            ]]>
+        </update>
+    </changes>
+</partial-response>

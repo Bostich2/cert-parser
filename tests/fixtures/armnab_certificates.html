@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru" class="no-js"><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base href="/">
+    
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="assets/css/main.fpz1b6lmed.css" />
+    <link rel="stylesheet" href="assets/css/responsive.g2icrjws0k.css" />
+    <link rel="stylesheet" href="app.xzg58etrm2.css" />
+    <link rel="stylesheet" href="ArmNAB.l4h6l4kqwi.styles.css" />
+    <script type="importmap">{
+  "imports": {
+    "./Components/Layout/ReconnectModal.razor.js": "./Components/Layout/ReconnectModal.abdmv1u4y3.razor.js",
+    "./_framework/blazor.server.js": "./_framework/blazor.server.wfr2hj6447.js",
+    "./_framework/blazor.web.js": "./_framework/blazor.web.wyu7y4jcvb.js",
+    "./assets/js/main.js": "./assets/js/main.bn3hyi0o5s.js",
+    "./assets/js/site.js": "./assets/js/site.70m1gz8zgu.js",
+    "./assets/lib/jquery/jquery-3.7.1.min.js": "./assets/lib/jquery/jquery-3.7.1.min.ex5vf7708v.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "./lib/bootstrap/dist/js/bootstrap.bundle.6cfz1n2cew.js",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "./lib/bootstrap/dist/js/bootstrap.esm.vr1egmr9el.js",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js",
+    "./lib/bootstrap/dist/js/bootstrap.js": "./lib/bootstrap/dist/js/bootstrap.notf2xhcfb.js"
+  },
+  "integrity": {
+    "./Components/Layout/ReconnectModal.abdmv1u4y3.razor.js": "sha256-5u+v90fOttEFzE2qHMGMOXmy93Ik/BaGqLrrnu6mdGU=",
+    "./Components/Layout/ReconnectModal.razor.js": "sha256-5u+v90fOttEFzE2qHMGMOXmy93Ik/BaGqLrrnu6mdGU=",
+    "./_framework/blazor.server.js": "sha256-bDQTw7AEuAYCpWRK2jFgleO9a7PxBwvuxd9zN63+oso=",
+    "./_framework/blazor.server.wfr2hj6447.js": "sha256-bDQTw7AEuAYCpWRK2jFgleO9a7PxBwvuxd9zN63+oso=",
+    "./_framework/blazor.web.js": "sha256-iLprmSueJh5+S5e7TMSpDCIn76pkDjFM/MNuNeykNuU=",
+    "./_framework/blazor.web.wyu7y4jcvb.js": "sha256-iLprmSueJh5+S5e7TMSpDCIn76pkDjFM/MNuNeykNuU=",
+    "./assets/js/main.bn3hyi0o5s.js": "sha256-SemxV08hXqjzbA5YLhFqO76dWT1W0lfpz+cmpgPqKVo=",
+    "./assets/js/main.js": "sha256-SemxV08hXqjzbA5YLhFqO76dWT1W0lfpz+cmpgPqKVo=",
+    "./assets/js/site.70m1gz8zgu.js": "sha256-WR7tAfvuv9GD0jIBDBWW2Xk5t/NAc2m1YWYRVVwpvLA=",
+    "./assets/js/site.js": "sha256-WR7tAfvuv9GD0jIBDBWW2Xk5t/NAc2m1YWYRVVwpvLA=",
+    "./assets/lib/jquery/jquery-3.7.1.min.ex5vf7708v.js": "sha256-PnUB0Vw2MOeRyLIDkuud7jGp9lzj793nbO9ccQFBqyQ=",
+    "./assets/lib/jquery/jquery-3.7.1.min.js": "sha256-PnUB0Vw2MOeRyLIDkuud7jGp9lzj793nbO9ccQFBqyQ=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.6cfz1n2cew.js": "sha256-mkoRoV24jV+rCPWcHDR5awPx8VuzzJKN0ibhxZ9/WaM=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.js": "sha256-mkoRoV24jV+rCPWcHDR5awPx8VuzzJKN0ibhxZ9/WaM=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.493y06b0oq.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.bundle.min.js": "sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.js": "sha256-exiXZNJDwucXfuje3CbXPbuS6+Ery3z9sP+pgmvh8nA=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.jj8uyg4cgr.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.min.js": "sha256-QZdFT1ZNdly4rmgUBtXmXFS9BU1FTa+sPe6h794sFRQ=",
+    "./lib/bootstrap/dist/js/bootstrap.esm.vr1egmr9el.js": "sha256-exiXZNJDwucXfuje3CbXPbuS6+Ery3z9sP+pgmvh8nA=",
+    "./lib/bootstrap/dist/js/bootstrap.js": "sha256-+UW802wgVfnjaSbdwyHLlU7AVplb0WToOlvN1CnzIac=",
+    "./lib/bootstrap/dist/js/bootstrap.min.63fj8s7r0e.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+    "./lib/bootstrap/dist/js/bootstrap.min.js": "sha256-3gQJhtmj7YnV1fmtbVcnAV6eI4ws0Tr48bVZCThtCGQ=",
+    "./lib/bootstrap/dist/js/bootstrap.notf2xhcfb.js": "sha256-+UW802wgVfnjaSbdwyHLlU7AVplb0WToOlvN1CnzIac="
+  }
+}</script>
+    </head>
+
+<body><a class="skip-link" href="#main-content">Перейти к основному содержанию</a>
+
+<div class="page-shell"><header class="site-header"><div class="header-top"><div class="wrap header-top__inner"><a class="logo" href="/ru"><span class="logo__mark"><img src="assets/img/logo.png" alt="ARMNAB"></span>
+                <span class="logo__divider"></span>
+                <span class="logo__text">МИНИСТЕРСТВО ЭКОНОМИКИ РЕСПУБЛИКИ АРМЕНИЯ<br>НАЦИОНАЛЬНЫЙ ОРГАН ПО АККРЕДИТАЦИИ</span></a></div></div>
+    <nav class="subnav"><div class="wrap subnav__inner"><div class="subnav__menu"><div class="subnav__item"><a href="/ru/contact">Контакты</a></div></div>
+            <div class="subnav__lang"><button class="subnav__lang-toggle" type="button" aria-haspopup="true" aria-expanded="false"><img class="globe" src="assets/img/flag-ru.svg" alt>
+                    <span class="subnav__lang-current">Русский</span>
+                    <img class="chevron" src="assets/img/chevron-down.png" alt></button>
+                <div class="lang-menu" role="menu"><a href="/" role="menuitem" lang="hy" hreflang="hy" data-lang="am" data-flag="assets/img/globe.svg"><img src="assets/img/globe.svg" alt> Հայերեն
+                    </a>
+                    <a href="/ru" role="menuitem" class="is-active" aria-current="true" lang="ru" hreflang="ru" data-lang="ru" data-flag="assets/img/flag-ru.svg"><img src="assets/img/flag-ru.svg" alt> Русский
+                    </a>
+                    <a href="/en" role="menuitem" lang="en" hreflang="en" data-lang="en" data-flag="assets/img/flag-en.svg"><img src="assets/img/flag-en.svg" alt> English
+                    </a></div></div></div></nav></header>
+
+    <main id="main-content" tabindex="-1"><!--Blazor:{"type":"server","key":{"locationHash":"64C4626BA849E8C70B5F69A7D20A46D474D98FBC42E4BF9F298F04D01C34E054:0","formattedComponentKey":""},"sequence":0,"descriptor":"CfDJ8D26pDuHU69Csmn1MjoXn4Dc\u002BsZcS9wf5l3SEqF5c1xvvc3\u002B1OGTAC0V1DHSCzDJUh5GUyrefpMI4SD4p2A1vNc8ELEUmvIznmRaFdeGc8z3wV7IXULo2ocYCrMyWOfjKNK3d07xeYEMiWlWCZfSJgtowR4e\u002BXGR5YMOzy1ODoccCN6qqjk0UYJP6YuCVIGzpyn\u002BJKQwCGvEIdDIfTMI4E4/0PZsxxUHSo6yp/NvDbCboJtGWArg\u002BdHmooNrBe7hu3wr9y4Zn3qWInFcFBoHCKCRLiToweKoyGLZSJpPvYGA1v54z0ncJT7gRR63GQVm/elLhoeWJi572ULPTkhmQhrPEvd0ulTx94BO4FTkqPMeyp4axGaDXcoLajtAWeLkBZ3ZviZiaTA9EqepXlBV/XZsBVeRzccC4FqqWdXKRu2Wc6l03ON9kUTAUARrw3\u002BOBzbFf0Wbl26k7pU0iKKql8z6bji4q0EQm2hny18s5AEP6ygUosmszAL3opeEZynCkacoL8xdD6SO4bKPOGAk7xli\u002BPoaEszrWZjag6W09N10"}--></main>
+
+    <footer class="site-footer"><div class="wrap footer__inner"><div class="footer__nav"><div class="footer__col"><div class="footer__heading"><h4>Контакты</h4>
+                    <hr></div>
+                <div class="footer__contact"><div class="footer__contact-item"><img src="assets/img/icon-phone.png" alt>
+                        <span><a href="tel:+37411203382">+ 374 11 20 33 82</a>
+                            <br>
+                            <a href="tel:+37411203384">+ 374 11 20 33 84</a></span></div>
+                    <div class="footer__contact-item"><img src="assets/img/icon-email.png" alt>
+                        <a href="mailto:armnab@armnab.am">armnab@armnab.am</a></div>
+                    <div class="footer__contact-item"><img src="assets/img/icon-location.png" alt>
+                        <span>0010 г.Ереван, ул Мгера Мкртчяна 5</span></div></div></div></div>
+
+        <hr class="footer__break">
+
+        <div class="footer__meta"><div class="footer__meta-main"><span class="footer__copy">© 2026 Национальный орган по аккредитации</span></div>
+            <div class="footer__logo"><img src="assets/img/logo-footer.png" alt="ARMNAB"></div></div></div></footer></div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span></div>
+        <blazor-focus-on-navigate selector="h1"></blazor-focus-on-navigate>
+
+    <script src="assets/lib/jquery/jquery-3.7.1.min.ex5vf7708v.js"></script>
+    <script src="assets/js/main.bn3hyi0o5s.js"></script>
+    <script src="assets/js/site.70m1gz8zgu.js"></script>
+    <script src="_framework/blazor.web.wyu7y4jcvb.js"></script></body></html><!--Blazor-Server-Component-State:CfDJ8D26pDuHU69Csmn1MjoXn4BoQkffM3o79lrE6GBCEcqLvFyYsJKLzsbGsvua9uli+5I0oYGPmyYgVBIT38AVyf5cD4Om83ljVY/7Ki1tW6C6zsK7yNFCldpMxlZyxW4viOg+6YqZi84XtalsCzPUjFhzoXJCoqu9r/sNBjHJl8eZUXD8/fswcXFExRgX+rDsfovBfTEGg6WVhWjJsLC27LmtSf/GctV1otvOwuUkKIdJ52fvRnariGkEIihITiPccSh5RrxM7+pvMQrObNwnAPAcWyZ3uXixVJi0+l+RteUdPQM2SOvZlQVgTI4ErrQvBoGWMPwqBQMGSHgyKjIImbhVgEUqTAugsuGEF74o0W23nxJSPCtZN7brYFNQf1UIxTvaUdL1adAjQmhP5iuiozNiUmqoH6LsE/rp6rFXLcLZpAmw2FyMQ/5jPAgzE9INuUR6i2iWgqFB9xDBErsVQFQh9ZvTnQIveQa5cNy30+vz9IuY32dmmL/eFG76e/ELH7ftzfLCSbUQ51vf+2GqaHGTOZ9HFx1i8QCkRmE58LHAzcvQhc/VnEDKBVebdiy9br8d9yCYugWHULWb1PpRfKzY4Qv6VuLo7PIZ8eimAUlPNjUgAoCDOj1BG3cFpzCzkOZoL71BhSUsdP6zvEJMA6l5JeitJA3c/795hluy1O9G+JZiFTrNP5uXF0GwhMYn/pKKYdX249iQw+UfCoYnvBKNKMrMiaROXjHPXmrKPGFwuP/6nrbZTY2Jn2+qMFlYoc0pSQ1FwgFOHwQMN+heZBeoo8HYtbA0S2RnyC312xiSVIfB19h7EoWKdACX+vwzRaE5E6dOz+zdXmyb6R4sJJaUGCFPWnJG443vvYw7PotexDIHbB0+Gxr14ACIB9ZfVUfK9Fjhe8V7DOF92rYuyBiFYjmtL4PV+OqVcPEQVCFhKdBaW9WmhvvzUUdxgjYFH7DLEpMzdqAbOtH6NZR5dZ6ih4nOKQBNtxVZwCyij82NV/0Dnu/dHQAafI+mHjzI85loiiPnC3GM3qPjiOCplBpN0T1ducghZc5n2eOW0qYXwbBUuZC2+iWWIPbojjaJYrfTozowZ36x2LyBXFrBKDDTd8MpVN6//YElk6ylQWx8bJpnA/G6vqJPDPO/0tTTzg==-->

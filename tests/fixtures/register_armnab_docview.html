@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title> - Հավատարմագրման ազգային մարմին</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/adminlte/components/font-awesome/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/adminlte/components/Ionicons/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link href="/Content/bootstrap.css" rel="stylesheet"/>
+<link href="/Content/armnab.css" rel="stylesheet"/>
+<link href="/Content/bootstrap-datetimepicker.min.css" rel="stylesheet"/>
+<link href="/adminlte/css/AdminLTE.css" rel="stylesheet"/>
+<link href="/adminlte/css/skins/skin-blue.css" rel="stylesheet"/>
+
+    <script src="/Scripts/modernizr-2.8.3.js"></script>
+
+    <script src="/Scripts/jquery-3.5.1.js"></script>
+
+    <script src="/Scripts/moment.js"></script>
+
+    <script src="/Scripts/armnab.js"></script>
+
+
+    <!-- Google Font -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+</head>
+<!--
+BODY TAG OPTIONS:
+=================
+Apply one or more of the following classes to get the
+desired effect
+|---------------------------------------------------------|
+| SKINS         | skin-blue                               |
+|               | skin-black                              |
+|               | skin-purple                             |
+|               | skin-yellow                             |
+|               | skin-red                                |
+|               | skin-green                              |
+|---------------------------------------------------------|
+|LAYOUT OPTIONS | fixed                                   |
+|               | layout-boxed                            |
+|               | layout-top-nav                          |
+|               | sidebar-collapse                        |
+|               | sidebar-mini                            |
+|---------------------------------------------------------|
+-->
+<body class="hold-transition skin-blue sidebar-mini fixed">
+    <div class="wrapper">
+        <!-- Main Header -->
+        <header class="main-header">
+            <!-- Logo -->
+            <a href="#" class="logo" data-toggle="push-menu" role="button">
+                <!-- mini logo for sidebar mini 50x50 pixels -->
+                <span class="logo-mini"><i class="fa fa-tachometer"></i></span>
+                <!-- logo for regular state and mobile devices -->
+                <span class="logo-lg">Կառավարում</span>
+            </a>
+            <!-- Header Navbar -->
+            <nav class="navbar navbar-static-top" role="navigation">                             
+                <!-- Navbar Right Menu -->
+                
+
+
+            </nav>
+        </header>
+        <!-- Left side column. contains the logo and sidebar -->
+        
+        <!-- Content Wrapper. Contains page content -->
+        <div Class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <section Class="content-header">
+                <h1>
+                    
+                    <small></small>
+                </h1>                
+            </section>
+            <!-- Main content -->
+            <section Class="content container-fluid">
+                
+
+
+<div Class="row">
+    <div Class="col-md-12">
+        <div Class="form-horizontal box box-info">
+            <div Class="box-header with-border">
+                <h3 Class="box-title">QR կոդ</h3>
+            </div>
+            <div Class="box-body">
+                <div>
+                    <img src="/R_TR_TS_01_001/GenerateFromCurrentUrl?DocId=108539" alt="QR Code" height="200" width="200" />
+                    <br />
+                    <a href="/R_TR_TS_01_001/GenerateFromCurrentUrl" download=026/S.A-0232-2023.png>
+                        Ներբեռնել QR կոդը
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div Class="form-horizontal box box-info">
+            <div Class="box-header with-border">
+                <h3 Class="box-title">Основная информация</h3>
+            </div>
+            <div Class="box-body">
+                <div Class="form-group form-group-sm">
+                    <label Class="col-md-3 control-label" for="">Вид документа</label>
+<label Class="col-md-2" for="">Сертификат соответствия</label>                </div>
+                <div Class="form-group form-group-sm">
+                    <label Class="col-md-3 control-label" for="">Регистрационный номер</label>
+                    <label class="col-md-4">ЕАЭС AM-026/S.A-0232-2023</label>
+                </div>
+                <div Class="form-group form-group-sm">
+                    <label Class="col-md-3 control-label" for="">Срок действия с</label>
+                    <label Class="col-md-1" for="">24/07/2023</label>
+                </div>
+                <div Class="form-group form-group-sm">
+                    <label Class="col-md-3 control-label" for="">по</label>
+                    <label Class="col-md-1" for="">23/07/2028</label>
+                </div>
+                <div Class="form-group form-group-sm">
+                    <label Class="col-md-3 control-label" for="">Типографский номер бланка</label>
+                    <label Class="col-md-1" for="">0005847</label>
+                </div>
+                <div id="frmConformityAuthority" Class="form-group form-group-sm">
+                    <label Class="col-md-3 control-label" for="">Органа по оценке соответствия</label>
+
+                                <label class="col-md-6">Oрган по сертификации продукции ООО “АРМТЕСТ”</label>
+                  
+                </div>
+                <div id = "divCertificationSchemeCode" Class="form-group form-group-sm">
+                                <label Class="col-md-3 control-label" for="">Схема</label>
+                                                   <label id = "lblSchemeText" class = "col-md-6"></label>
+                                                </div>
+                                                <div Class="form-group form-group-sm">
+                                <label Class="col-md-3 control-label" for="">Наименование вида объекта технического регулирования</label>
+<label Class="col-md-6" for="">серийный выпуск</label>                                                </div>
+                                                <hr />
+                                                <i Class="text-success text-bold" colspan="2">Статус</i>
+                                                                <div Class="form-group form-group-sm">
+                                                <label Class="col-md-3 control-label" for="">Статус действия документа</label>
+
+<label Class="col-md-2" for="">действует</label>                                                                </div>
+                                                                <div class="form-group form-group-sm">
+                                                <label Class="col-md-3 control-label" for="">начальная дата действия статуса</label>
+                                                
+                                                                </div>
+                                                                <hr />
+                                                                <i Class="text-success text-bold" colspan="2">Реквизиты технического регламента</i>
+                                                                                <div class="form-group form-group-sm">
+                                                                <label Class="col-md-3 control-label" for="">Реквизиты</label>
+                                                                <label Class="col-md-6" for="">ТР ТС 020/2011</label>
+                                                                                </div>
+                                                                                <hr />
+                                                                                <i Class="text-success text-bold" colspan="2">Информация о заявителе</i>
+                                                                                                <div Class="form-group form-group-sm">
+                                                                                <label Class="col-md-3 control-label" for="">Наименование хозяйствующего субъекта</label>
+                                                                                <label Class="col-md-6" for="">&quot;АВИС ЭЛЕКТРОНИКС&quot;</label>
+                                                                                                </div>
+                                                                                                <div Class="form-group form-group-sm">
+                                                                                <label Class="col-md-3 control-label" for="">Организационно-правовая форма</label>
+
+<label Class="col-md-6" for="">Общество с ограниченной ответственностью (ООО)</label>                                                                                                </div>
+                                                                                                <div Class="form-group form-group-sm">
+                                                                                <label Class="col-md-3 control-label" for="">Страна</label>
+
+<label Class="col-md-6" for="">Российская Федерация</label>                                                                                                </div>
+                                                                                                <div Class="form-group form-group-sm">
+                                                                                <label Class="col-md-3 control-label" for="">Номер государственной регистрации</label>
+                                                                                                    <label Class = "col-md-6">1107746077900</label>
+                                                                                                                    </div>
+                                                                                                                    <div Class="form-group form-group-sm">
+                                                                                                    <label Class="col-md-3 control-label" for="">УНН</label>
+                                                                                                                        <label Class="col-md-6">7714800206</label>
+                                                                                                                                        </div>
+                                                                                                                                    </div>
+                                                                                                                                </div>
+
+                                                                                                                                <div id = "divApplicant" >
+                                                                                                                        
+<input data-val="true" data-val-number="The field Id must be a number." data-val-required="The Id field is required." id="ApplicantDetails_Id" name="ApplicantDetails.Id" type="hidden" value="108618" />
+
+
+
+<div Class="form-horizontal box box-warning">
+    <div Class="box-header with-border">
+        <h3 Class="box-title">Адреса Заявителя / Контакты / Филиалы</h3>
+    </div>
+    <div Class="box-body">
+        <div id="ApplicantAddressList">
+            
+
+
+    <i Class="text-success text-bold" colspan="2"> Адрес(а)</i>
+
+<div Class="form-horizontal">
+    <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                    <th> вид адреса</th>
+                    <th> Регион</th>
+                    <th> Район</th>
+                    <th> Улица</th>
+                    <th> Номер дома</th>
+                    <th> Почтовый индекс</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                        <tr id="subjectAddr_164105">
+                            <th scope="row"> 1</th>
+                                <td>Место нахождения(юридический адрес)</td>
+                            <td>город Москва</td>
+                            <td>-</td>
+                            <td>улица Планетная</td>
+                            <td>дом 11, Помещ. 12/11 РМ-2</td>
+                            <td>125167</td>
+                            <td>
+                            </td>
+                        </tr>
+        </tbody>
+    </Table>
+</div>
+
+        </div>
+        <hr />
+        <div id="ApplicantContactList">
+            
+
+
+    <i Class="text-success text-bold" colspan="2"> Контакт(ы)</i>
+
+<div Class="form-horizontal">
+    <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                    <th> Вид контакта</th>
+                    <th> Контакт</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                    <tr><td colspan="3" class="text-danger">Зарегистрированный контакт  не найден.</td></tr>
+        </tbody>
+    </Table>
+</div>
+
+
+        </div>
+        <hr />
+        <div>
+            <i Class="text-success text-bold" colspan="2"> Филиал(ы)</i>
+        </div>
+        <Table Class="table table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                        <th>Страна</th>
+                        <th>УНН</th>
+                        <th>Наименование хозяйствующего субъекта</th>
+                        <th>Наименование организационно-правовой формы</th>
+                        <th>Номер государственной регистрации</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                        <tr><td colspan="3" class="text-danger">Зарегистрированный филиал не найден.</td></tr>
+            </tbody>
+        </Table>
+    </div>
+
+</div>
+                                                                                                                                </div>
+
+                                                                                                                                <div id = "divProduct" >
+                                                                                                                        
+<input data-val="true" data-val-number="The field Id must be a number." data-val-required="The Id field is required." id="TechnicalRegulationObjectDetails_Id" name="TechnicalRegulationObjectDetails.Id" type="hidden" value="108587" />
+
+
+
+<div Class="form-horizontal box box-success">
+    <div Class="box-header with-border">
+        <h3 Class="box-title">Продукт</h3>
+    </div>
+    <div Class="box-body">
+        <Table Class="table table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                        <th>Наименование продукции</th>
+                        <th>Описание продукта</th>
+                        <th>Код товара по ТН ВЭД ЕАЭС</th>
+                        <th>Размер партии</th>
+                        <th>Дополнительная информация</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                            <tr>
+                                <th scope="row"> 1</th>
+                                <td>Мониторы жидкокристаллические бытового назначения</td>
+                                <td style="max-width:350px;">марка &quot;AVEL&quot;, модели согласно приложению № 2 (бланки №№ 0003710)</td>
+                                <td style="max-width:250px;word-wrap:break-word;">8528599009</td>
+                                    <td></td>
+                                <td>  Перечень стандартов согласно приложению № 1 к сертификату соответствия (бланк № 0003709) Условия хранения продукции в соответствии с ГОСТ 15150-69. Условия хранения конкретного изделия, срок хранения (службы) указываются в прилагаемой к продукции товаросопроводительной и/или эксплуатационной документации. Договор с изготовителем № 145 от 19.02.2019 года. Сертификат распространяется на серийно выпускаемую продукцию изготовленную с 01.06.2023г</td>
+                                <td>
+                                </td>
+                            </tr>
+                            <tr id="ProductInstanceList">
+                                <td></td>
+                                <td colspan="6" id="ProductInstanceList_113244">
+                                    
+
+
+<i Class="text-success text-bold" colspan="2"> Информация о единице продукции</i>
+<div Class="form-horizontal">
+    <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                        <tr id="prodInstance_215696">
+                            <th scope="row"> 1</th>
+                            <td>
+                                <table class="table-striped table-bordered">
+                                        <tr>
+                                            <th>Количество продукции и единица измерения</th>
+                                                <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>заводской номер единичного изделия</th>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Наименование группы одинаковых единиц продукции</th>
+                                            <td>Мониторы жидкокристаллические бытового назначения, марка &quot;AVEL&quot;</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Дополнительные сведения о продукции</th>
+                                            <td>модели:AVS0390BM, AVS0534BM, AVS0500BM, AVS0504BM, AVS4715BM, AVS0704BM, AVS0904BM, AVS4711TM, AVS4711TM (AHD), AVS4711TM AHD/CVBS, AVS4714BM, AVS4714BM (AHD), AVS4714BM AHD/CVBS, AVS4701BM, AVS4747TM, AVS4747TM( AHD), AVS4747TM AHD/CVBS, AVS0410BM, AVS0458BM, AVS0501BM, AVS0350BM, AVS0330BM, AVS0335BM, AVS0457BM, AVS0403BM, AVS0404BM, AVS0407BM, AVS0450BM, AVS0470BM, AVS0480BM, AVS0485BM, AVS0490BM, AVS0495BM, AVS0507BM, AVS0555BM, AVS0555BM AHD/CVBS, AVS0577BM, AVS5000BM, AVS5000BM AHD/CVBS, AVS5001BM, AVS5002BM, AVS5003BM, AVS5004BM, AVS5005BM, AVS0702BM, AVS0707BM, AVS0708BM, AVS0710BM, AVS0725BM, AVS0735BM, AVS0775BM, AVS0795BM, AVS4710BM, AVS4705BM, AVS4744BM, AVS707CPR(М), AVS4727BM, AVS701CPR(М), AVS0903BM, AVS0905BM, AVS710CPR(М), AVS0909BM, AVS0914BM, AVS0915BM, AVS0920BM, AVS0925BM, AVS0950BM, AVS0955BM, AVS1001BM, AVS702CPR(М), AVS1003BM, AVS703CPR(М), AVS1005BM, AVS1010BM, AVS1015BM, AVS1020BM, AVS1025BM, AVS1030BM, AVS1166BM, AVS1106M, AVS1126BM, AVS705CPR(М), AVS1205BM, AVS1225BM, AVS1235BM, AVS1245BM, AVS1255BM, AVS715CPR(М), AVS1303BM, AVS1333BM, AVS1313BM, AVS1331BM, AVS720CPR(М), AVS1501BM, AVS1505BM, AVS1506BM, AVS1510BM, AVS1515BM, AVS1525BM, AVS1570BM, AVS1700BM, AVS1701BM, AVS725CPR(М), AVS1705BM, AVS1710BM, AVS1715BM, AVS1771BM, AVS1901BM, AVS1902BM, AVS1903BM, AVS1905BM, AVS1919BM, AVS730CPR(М), AVS2002BM, AVS2005BM, AVS2025BM, AVS2101BM, AVS2112BM, AVS2115BM, AVS2150BM, AVS2202BM,AVS2205BM, AVS2207BM, AVS2303BM, AVS2310BM, AVS2330BM, AVS2401BM, AVS2404BM, AVS2404BMBF, AVS2404BMWF, AVS2404BMFM, AVS2450BM, AVS2705BM, AVS2710BM, AVS2715BM</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Дата изготовления</th>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Дата истечения срока годности</th>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Код товара по ТН ВЭД ЕАЭС</th>
+                                            <td>8528599009</td>
+                                        </tr>
+                                </table>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+        </tbody>
+    </Table>
+</div>
+
+                                </td>
+                            </tr>
+                            <tr id="DocInformationList" class="collapse in">
+                                <td></td>
+                                <td colspan="6">
+                                    
+
+
+    <i Class="text-success text-bold" colspan="2">Документ в соответствии с которым изготовлена продукция</i>
+
+<div Class="form-horizontal">
+      <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                    <th> наименование</th>
+                    <th> реквизиты</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                        <tr>
+                            <th scope="row"> 1</th>
+                            <td>&quot;Совместимость технических средств электромагнитная. Оборудование информационных технологий. Устойчивость к электромагнитным помехам. Требования и методы испытаний&quot;</td>
+                            <td>ГОСТ CISPR 24-2013</td>
+                            <td>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"> 2</th>
+                            <td>&quot;Совместимость технических средств электромагнитная. Оборудование информационных технологий. Радиопомехи индустриальные. Нормы и методы измерений&quot;</td>
+                            <td>ГОСТ 30805.22-2013</td>
+                            <td>
+                            </td>
+                        </tr>
+        </tbody>
+    </Table>
+</div>
+
+
+                                </td>
+                            </tr>
+            </tbody>
+        </Table>
+    </div>
+</div>
+
+                                                                                                                                </div>
+
+                                                                                                                                <div id = "divManufacturer" >
+                                                                                                                        
+
+
+<input data-val="true" data-val-number="The field Id must be a number." data-val-required="The Id field is required." id="TechnicalRegulationObjectDetails_Id" name="TechnicalRegulationObjectDetails.Id" type="hidden" value="108587" />
+<div Class="form-horizontal box box-success">
+    <div Class="box-header with-border">
+        <h3 Class="box-title">Изготовитель</h3>
+    </div>
+    <div Class="box-body">
+        <Table Class="table table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                        <th>Страна</th>
+                        <th>Наименование хозяйствующего субъекта</th>
+                        <th>Наименование организационно-правовой формы</th>
+                        <th>номер государственной регистрации</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                            <tr>
+                                <th scope="row"> 1</th>
+                                <td>
+Китай                                </td>
+                                <td>AVIS ELECTRONICS OVERSEAS LIMITED</td>
+                                <td>Общество с ограниченной ответственностью (ООО)</td>
+                                <td>-</td>
+                                <td>
+                                </td>
+                            </tr>
+                            <tr id="ManufacturerAddressList_109556">
+                                <td></td>
+                                <td id="ManufacturerAddressList_td109556" colspan="6">
+                                    
+
+
+    <i Class="text-success text-bold" colspan="2">Адрес(а)</i>
+
+<div Class="form-horizontal">
+    <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                    <th> вид адреса</th>
+                    <th> Регион</th>
+                    <th> Район</th>
+                    <th> Улица</th>
+                    <th> Номер дома</th>
+                    <th> Почтовый индекс</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                        <tr id="AddrV4_165972">
+                            <th scope="row"> 1</th>
+                                <td>Место нахождения(юридический адрес)</td>
+
+                            <td>Baoan district, Shenzhen</td>
+                            <td>Guangdong</td>
+                            <td>JingBei road, Shiyan town</td>
+                            <td>506-507А, HuiGu ChuangXin Technology park</td>
+                            <td>518108</td>
+                            <td>
+                            </td>
+                        </tr>
+        </tbody>
+    </Table>
+</div>
+
+
+                                </td>
+                            </tr>
+                            <tr id="ManufacturerBranchList" class="collapse in">
+                                <td></td>
+                                <td colspan="6">
+                                    
+
+
+<div>
+    <i Class="text-success text-bold" colspan="2"> Филиал(ы)</i>
+</div>
+<div Class="form-horizontal">
+    <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                    <th>Страна</th>
+                    <th>Наименование хозяйствующего субъекта</th>
+                    <th>Наименование организационно-правовой формы</th>
+                    <th>номер государственной регистрации</th>
+                    <th>УНН</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </Table>
+
+</div>
+
+                                </td>
+                            </tr>
+            </tbody>
+        </Table>
+    </div>
+</div>
+
+
+                                                                                                                                </div>
+
+                                                                                                                                <div Class="form-horizontal box box-success">
+                                                                                                                                    <div Class="box-header with-border">
+                                                                                                                                        <h3 Class="box-title">Реквизиты товаросопроводительной документации</h3>
+                                                                                                                                                    </div>
+                                                                                                                                                    <div Class="box-body">
+                                                                                                                                        
+
+
+
+<div Class="form-horizontal">
+      <Table Class="table table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                    <th> наименование</th>
+                    <th> реквизиты</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+                    <tr><td colspan="3" class="text-danger">Зарегистрированный документ(ы) не найден։</td></tr>
+        </tbody>
+    </Table>
+</div>
+
+
+                                                                                                                                                    </div>
+                                                                                                                                                </div>
+
+                                                                                                                                                <div id = "divComplianceDocDetail" >
+                                                                                                                                        
+
+<div Class="form-horizontal box box-warning">
+    <div Class="box-header with-border">
+        <h3 Class="box-title">Основания для выдачи сертификата</h3>
+    </div>
+    <div Class="box-body">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                        <th>Наименование документа</th>
+                        <th>Дата документа</th>
+                        <th>Номер документа</th>
+                        <th>Наименование хозяйствующего субъекта, выдавшего документ</th>
+                        <th>Номер документа, подтверждающего аккредитацию хозяйствующего субъекта</th>
+                        <th>Страна аккредитации хозяйствующего субъекта, выдавшего документ</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                        <tr id="ComplianceDocDetail_tr143225">
+                            <th scope="row"> 1</th>
+                            <td>Протоколы исследований(испытаний) и измерений</td>
+                            <td>24/07/2023</td>
+                            <td>3-20230724-8 </td>
+                            <td>Испытательной лабораторией Общества с ограниченной ответственностью &quot;СИСТЕМЭКС&quot; </td>
+                            <td>№ 047/Т-094</td>
+                                <td></td>
+
+                            <td>
+                            </td>
+                        </tr>
+                        <tr id="ComplianceDocDetail_tr143228">
+                            <th scope="row"> 2</th>
+                            <td>Акт анализа состояния производства</td>
+                            <td>07/07/2023</td>
+                            <td>314</td>
+                            <td>ОС ООО &quot;АРМТЕСТ&quot; </td>
+                            <td>№ 026/S-043 от 08.08.2022</td>
+                                <td></td>
+
+                            <td>
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+                                                                                                                                                </div>
+
+                                                                                                                                        
+
+<div Class="form-horizontal box box-danger">
+    <div Class="box-header with-border">
+        <h3 Class="box-title">Эксперт</h3>
+    </div>
+    <div Class="box-body">
+        <Table Class="table table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                        <th> Имя</th>
+                        <th> Фамилия</th>
+                        <th> Отчество</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                        <tr>
+                            <th scope="row"> 1</th>
+                            <td>Карен</td>
+                            <td>Мирзабекян</td>
+                            <td>Джаниевич</td>
+                            <td>
+                            </td>
+                        </tr>
+
+            </tbody>
+        </Table>
+    </div>
+</div>
+
+                                                                                                                                                <div id = "divDocAnnexDetails" >
+                                                                                                                                        
+
+<div Class="form-horizontal box box-info">
+    <div Class="box-header with-border">
+        <h3 Class="box-title">Приложение</h3>
+    </div>
+    <div Class="box-body">
+        <Table Class="table table-sm" id="DocAnnexDetailsList">
+            <thead>
+                <tr>
+                    <th>#</th>
+                        <th>Порядковый номер</th>
+                        <th>Номер бланка</th>
+                        <th>Количество листов</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                        <tr id="23828">
+                            <th scope="row"> 1</th>
+                            <td>1</td>
+                            <td>0003710</td>
+                            <td>1</td>
+                            <td>
+
+                            </td>
+                        </tr>
+                        <tr id="23829">
+                            <th scope="row"> 2</th>
+                            <td>2</td>
+                            <td>0003709</td>
+                            <td>1</td>
+                            <td>
+
+                            </td>
+                        </tr>
+
+            </tbody>
+        </Table>
+    </div>
+</div>
+
+                                                                                                                                                </div>
+                                                                                                                                            </div>
+</div>
+
+<!-- Modal AddEdit-->
+<div class="modal fade" id="AddEditModal" tabindex="-1" role="dialog" aria-labelledby="AddEditModalLabel">
+                                                                                                                                            <div class="modal-dialog" role="document">
+                                                                                                                                                <div class="modal-content">
+                                                                                                                                                    <div class="modal-header">
+                                                                                                                                                        <button type = "button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                                                                                                                        <h4 class="modal-title" id="AddEditModalLabel"></h4>
+                                                                                                                                                    </div>
+                                                                                                                                                    <div class="modal-body" id="AddEditBodyDiv">
+                                                                                                                                                    </div>
+                                                                                                                                                </div>
+                                                                                                                                            </div>
+</div>
+
+<script src = "~/Scripts/jquery.unobtrusive-ajax.min.js" ></script>
+                                                                                                                                                                                                                                                <script src = "~/Scripts/hy-am.js" ></script>
+                                                                                                                                                                                                                                                <script type = "text/javascript" >
+                                                                                                                                            $(function () {
+                                                                                                                                                GetSchemeText();
+                                                                                                                                            });
+
+                                                                                                                                            function AddEditModalShow(controller, action, Id, conformityDocDetailId, modelType, parentId) {
+                                                                                                                                                var modelTypeVal = '';
+                                                                                                                                                var parentIdVal = '';
+                                                                                                                                                                                                                                                    if (!(modelType === undefined || modelType === null)) {
+                                                                                                                                                    modelTypeVal = '&ModelType=' + modelType;
+                                                                                                                                                }
+
+                                                                                                                                                if (!(parentId === undefined || parentId === null)) {
+                                                                                                                                                    parentIdVal = '&ParentId=' + parentId;
+                                                                                                                                                }
+                                                                                                                                                var url = '/' + controller + '/' + action + '?Id=' + Id + '&ConformityDocDetailId=' + conformityDocDetailId + modelTypeVal + parentIdVal;
+                                                                                                                                                $("#AddEditBodyDiv").load(url, function () {
+                                                                                                                                                    //Decide if label should be Update or Insert Id>0 =>Update, Id=0 =>Insert(New)
+                                                                                                                                                    (Id > 0 ? $("#AddEditModalLabel").html("Թարմացնել") : $("#AddEditModalLabel").html("Գրանցել նորը"));
+                                                                                                                                                    $("#AddEditModal").modal("show");
+                                                                                                                                                });
+                                                                                                                                            }
+
+                                                                                                                                            function LoadCommunicationPartial(parentId, parentType) {
+                                                                                                                                                $.ajax({
+                                                                                                                                                    url: '/R_TR_TS_01_001/GetCommunicationPartial',
+type: 'GET',
+cache: false,
+                                                                                                                                                    data: { ConformityDocDetailId: 108539,displayMePartial: "False", ModelType: parentType , ParentId: parentId}
+                                                                                                                                                            }).done(function (result) {
+                                                                                                                                                                var containerName ='';
+
+                                                                                                                                                                                                                                                                if (parentType == "ApplicantDetails")
+                                                                                                                                                                                                                                                                    containerName = 'ApplicantContactList';
+                                                                                                                                                                else if (parentType == "ApplicantDetails.BranchDetails")
+                                                                                                                                                                    containerName = 'BranchContactList_td' + parentId;
+
+                                                                                                                                                                $("#" + containerName).html(result);
+                                                                                                                                                            });
+                                                                                                                                                        }
+
+                                                                                                                                                        function GetSchemeText() {
+                                                                                                                                                            $.ajax({
+                                                                                                                                                                url: '/R_TR_TS_01_001/GetCertificationSchemeCode',
+type: 'GET',
+cache: false,
+                                                                                                                                                                data: { lang: "2 "   , docType: "05" }
+                                                                                                                                                            }).done(function (result) {
+                                                                                                                                                                var obj = $.parseJSON(result);
+
+                                                                                                                                                                $.each(obj, function (k, v) {
+                                                                                                                                                                    if (k === "1с")
+                                                                                                                                                                        $("#lblSchemeText").text(v);
+                                                                                                                                                                });
+                                                                                                                                                            });
+                                                                                                                                                        }
+</script>
+
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+        <!-- Main Footer -->
+        <footer Class="main-footer">
+            <!-- To the right -->
+            <div Class="pull-right hidden-xs">
+
+            </div>
+            <!-- Default to the left -->
+            &copy; 2026 - Հավատարմագրման ազգային մարմին
+        </footer>             
+    </div>
+    <!-- ./wrapper -->
+    <script src="/Scripts/bootstrap.min.js"></script>
+<script src="/Scripts/bootstrap-datetimepicker.min.js"></script>
+
+    <script src="/adminlte/js/adminlte.js"></script>
+
+    
+</body>
+</html>

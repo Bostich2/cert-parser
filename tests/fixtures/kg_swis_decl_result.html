@@ -1,0 +1,843 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+		<meta charset="utf-8" />
+	    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+	    <title>Реестр выданных деклараций о соответсвии единой формы Таможенного Союза</title>
+
+
+		<title>Реестр выданных деклараций о соответсвии единой формы Таможенного Союза</title>
+
+	    <link href="/Content/jquery-ui/jquery-ui.css" rel="stylesheet"/>
+<link href="/Content/css/Site.css" rel="stylesheet"/>
+<link href="/Content/css/MainTabs.css" rel="stylesheet"/>
+<link href="/Content/xslt/document.css" rel="stylesheet"/>
+<link href="/Content/css/style-dropdown-modern.css" rel="stylesheet"/>
+<link href="/Content/css/check-boxes-radio-buttons.css" rel="stylesheet"/>
+
+        
+		<script src="/Scripts/swis.error-recorder.js"></script>
+
+		<script src="/Scripts/jquery-2.1.1.js"></script>
+<script src="/Scripts/jquery-migrate-1.1.0.js"></script>
+<script src="/Scripts/jquery-ui-1.11.4.js"></script>
+<script src="/Scripts/jquery.unobtrusive-ajax.js"></script>
+<script src="/Scripts/jquery.validate.js"></script>
+<script src="/Scripts/jquery.validate.unobtrusive.js"></script>
+<script src="/Scripts/jquery.collapsible.js"></script>
+<script src="/Scripts/jquery.cookie.js"></script>
+<script src="/Scripts/jquery.mask.js"></script>
+<script src="/Scripts/jquery.mb.browser.js"></script>
+
+		<script src="/Scripts/bootstrap.js"></script>
+<script src="/Scripts/respond.js"></script>
+
+		<script src="/Scripts/swis.datepicker.js"></script>
+
+		<script src="/Scripts/tinymce.min.js"></script>
+
+		<script src="/Scripts/MemoFieldInitializer.js"></script>
+
+		<script src="/Scripts/resizable-tables.js"></script>
+
+		<script src="/Scripts/icheck.js"></script>
+
+		<script src="/Scripts/form-util.js"></script>
+
+		<script src="/Scripts/Swis.js"></script>
+
+		<script src="/Scripts/hoverIntent.js"></script>
+
+
+
+        <script src="/Scripts/kendo/2016.3.1118/kendo.all.min.js"></script>
+<script src="/Scripts/kendo/2016.3.1118/kendo.aspnetmvc.min.js"></script>
+
+        <script src="/Scripts/kendo/2016.3.1118/jszip.min.js"></script>
+
+        <script src="/Scripts/kendo/2016.3.1118/cultures/kendo.culture.ru-RU.min.js"></script>
+
+        <script src="/Scripts/kendo/2016.3.1118/messages/kendo.messages.ru-RU.min.js"></script>
+
+        <script src="/Content/Application.js"></script>
+
+        <script src="/Scripts/cldr.js"></script>
+<script src="/Scripts/cldr/event.js"></script>
+<script src="/Scripts/cldr/supplemental.js"></script>
+<script src="/Scripts/globalize.js"></script>
+<script src="/Scripts/globalize/number.js"></script>
+<script src="/Scripts/globalize/plural.js"></script>
+<script src="/Scripts/globalize/currency.js"></script>
+<script src="/Scripts/globalize/date.js"></script>
+<script src="/Scripts/globalize/message.js"></script>
+<script src="/Scripts/globalize/relative-time.js"></script>
+
+        <link href="/Content/kendo/2016.3.1118/kendo.common-bootstrap.min.css" rel="stylesheet"/>
+<link href="/Content/kendo/2016.3.1118/kendo.bootstrap.min.css" rel="stylesheet"/>
+
+        
+		<link rel="shortcut icon" href="/Content/favicon.ico" />
+</head>
+
+	<body style="height:100%">
+		<div class="bg2">
+
+                
+		    <table style="height:100%;">
+				<tr>
+					<td width="220" valign="top" height="130"  class="dot_line">
+						<a onclick="clearActiveSubitem()" href="/"><img src="/Content/images/logo.png" alt="TULPAR SYSTEM" title="TULPAR SYSTEM" border="0"/></a>
+					</td>
+					<td valign="top" width="100%" class="dot_line">
+						<div class="ServerTime">Время на сервере: <span id="ServerTime">--:--</span></div>
+
+						<div style="width:300px;float:left;">
+							<div class="tulpar">
+								ИНФОРМАЦИОННАЯ СИСТЕМА <br/>"ЕДИНОГО ОКНА" для ВЭД
+							</div>					  
+						</div>
+						<div style="margin-left:300px;">
+						    <div style="padding-top: 30px; width: 600px;">
+						                <a class="anonymousLinks" style="margin-right: 20px;"href="/ServicePrice" onclick=" clearActiveSubitem(); ">Прайслист услуг</a>
+
+                                Реестры:
+						        <a class="registryLinks" href="/Registry/DeclarationOfConformity" onclick="clearActiveSubitem();">декларации о соответствии ТР TC</a>,
+                                <a class="registryLinks" href="/Registry/DeclarationOfConformity-KGZ-National" onclick="clearActiveSubitem();">декларации о соответствии ТР КР</a>,
+                                <a class="registryLinks" href="/Registry/CertificateOfConformity" onclick="clearActiveSubitem();">сертификаты соответствия ТР ТС</a>,
+						        <a class="registryLinks" href="/Registry/CertificateOfConformity-KGZ-National" onclick="clearActiveSubitem();">сертификаты соответствия ТР КР</a>,
+						        <a class="registryLinks" href="/Report/AlcoholProductionTurnoverLicenseRegistry" onclick="clearActiveSubitem();">лицензии на алкогольную продукцию</a>
+						    </div>
+
+							<div style="height: 90px; position: relative;">
+								<table cellspacing="10" style="display: inline-block; padding-top:4px;">
+									<tr>
+										<td valign="top">
+<form action="/HsCode" method="get">                                                <div class="searchBlock">
+                                                    <input type="text" id="ProductName" name="ProductName" value="Наименование товара" class="searchField" style="width: 220px;" onfocus=" inputFocus(this) " onblur=" inputBlur(this) "/>
+                                                    <input type="submit" name="" value="" title="Поиск товара" onclick=" clearActiveSubitem(); clearInput('ProductName', 'Наименование товара');" class="searchButton" id="searchButton"/>
+                                                </div>
+</form>										</td>
+										<td width="10"></td>
+										<td valign="top">
+<form action="/Ntb/List" method="get">											    <div class="searchBlock">
+											        <input type="text" id="HSCodeSearch" onfocus=" setHsCodeSearchComplete('#HSCodeSearch'); inputFocus(this); " maxLength="10" name="HSCode" value="Код ТН ВЭД" class="searchField" style="width: 110px;" onblur=" inputBlur(this) "/>
+											        <input type="submit" name="" value="" title="Поиск товара" onclick=" clearActiveSubitem(); clearInput('HSCodeSearch', 'Код ТН ВЭД'); " class="searchButton"/>
+											    </div>
+</form>										</td>
+										<td width="10"></td>
+										<td valign="top">
+											
+											
+<form action="/Invoice/GetInvoices" method="get">													<div class="searchBlock">            
+														<input type="text"  value="№ счета"  name="invoiceNumber" id="invoiceNumber" class="searchField" style="width:110px;" onfocus="inputFocus(this)" onblur="inputBlur(this)"/>
+														<input type="submit" name="" value="" title="Поиск счета" onclick="clearActiveSubitem(); clearInput('invoiceNumber', '№ счета');" class="searchButton"/>
+													</div>
+</form>                                            
+									
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div> 
+
+					</td></tr>
+			
+				<tr><td valign="top" width="220" >
+						<div class="left_menu">						
+							<div style="margin-top:5px;">
+								<ul class="slideBoxNavigation">
+
+        <div class="menuBlock">
+            <div class="whiteBorder">
+                <div class="windr1" style="padding-left:5px;">
+                    <span class="menuItemHeaderWithSubItems" style="text-align: center">Вход в систему</span>
+                </div>
+                
+                <div class="sf_in_left_menu">
+        
+<form action="/Account/LogOn" method="post">                        <input id="userName" name="userName" type="text" class="loginFields" style="margin-top: 10px;" value="Логин" onfocus="inputFocus(this)" onblur="inputBlur(this)"/>
+                        <input id="password" name="password" type="text" class="loginFields" value="Пароль" onfocus="inputPasswordFocus(this)" onblur="inputPasswordBlur(this)"/>
+                        <input id="traderInn" name="traderInn" type="text" class="loginFields loginWithTrader" value="ИНН" onfocus="setTraderInnComplete('#traderInn'); inputFocus(this);" onblur="inputBlur(this)"/>
+                        <span id="actAsTraderLink" class="Act_as_trader_link" onclick="showTraderInnInput()">Действовать от имени УВЭД</span>
+                        <input type="submit" onclick="clearHintValues()" value="Войти" class="logging_button" />
+</form>                </div>
+            </div>
+        </div>
+
+
+<script type="text/javascript">
+
+    window.onload = (function () {
+        var activeSubItemId = ''.toString();
+        if (activeSubItemId != "") {
+            var activeSubItem = document.getElementById(activeSubItemId);
+            if (activeSubItem != null) {
+                activeSubItem.style.backgroundColor = "#E8E8E8";
+            }
+        }
+    })();
+
+    function showTraderInnInput() {
+        $('#actAsTraderLink').css('display', 'none');
+        $('#traderInn').css('display', 'inline-block');
+    }
+
+    function clearHintValues() {
+        if ($('#userName').val() == 'Логин') {
+            $('#userName').val('');
+        }
+        if ($('#password').val() == 'Пароль') {
+            $('#password').val('');
+        }
+        if ($('#traderInn').val() == 'ИНН') {
+            $('#traderInn').val('');
+        }
+    }
+
+    function subItemsHideShow(key) {
+        if ($('#subItem-' + key).is(":visible")) {
+            setSessionValueHidden(key, "none");
+        }
+        else {
+            setSessionValueVisible(key, "block");
+        }
+    }
+
+    function setSessionValueVisible(key, value) {
+        $.ajax({
+            url: '/Home/SetSessionValue',
+            data: { sessionKey: "menuVisibility-" + key, sessionValue: value },
+            type: "POST",
+            success: function () {
+                $('#subItem-' + key).show();
+            }
+        });
+    }
+
+    function setSessionValueHidden(key, value) {
+        $.ajax({
+            url: '/Home/SetSessionValue',
+            data: { sessionKey: "menuVisibility-" + key, sessionValue: value },
+            type: "POST",
+            success: function () {
+                $('#subItem-' + key).hide();
+            }
+        });
+    }
+</script>
+
+
+
+
+
+
+
+
+							
+								</ul>	
+							</div>		
+						</div>
+					</td>
+					<td valign="top">
+
+						<div style="padding-top: 15px; padding-right:10px;">
+							
+
+<h2>Реестр выданных деклараций о соответсвии единой формы Таможенного Союза</h2>
+    <fieldset>
+        <form method="get" id="parameters-form" action="/Registry/DeclarationOfConformity">
+
+<script type="text/javascript">
+    $(function () {
+        $('#spinner').hide();
+    });
+
+    function submitForm(newPage) {
+        $('#PageNumber').val(newPage);
+        $('#parameters-form').submit();
+    }
+
+    function checkAndShowSpinner() {
+        var registerNumber = document.querySelector('[name="RegisterNumber"]').value;
+
+        // Проверка на пустое значение RegisterNumber
+        if (registerNumber.trim() === "") {
+            //alert("Введите регистрационный номер");			
+            return;
+        }
+
+        // Показать spinner
+        $('#spinner').show();
+    }
+</script>
+
+
+
+            <div class="field Document">
+                <label>
+                        <span class="for_input">Регистрационный номер <span style="color: red;">*</span></span>
+                        <input style="margin-left: 10px;" class="Document" name="RegisterNumber" value="KG417/18.д.0000338" type="text" required>
+                </label>
+            </div>
+
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Статус</span>
+                    <span class="notrequired_for_input">*</span>
+                    <select class="input-validation-error" id="Status" name="Status"><option selected="selected">Все</option>
+<option value="1">Действует</option>
+<option value="2">Продлена</option>
+<option value="3">Приостановлена</option>
+<option value="4">Возобновлена</option>
+<option value="5">Прекращена</option>
+</select>
+                </label>
+            </div>
+
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Агенство</span>
+                    <span class="notrequired_for_input">*</span>
+                    <select class="input-validation-error" id="Agency" name="Agency"><option selected="selected">Все</option>
+<option value="e652efed-ce2e-40c0-a732-baea48bbf80d">Аксыйский районный Центр профилактики заболеваний и Государственного санитарно –эпидемиологического надзора</option>
+<option value="08ccc4aa-5936-4675-80b4-5df0d6211a62">Ала-Букинский районный Центр профилактики заболеваний и Государственного санитарно –эпидемиологического надзора</option>
+<option value="9b2db497-7af8-47fa-b79b-17b5058b2359">Базар-Курганский районный центр профилактики заболеваний и государственного санитарно –эпидемиологического надзора</option>
+<option value="305200c7-a547-e211-9e2b-3cd92b053068">Баткенский городской Центр профилактики заболеваний и государственного санитарно- эпидемиологического надзора</option>
+<option value="345200c7-a547-e211-9e2b-3cd92b053068">Бишкекский центр испытаний, сертификации и метрологии</option>
+<option value="315200c7-a547-e211-9e2b-3cd92b053068">Государственное учреждение &quot;Баткенский Центр испытаний, сертификации и метрологии Центра по старндартизации и метрологии при Министерстве экономики и коммерции Кыргызской Республики&quot;</option>
+<option value="415200c7-a547-e211-9e2b-3cd92b053068">Департамент профилактики заболеваний и госсанэпиднадзора МЗ КР</option>
+<option value="455200c7-a547-e211-9e2b-3cd92b053068">Жалал-Абадский городской Центр профилактики заболеваний и государственного санитарно- эпидемиологического надзора</option>
+<option value="475200c7-a547-e211-9e2b-3cd92b053068">Жалал-Абадский Центр испытаний, стандартизации и метрологии при Центре стандартизации и метрологии при Министерстве экономики Кыргызской Республики</option>
+<option value="b57d1bc5-ef8d-4d91-9c2d-b5bc067aa206">Кадамжайский районный Центр профилактики заболеваний и Государственного санитарно –эпидемиологического надзора</option>
+<option value="ff2e0931-af98-40c4-8995-b3fe8586b069">Кара- Суйский районный центр профилактики заболеваний и государственного санитарно –эпидемиологического надзора</option>
+<option value="525200c7-a547-e211-9e2b-3cd92b053068">Каракольский городской Центр профилактики заболеваний и государственного санитарно- эпидемиологического надзора</option>
+<option value="60ae2e34-dc5b-498e-8eb4-4bdbebcba278">Кара-Кульский городской ЦГСЭН</option>
+<option value="f9b0c43a-8cd3-4736-aecb-d3b3f114276f">Майлуу-Сууйский городской Центр профилактики заболеваний и государственного санитарно- эпидемиологического надзора</option>
+<option value="eadf1250-7561-486b-a522-c36bc855279f">Межрайонный Ысык-Атинский центр профилактики заболеваний и государственного санитарно-эпидемиологического надзора по Аламудунскому району</option>
+<option value="24a42b2d-1777-4908-87c0-4113bb553797">Ноокенский районный Центр профилактики заболеваний и Государственного санитарно –эпидемиологического надзора</option>
+<option value="126d8e29-719f-4046-bcdd-5332305709c2">Общество с ограниченной ответственностью &quot;Азия Сертификат&quot;</option>
+<option value="8c83b631-5b09-454c-9a1a-1bb936d496f8">Общество с ограниченной ответственностью &quot;Азиястандарт&quot;</option>
+<option value="4b330c5b-853c-4c02-8810-056d0e6174fe">Общество с ограниченной ответственностью &quot;Евразия сертификат&quot;</option>
+<option value="0634b69b-c01f-4744-92eb-15a456286bf7">Общество с ограниченной ответственностью &quot;КСК Альянс&quot;</option>
+<option value="047d3edb-1ef2-4f2c-bf8e-5ef458de2fd7">Общество с ограниченной ответственностью &quot;МобиЛаб&quot;</option>
+<option value="d7e107e9-aed6-4fd8-92da-1f4892e9da14">Общество с ограниченной ответственностью &quot;Норма Серт&quot;</option>
+<option value="4c4718f2-688c-4b9d-b6a5-1eb0340d087f">Общество с ограниченной ответственностью &quot;ПраймСерт&quot;</option>
+<option value="2f2a92d4-e3cd-4f32-8ad2-d58372aa0bf8">Общество с ограниченной ответственностью &quot;ПромМаш&quot;</option>
+<option value="dc53ebcb-49d4-49ca-aabe-d5da006f8cb6">Общество с ограниченной ответственностью &quot;ПрофиЭксперт&quot;</option>
+<option value="9ced2469-e548-47a4-a911-d3c07a579682">Общество с ограниченной ответственностью &quot;СЕРТЕС ЦЕНТР&quot;</option>
+<option value="496cb5cd-2654-4647-af90-d35da0a9e0c1">Общество с ограниченной ответственностью &quot;Сертификация плюс&quot;</option>
+<option value="3ea884f8-247b-4098-805b-4ea0f3923306">Общество с ограниченной ответственностью &quot;Союз маркировки и сертификации&quot;</option>
+<option value="1152eb7f-a020-4cd1-bbfc-d389f7bc6baf">Общество с ограниченной ответственностью &quot;Тантал&quot;</option>
+<option value="1039a624-2922-4a80-bfd8-a0c459bcd2ba">Общество с ограниченной ответственностью &quot;Техно  Серт&quot;</option>
+<option value="3e5f8f83-409d-4dee-a1c1-b61a4a0bf082">Общество с ограниченной ответственностью &quot;Трейдинг Консалт&quot;</option>
+<option value="14635357-1894-4171-bf7c-e6710e47febc">Общество с ограниченной ответственностью &quot;Центр оценки соответствия&quot;</option>
+<option value="6e32b804-5339-4848-bb24-f5fdfef04c88">Общество с ограниченной ответственностью &quot;Центр сертификации &quot;Мурас&quot;</option>
+<option value="8f6c70f6-2c4d-433b-acde-6c3b1dfa8e85">Общество с ограниченной ответственностью &quot;Центр Сертификации Аурум&quot;</option>
+<option value="71662934-f7d1-4d4c-9979-4a57c5d1773e">Общество с ограниченной ответственностью &quot;Центр Сертификации и Испытаний&quot;</option>
+<option value="321595e4-22d8-492d-ac34-b0f818cde722">Общество с ограниченной ответственностью &quot;Эксперт-Лайн&quot;</option>
+<option value="d2641bd3-e1cf-4009-ab94-53d0ef05de8b">Общество с ограниченной ответственностью &#171;Безопасность в промышленности&#187;</option>
+<option value="faa05714-7e97-4c7c-855f-2ff806900dae">Общество с ограниченной ответственностью &#171;НукураСерт&#187;</option>
+<option value="0e0c63a3-04ca-4f6f-b0b6-4bd661832755">Общество с ограниченной ответственностью &#171;Семетей-Тест&#187;</option>
+<option value="0459844d-6ec7-4b7f-af81-479bde6113b6">Орган по сертификации Общества с ограниченной ответственностью &quot;Промышленная Безопасность&quot;</option>
+<option value="4b92ae73-3584-436b-964e-ff0e5e9c087f">ОС &quot;Бишкек Стандарт&quot;</option>
+<option value="d1663ae7-8969-4056-a0de-eb438601fa81">ОС &quot;Кыргыз Тест&quot;</option>
+<option value="69f7f0cb-3c6d-4081-a085-00eb9e739207">ОС &quot;Мегасерт&quot;</option>
+<option value="fde024a6-0d8e-e311-b97b-3cd92b053068">ОС &quot;Сапат-Тест&quot;</option>
+<option value="2b00f5bf-fe02-4d98-9915-2806fddf58f1">ОС &quot;Сертификат и Ко&quot;</option>
+<option value="59876dbe-bf8c-e311-b97b-3cd92b053068">ОС &quot;Сертификат-Экспресс&quot;</option>
+<option value="0275daf5-351c-4b60-9183-e5ac085ce28f">ОС &quot;Союз Сертификат&quot;</option>
+<option value="38c43c71-4957-e311-b5ac-3cd92b053068">ОС &quot;Стандартсертик&quot;</option>
+<option value="d1fdb1a8-c0a7-e611-b5d6-3cd92b053068">ОС Сертификат Плюс</option>
+<option value="27f7fc91-b853-49e8-85f6-23bdf60d8671">ОсОО &quot;Межнациональный центр подтверждения соответствия&quot;</option>
+<option value="70d1b9f1-9c55-e311-b5ac-3cd92b053068">ОсОО ОС &#171;Сертификат Перспектива&#187;</option>
+<option value="930d8869-4f72-4044-9b9e-03e184a12025">Ошский городской Центр профилактики заболеваний и государственного санитарно- эпидемиологического надзора</option>
+<option value="5c5200c7-a547-e211-9e2b-3cd92b053068">Ошский центр испытаний, стандартизации и метрологии</option>
+<option value="b6510d97-e623-4c31-8466-90245b900da0">Сузакский районный центр профилактики заболеваний и государственного санитарно –эпидемиологического надзора</option>
+<option value="6a21221d-e212-4fb4-b6b0-8720778acf05">Тестовый ЦПЗ и ГСЭН</option>
+<option value="4f5200c7-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Кара-Балтинский Центр испытаний, стандартизации и метрологии Центра по стандартизации и метрологии при Министерстве экономики и коммерции Кыргызской Республики</option>
+<option value="535200c7-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Каракольский Центр испытаний, сертификации и метрологии Центра по стандартизации и метрологии при Министерстве экономики и коммерции Кыргызской Республики</option>
+<option value="d9e736bb-1263-4e61-bccf-97ba483deb9b">Учреждение &quot;Межрайонный Узгенский Центр профилактики заболеваний и государственного санитарно-эпидемиологического надзора&quot;</option>
+<option value="585200c7-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Нарынский Центр испытаний, сертификации и метрологии Центра по стандартизации и метрологии при Министерстве экономики и коммерции Кыргызской Республики&quot;</option>
+<option value="605200c7-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Республиканский центр сертификации в строительстве при Государственном агентстве архитектуры, строительства и жилищно-коммунального хозяйства при Кабинете Министров Кыргызской Республике&quot;</option>
+<option value="3e5200c7-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Служба по регулированию и надзору в отрасли связи при Министерстве цифрового развития и инновационных технологий Кыргызской Республики&quot;</option>
+<option value="c69e03e1-88af-4b05-871b-533d293bf2b1">Учреждение &quot;Таласский Центр испытаний, сертификации и метрологии Центра по стандартизации и метрологии при Министерстве экономики и коммерции Кыргызской Республики&quot;</option>
+<option value="675200c7-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Токмокский Центр испытаний, сертификации и метрологии Центра по стандартизации и метрологии при Министерстве экономики и коммерции Кыргызской Республики&quot;</option>
+<option value="1687f8cc-a547-e211-9e2b-3cd92b053068">Учреждение &quot;Чолпон-Атинский центр испытаний, стандартизации и метрологии&quot;</option>
+<option value="335200c7-a547-e211-9e2b-3cd92b053068">Центр государственного санитарно-эпидемиологического надзора г. Бишкек</option>
+</select>
+                </label>
+            </div>
+
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Изготовитель</span>
+                    <input style="margin-left: 10px;" class="Document" name="Manufacturer" type="text">
+                </label>
+            </div>
+
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Дата регистрации с</span>
+                    <input style="margin-left: 10px;" class="Document swisDatePicker" name="RegisterDateFrom" value="" type="text">
+                </label>
+            </div>
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Дата регистрации по</span>
+                    <input style="margin-left: 10px;" class="Document swisDatePicker" name="RegisterDateTo" value="" type="text">
+                </label>
+            </div>
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Дата окончания действия с</span>
+                    <input style="margin-left: 10px;" class="Document swisDatePicker" name="EndDateFrom" value="" type="text">
+                </label>
+            </div>
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Дата окончания действия по</span>
+                    <input style="margin-left: 10px;" class="Document swisDatePicker" name="EndDateTo" value="" type="text">
+                </label>
+            </div>
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Заявитель</span>
+                    <input style="margin-left: 10px;" class="Document" name="Declarant" type="text">
+                </label>
+            </div>
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Код ТН ВЭД продукции</span>
+                    <input style="margin-left: 10px;" class="Document" name="GoodsHsCode" type="text">
+                </label>
+            </div>
+            <div class="field Document">
+                <label>
+                    <span class="for_input">Сведения о продукции</span>
+                    <input style="margin-left: 10px;" class="Document" name="GoodsName" type="text">
+                </label>
+            </div>
+            <table>
+                <tr>
+                    <td style="height: 35px">
+                        <input type="submit" class="small_button" name="" value="Найти" onclick="if(!('')) checkAndShowSpinner();" />
+                    </td>
+                    <td>
+                        <img id="spinner" alt="wait..." src="/Content/images/spinner.gif" />
+                    </td>
+                </tr>
+            </table>
+
+            <input name="PageNumber" type="hidden" id="PageNumber" value="1" />
+        </form>
+    </fieldset>
+
+
+        <div>
+            <br/>
+            <div class="tbl_div">
+                <table id="reportTable" class="certificatesReport resizable">
+                    <tr>
+                        <th class="certificatesReport-header">№</th>
+                        <th class="certificatesReport-header">Регистрационный номер</th>
+                        <th class="certificatesReport-header">Статус декларации</th>
+                        <th class="certificatesReport-header">Код ТН ВЭД</th>
+                        <th class="certificatesReport-header">Сведения о продукции</th>
+                        <th class="certificatesReport-header">Изготовитель</th>
+                        <th class="certificatesReport-header">Заявитель</th>
+                        <th class="certificatesReport-header">Дата регистрации</th>
+                        <th class="certificatesReport-header">Дата окончания действия</th>
+                        <th class="certificatesReport-header">Показать документ</th>
+                    </tr>
+
+                            <tr>
+                                <td class="tb_td">1</td>
+                                <td class="tb_td">ЕАЭС KG417/18.Д.0000338</td>
+                                <td class="tb_td">Прекращена</td>
+                                <td class="tb_td">1905100000</td>
+                                <td class="tb_td">Продукция общественного питания, реализуемая населению: Корейский салат с т.м. от &quot;Ольги&quot;, Ашлямфу с т.м. от &quot;Ольги&quot;</td>
+                                <td class="tb_td">Индивидуальный предприниматель Юнусов Довран Тахирович</td>
+                                <td class="tb_td">Индивидуальный предприниматель Юнусов Довран Тахирович</td>
+                                <td class="tb_td">17 июнь 2025</td>
+                                <td class="tb_td">17 июнь 2026</td>
+                                <td class="tb_td"><a href="/Doc/1ce21ede-10e2-4fcc-a41b-bcd6158e7ad7">Показать</a></td>
+                            </tr>
+
+                </table>
+                <br/>
+
+            </div>
+        </div>
+
+						</div>
+					</td>
+					<td width="10"></td>
+				</tr>
+				<tr><td height="20"></td></tr>
+				<tr>
+					<td height="80" valign="top" colspan="2" class="footer_div">
+						<table width="100%">
+							<tr>
+								<td align="center"><strong>Торговля становится проще!</strong></td>
+								<td align="center"><strong>ГП</strong> «Центр «единого окна» <br />в сфере внешней торговли»</td>
+								<td align="center">
+									<address>Кыргызская Республика, г. Бишкек, <br />Проспект Чуй, 122</address>
+								</td>
+								<td align="center">
+									<abbr title="Телефон">Телефон, факс:</abbr><br />+996 (312) 90-26-40 <br /><a href="mailto:info@trade.kg">info@trade.kg</a>
+								</td>
+							</tr>        
+							<tr>
+
+								<td style="text-align: center; font-size: x-small;" colspan="4" >Версия: 1.0.1444.2426</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+       
+	<script type="text/javascript">
+        $(document).ready(function () {
+            kendo.culture("ru-RU");
+            $.validator.addMethod('date',
+                function (value, element) {
+                    return this.optional(element) || kendo.parseDate(value);
+                });
+        });
+	    $(document).ready(function () {
+	        Application.culture = "ru-RU";
+	        Application.neutralCulture = "ru";
+	        Application.CldrFetch = '/Cultures/Cldr';
+	        Application.init();
+	    });
+	</script>
+	</body>
+</html>
+
+<script type="text/javascript" language="javascript">
+
+    $(document).ready(function() {
+        initMemoView();
+        AttachAutocompleteEventsToGoodsHSCodeFields();
+        var mask = 'Z (000) 00 00 00';
+        var placeholder = '0 (789) 12 34 56';
+        var countryCode = '+996';
+        var fieldId = 'RU.Trader.NotificationPhone';
+        var phoneNumberValue = $("[id$='" + fieldId + "']").val();
+
+        if ($("[id$='" + fieldId + "']").length) {
+            $("[id$='" + fieldId + "']").val(phoneNumberValue.replace(countryCode, '0'));
+        }
+
+        $("[id$='" + fieldId + "']").mask(mask, {
+            placeholder: placeholder,
+            translation: {
+                'Z': {
+                    pattern: /[0-0]/,
+                    optional: false
+                }
+            }
+        });
+
+        $("#traderProfileSubmitButton").bind("click", function() {
+            $("[id$='" + fieldId + "']").unmask();
+            var phoneNumberValue = $("[id$='" + fieldId + "']").val();
+            var phoneNumberWithoutZero = phoneNumberValue.substring(1, phoneNumberValue.length).trim();
+            if (phoneNumberWithoutZero) {
+                $("[id$='" + fieldId + "']").val(countryCode + phoneNumberWithoutZero);
+            }
+        });
+    });
+
+    function AttachAutocompleteEventsToGoodsHSCodeFields() {
+        $(document).on("focus", "input[name='RU.Goods.HSCode']", function() {
+            var codeFieldId = $(this).attr("data-code-field-id");
+            var nameFieldId = $(this).attr("data-name-field-id");
+            setHsCodeComplete(codeFieldId, nameFieldId);
+        });
+    }
+
+    $(function() {
+        $("#HomeTabs").tabs({
+            cache: true
+        });
+        $("#CreateApplicationTabs").tabs({
+            cache: true
+        });
+    });
+
+    function initICheckelements() {
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_square-grey',
+            radioClass: 'iradio_square-grey'
+        });
+    }
+
+    function runMultiple() {
+        $.ajax({
+            type: "GET",
+            url: '/Home/Time',
+            dataType: "text",
+            async: true,
+            cache: false,
+            success: function(data, textStatus, jqXHR) {
+                document.getElementById("ServerTime").innerHTML = data;
+            }
+        });
+    }
+
+    runMultiple();
+    var timerMulti = window.setInterval("runMultiple();", 10000);
+
+    function clearActiveSubitem() {
+        setActeveSubItem("");
+    }
+
+    function setActiveMenuSubItem(elementId) {
+        $('.menu-subitem').css("background-color", "white");
+        var activeSubItem = document.getElementById(elementId);
+        activeSubItem.style.backgroundColor = "#E8E8E8";
+        setActeveSubItem(elementId);
+    }
+
+    function setActeveSubItem(elementId) {
+        $.ajax({
+            url: '/Home/SetSessionValue',
+            data: { sessionKey: "activeSubItem", sessionValue: elementId },
+            type: "POST"
+        });
+    }
+
+    function setAutoComplete(id1, id2, entity) {
+        $(function() {
+            $(id1).autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: '/Crm/ReceiveEntitiesForAutocomplete',
+                        data: { term: request.term, entityName: entity },
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            response($.map(data, function(item) {
+                                return { id: item.Id, value: item.SchemaName };
+                            }));
+                        }
+                    });
+                },
+                minLength: 1,
+                select: function(event, ui) {
+                    $(id2).val(ui.item.id);
+                }
+            });
+            $(id1).change(function() {
+                $(id2).val(this.value);
+            });
+        });
+    }
+
+
+    function setHsCodeComplete(id1, id2) {
+        $(function() {
+            $(id1).autocomplete({
+                source: function(request, response) {
+                    retrieveHsCodes(request, response);
+                },
+                minLength: 1,
+                select: function(event, ui) {
+                    $(id2).val(ui.item.name);
+                    $(id1).val(ui.item.value);
+                    $(id2).select();
+                },
+                focus: function(event, ui) {
+                    $(id2).val(ui.item.name);
+                }
+            });
+        });
+    }
+
+    function setHsCodeSearchComplete(id1) {
+        $(function() {
+            $(id1).autocomplete({
+                source: function(request, response) {
+                    retrieveHsCodes(request, response);
+                },
+                minLength: 1,
+                select: function(event, ui) {
+                    $(id1).val(ui.item.value);
+                }
+            });
+        });
+    }
+
+    function retrieveHsCodes(request, response) {
+        $.ajax({
+            url: '/Crm/ReceiveHsCodes',
+            data: { term: request.term },
+            type: "POST",
+            dataType: "json",
+            success: function(data) {
+                response($.map(data.hsCode, function(item) {
+                    return { name: item.name, value: item.code };
+                }));
+            }
+        });
+    }
+
+    function setTraderInnComplete(id1) {
+        $(function() {
+            $(id1).autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: '/Crm/ReceiveTradersInns',
+                        data: { term: request.term },
+                        type: "POST",
+                        dataType: "json",
+                        success: function(data) {
+                            response($.map(data.inn, function(item) {
+                                return { value: item.inn };
+                            }));
+                        }
+                    });
+                },
+                minLength: 1,
+                select: function(event, ui) {
+                    $(id1).val(ui.item.value);
+                }
+            });
+        });
+    }
+
+    function inputFocus(i) {
+        if (i.value == i.defaultValue) {
+            i.value = "";
+            i.style.color = "#000";
+        }
+    }
+
+    function inputPasswordFocus(i) {
+        if (i.value == i.defaultValue) {
+            i.value = "";
+            i.type = "password";
+            i.style.color = "#000";
+        }
+    }
+
+    function inputBlur(i) {
+        if (i.value == "") {
+            i.value = i.defaultValue;
+            i.style.color = "#888";
+        }
+    }
+
+    function inputPasswordBlur(i) {
+        if (i.value == "") {
+            i.value = i.defaultValue;
+            i.style.color = "#888";
+            i.type = "text";
+        }
+    }
+
+    function clearInput(id, value) {
+        var element = document.getElementById(id);
+        if (element.value == value) {
+            element.value = "";
+        }
+    }
+
+    function numberCounterDown(id, limit) {
+        var value = parseInt($('#' + id).val(), 10);
+        if (value > parseInt(limit, 10)) $('#' + id).val(value - 1);
+    }
+
+    function numberCounterUp(id, limit) {
+        var value = parseInt($('#' + id).val(), 10);
+        if (value < parseInt(limit, 10)) $('#' + id).val(value + 1);
+    }
+
+    var typewatch = function() {
+        var timer = 0;
+        return function(callback, ms) {
+            clearTimeout(timer);
+            timer = setTimeout(callback, ms);
+        };
+    }();
+
+    function editLimit(id, bottomLimit, topLimit) {
+        var value = parseInt($('#' + id).val(), 10);
+        if ($('#' + id).val() != '') {
+            if (!(Math.floor(value) == value && $.isNumeric(value))) $('#' + id).val(bottomLimit);
+            if (value < bottomLimit) $('#' + id).val(bottomLimit);
+            if (value > topLimit) $('#' + id).val(topLimit);
+        }
+    }
+
+    function showBlock(id) {
+        var formToShow = document.getElementById(id);
+        if (formToShow != null) formToShow.style.display = "inline-block";
+    }
+
+    function closeForm(id) {
+        var formToClose = document.getElementById(id);
+        if (formToClose != null) formToClose.style.display = "none";
+    }
+
+    $(function() {
+        var dd = new DropDown($('#dd'));
+        $(document).click(function() {
+            $('#dd').removeClass('active');
+            $('.droppingList').css("z-index", "-1");
+        });
+
+    });
+
+    function DropDown(el) {
+        this.initEvents();
+    }
+
+    DropDown.prototype = {
+        initEvents: function() {
+            $('#ddArrow').on('click', function(event) {
+                if ($('#droppingList').css('z-index') == "1") {
+                    $('.droppingList').css("z-index", "-1");
+                } else {
+                    $('.droppingList').css("z-index", "1");
+                }
+                $('#dd').toggleClass('active');
+                return false;
+            });
+        }
+    };
+    function onTraderMenuOpen(e) {
+        //alert(element.innerHTML);
+        $.post("/Account/CheckUser", function (data) {
+            if (data === 'True') {
+                $.post("/Account/GetUpdatedBalanceInfo", function (data) {
+                    $("#traderBalance span").text(data);
+                });
+            }
+        });
+    }
+
+</script>
+<style>
+    .profileLink:link {
+    color: black;
+}
+
+/* visited link */
+.profileLink:visited {
+    color: black;
+}
+
+/* mouse over link */
+.profileLink:hover {
+    color: #0B615E;
+}
+
+/* selected link */
+.aprofileLink:active {
+    color: black;
+} 
+</style>

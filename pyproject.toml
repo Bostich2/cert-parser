@@ -1,0 +1,47 @@
+[project]
+name = "sert-parser"
+dynamic = ["version"]
+description = "Lookup EAEU conformity certificates by registration number (BY, RU, KZ)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "httpx>=0.27.0",
+    "jinja2>=3.1.4",
+    "pydantic-settings>=2.6.0",
+    "python-multipart>=0.0.12",
+    "truststore>=0.10.0",
+    "pymupdf>=1.24.0",
+    "rapidocr>=3.0.0",
+    "onnxruntime>=1.17.0",
+    "openpyxl>=3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "respx>=0.21.0",
+    "setuptools-scm>=8.0",
+]
+
+[build-system]
+requires = ["setuptools>=75.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_file = "src/sert_parser/_version.py"
+tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
+fallback_version = "0.0.0.dev0"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+sert_parser = ["web/templates/*.html", "web/static/*", "web/static/flags/*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+asyncio_mode = "auto"

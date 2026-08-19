@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600">
+  <rect width="900" height="600" fill="#00AFCA"/>
+  <circle cx="450" cy="260" r="78" fill="#FFEF00"/>
+  <g fill="#FFEF00">
+    <path d="M450 120 L458 240 L450 230 L442 240 Z"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(36 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(72 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(108 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(144 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(180 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(216 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(252 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(288 450 260)"/>
+    <path d="M450 120 L530 175 L510 190 L450 130 Z" transform="rotate(324 450 260)"/>
+  </g>
+  <path fill="#FFEF00" d="M470 390c0-22 18-40 40-40h-20c-22 0-40 18-40 40v10h20z"/>
+  <path fill="#FFEF00" d="M430 380h80l-10 25-30 10-30-10z"/>
+</svg>

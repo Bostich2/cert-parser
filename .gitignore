@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+.env
+data/
+*.sqlite
+*.sqlite3
+.idea/
+.vscode/
+.cursor/
+*.egg-info/
+dist/
+build/
+src/sert_parser/_version.py

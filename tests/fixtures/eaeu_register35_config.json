@@ -1,0 +1,372 @@
+{
+	"i18_sources": [
+		"assets/i18n/data/",
+		"assets/i18n/menu/",
+		"ui-sdk/assets/i18n/"
+	],
+	"registerHomeOnThematicPageLink": "https://tech.eaeunion.org/tech",
+	"OP36_link": "https://tech.eaeunion.org/tech",
+	"OP36_link_registers": "https://tech.eaeunion.org/tech/registers/35-1",
+	"defaultLang": "ru",
+	"platformUrl": "https://tech.eaeunion.org/platformsvc",
+	"apiUrl": "https://tech.eaeunion.org/spd2",
+	"fileStorageApiUrl": "https://tech.eaeunion.org/platformsvc",
+	"classifierServiceUrl": "https://tech.eaeunion.org",
+	"exportLimit": 5000,
+	"exportApi": {
+		"url": "/ConformityDocDetailsType/v101",
+		"collection": "service-prop-35_1-conformityDocDetailsType"
+	},
+	"exportByProcessId": {
+		"fileName": "Реестр документов",
+		"cardToPdf": {
+			"processId": "592344f3-1b37-4837-9bea-a1df3702cf72"
+		},
+		"registerToPdf": {
+			"processId": ""
+		},
+		"registerToCsv": {
+			"processId": "d20ff0da-401a-4a17-8cef-a0f607647657"
+		},
+		"registerToXml": {
+			"processId": "5f9495fb-6dd8-43b5-aa74-1e44cf219130"
+		}
+	},
+	"languages": [
+		{
+			"code": "рус",
+			"key": "ru"
+		}
+	],
+	"authorizationSettings": {
+		"userAttributeId": "80dbde88-7ba1-48f2-a031-5ad4fbcc1292",
+		"production": false,
+		"redirectErrorTimeout": 500,
+		"redirectSuccessTimeout": 0,
+		"mainPublicPageUrl": "https://tech.eaeunion.org/tech/registers/35-1",
+		"apiURL": "https://tech.eaeunion.org/platformsvc",
+		"oauthAuthorizationendPoint": "https://goszakupki.eaeunion.org/auth/realms/eec/protocol/openid-connect/auth",
+		"oAuthClientId": "workflowprod",
+		"oAuthLoginRedirectPath": "/redirect",
+		"formDataRequestEndsWith": [
+			"/test/formdata",
+			"/filestorage/save"
+		],
+		"logoutUrl": "https://tech.eaeunion.org/tech/registers/35-1"
+	},
+	"metrikaConfig": {
+		"isEnable": true,
+		"configs": [
+			{
+				"id": 105746350,
+				"webvisor": false,
+				"clickmap": false
+			}
+		]
+	},
+	"charts": {
+		"collection": "kbdallread.service-prop-35_1-conformityDocDetailsType-cache",
+		"docsByCountries": {
+			"tableCollection": "kbdallread.service-prop-35_1-conformityDocDetailsType-cache2",
+			"tableModDateCollection": "kbdallread.service-prop-35_1-conformityDocDetailsType-cache2-moddate",
+			"exportByProcessId": {
+				"fileName": "Количество выданных (зарегистрированных) документов",
+				"registerToPdf": {
+					"processId": "927db2cf-c0c3-4dc9-b6b9-b62f0ef386c5"
+				},
+				"registerToXlsx": {
+					"processId": "366e84d4-7052-4e7c-a27a-de7aa32a6ba2",
+					"extension": "xlsx"
+				}
+			},
+			"countryTitleMap": {
+				"AM": "country_title_AM",
+				"BY": "country_title_BY",
+				"KZ": "country_title_KZ",
+				"KG": "country_title_KG",
+				"RU": "country_title_RU"
+			}
+		}
+	},
+	"registers": {
+		"conformityDocs": {
+			"search": "kbdallread.service-prop-35_1-conformityDocDetailsType",
+			"cols": [
+				{
+					"field": "docId",
+					"header": "Регистрационный номер документа",
+					"sortable": true
+				},
+				{
+					"field": "unifiedCountryCode.value",
+					"header": "Страна",
+					"sortable": true
+				},
+				{
+					"field": "conformityDocKindName",
+					"header": "Вид документа",
+					"sortable": true
+				},
+				{
+					"field": "docStartDate",
+					"header": "Срок действия",
+					"sortable": true
+				},
+				{
+					"field": "applicantDetails.businessEntityName",
+					"header": "Заявитель",
+					"sortable": true
+				},
+				{
+					"field": "technicalRegulationObjectDetails.manufacturerDetails.0.businessEntityName",
+					"header": "Изготовитель",
+					"sortable": true
+				},
+				{
+					"field": "technicalRegulationId",
+					"header": "Технический регламент",
+					"sortable": true
+				},
+				{
+					"field": "conformityAuthorityV2Details.businessEntityName",
+					"header": "Наименование органа по оценке соответствия",
+					"sortable": true
+				},
+				{
+					"field": "docStatusDetails.docStatusCode",
+					"header": "Статус действия",
+					"sortable": true
+				}
+			],
+			"filters": [
+				{
+					"code": "keyword",
+					"description": "Поиск по ключевым словам",
+					"visible": false
+				},
+				{
+					"code": "country",
+					"description": "Страна",
+					"visible": true
+				},
+				{
+					"code": "docId",
+					"description": "Регистрационный номер документа",
+					"visible": true
+				},
+				{
+					"code": "conformityDoc",
+					"description": "Вид документа",
+					"visible": true
+				},
+				{
+					"code": "docStatus",
+					"description": "Статус действия",
+					"visible": true
+				},
+				{
+					"code": "docStartDate",
+					"description": "Дата начала срока действия",
+					"visible": true
+				},
+				{
+					"code": "docValidityDate",
+					"description": "Дата окончания срока действия",
+					"visible": true
+				},
+				{
+					"code": "applicantBusinessEntityName",
+					"description": "Наименование заявителя",
+					"visible": false
+				},
+				{
+					"code": "manufacturerBusinessEntityName",
+					"description": "Наименование изготовителя",
+					"visible": false
+				},
+				{
+					"code": "conformityAuthorityBusinessEntityName",
+					"description": "Наименование органа по сертификации",
+					"visible": false
+				},
+				{
+					"code": "complianceBusinessEntityName",
+					"description": "Наименование испытательной лаборатории",
+					"visible": false
+				},
+				{
+					"code": "expert",
+					"description": "Эксперт",
+					"visible": false
+				},
+				{
+					"code": "productName",
+					"description": "Наименование продукции",
+					"visible": false
+				},
+				{
+					"code": "сommodityCode",
+					"description": "Код ТН ВЭД ЕАЭС",
+					"visible": false
+				},
+				{
+					"code": "docName",
+					"description": "Нормативный документ, предусмотренный единым перечнем, утвержденным Решением 620",
+					"visible": false
+				},
+				{
+					"code": "singleListProductIndicator",
+					"description": "Продукция включена в единый перечень",
+					"visible": true
+				},
+				{
+					"code": "technicalRegulationObject",
+					"description": "Вид объекта технического регулирования",
+					"visible": true
+				},
+				{
+					"code": "manufacturerCountry",
+					"description": "Происхождение продукции",
+					"visible": true
+				},
+				{
+					"code": "productGroup",
+					"description": "Группа продукции",
+					"visible": true
+				},
+				{
+					"code": "certificationScheme",
+					"description": "Схема оценки соответствия",
+					"visible": true
+				},
+				{
+					"code": "technicalRegulationId",
+					"description": "Технический регламент",
+					"visible": true
+				}
+			]
+		}
+	},
+	"classifiers": [
+		{
+			"name": "country",
+			"code": "P.CLS.019",
+			"description": "Страны"
+		},
+		{
+			"name": "countryEEC",
+			"code": "P.CLS.019.EEC",
+			"description": "Страны ЕЕС"
+		},
+		{
+			"name": "technicalRegulationId",
+			"code": "P.CLS.056",
+			"description": "Технический регламент"
+		},
+		{
+			"name": "conformityDocKind",
+			"code": "P.TS.01.CLS.057",
+			"description": "Вид документа"
+		},
+		{
+			"name": "docStatus",
+			"code": "P.TS.01.CLS.058",
+			"description": "Статус действия"
+		},
+		{
+			"name": "technicalRegulationObjectKindName",
+			"code": "P.CLS.059",
+			"description": "Вид объекта технического регулирования "
+		},
+		{
+			"name": "certificationSchemeCode",
+			"code": "P.TS.01.CLS.001",
+			"description": "Схема оценки соответствия"
+		},
+		{
+			"name": "businessEntityKind",
+			"code": "P.CLS.068",
+			"description": "Код государственной регистрации"
+		}
+	],
+	"links": [
+		{
+			"code": "AM",
+			"link": "https://armnab.am/ru"
+		},
+		{
+			"code": "BY",
+			"link": "https://tsouz.belgiss.by/"
+		},
+		{
+			"code": "KZ",
+			"link": "https://techreg.gov.kz/index/"
+		},
+		{
+			"code": "KG",
+			"link": "http://swis.trade.kg/Registry/CertificateOfConformity"
+		},
+		{
+			"code": "RU",
+			"link": "https://fsa.gov.ru/use-of-technology/elektronnye-reestry/"
+		}
+	],
+	"registryCard": [
+		{
+			"field": "Направление деятельности ЕАЭС",
+			"values": [
+				{
+					"value": "Техническое регулирование"
+				}
+			]
+		},
+		{
+			"field": "Группа информационных ресурсов",
+			"values": [
+				{
+					"value": "Информационное обеспечение в сфере технического регулирования"
+				}
+			]
+		},
+		{
+			"field": "Наименование",
+			"values": [
+				{
+					"value": "Единый реестр выданных сертификатов соответствия и зарегистрированных деклараций о соответствии"
+				}
+			]
+		},
+		{
+			"field": "Описание",
+			"values": [
+				{
+					"value": "Представление заинтересованным лицам доступа к актуальной информации о документах об оценке соответствия и связанной с ней статистической информацией"
+				}
+			]
+		},
+		{
+			"field": "Документ-основание",
+			"values": [
+				{
+					"value": "Решение Коллегии Евразийской экономической комиссии от 26 сентября 2017 г. № 127 \"О Порядке формирования и ведения единого реестра выданных сертификатов соответствия и зарегистрированных деклараций о соответствии\"",
+					"url": "https://docs.eaeunion.org/docs/ru-ru/01514916/clcd_28092017_127"
+				}
+			]
+		}
+	],
+	"odataAndREST": {
+		"odata": {
+			"show": 1,
+			"url": "https://tech.eaeunion.org/odata/conformityDocDetailsType?$top=10",
+			"scheme": "https://tech.eaeunion.org/odata/$metadata#conformityDocDetailsType",
+			"serviceDescription": "https://opendata.eaeunion.org/opendata/ru/api/apiodata",
+			"method": "GET"
+		},
+		"rest": {
+			"show": 1,
+			"url": "https://tech.eaeunion.org/spd/find?collection=kbdallread.service-prop-35_1-conformityDocDetailsType&limit=10",
+			"serviceDescription": "https://opendata.eaeunion.org/opendata/ru/api/restapi",
+			"method": "POST"
+		}
+	}
+}

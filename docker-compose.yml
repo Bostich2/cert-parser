@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-0.2.0}
+    ports:
+      - "8000:8000"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8000"
+      CACHE_PATH: /app/data/cache.sqlite
+      BELGISS_API_URL: https://api.belgiss.by
+      BELGISS_PUBLIC_URL: https://tsouz.belgiss.by
+      LOOKUP_CONCURRENCY: "2"
+      LOOKUP_DELAY_SECONDS: "0.25"
+      CACHE_TTL_SECONDS: "86400"
+      BELGISS_SSL_VERIFY: "true"
+      FSA_BASE_URL: https://pub.fsa.gov.ru
+      EOKNO_REGISTER_URL: https://eokno.gov.kz/public-register/register-ktrm.xhtml
+      PDF_MAX_BYTES: "15728640"
+      PDF_OCR_MAX_PAGES: "5"
+      PDF_OCR_ENABLED: "true"
+    volumes:
+      - sert-parser-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  sert-parser-data:
