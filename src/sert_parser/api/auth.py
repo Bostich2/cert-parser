@@ -15,6 +15,8 @@ from sert_parser.config import Settings
 Role = Literal["user", "admin"]
 SESSION_USER_KEY = "user"
 SESSION_CSRF_KEY = "csrf_token"
+# Fixed bcrypt hash used for constant-time login when username is unknown.
+_DUMMY_PASSWORD_HASH = "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW"
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,9 +80,10 @@ def authenticate(
     directory: dict[str, UserRecord],
 ) -> SessionUser | None:
     record = directory.get(username.strip())
-    if record is None:
+    password_hash = record.password_hash if record is not None else _DUMMY_PASSWORD_HASH
+    if not verify_password(password, password_hash):
         return None
-    if not verify_password(password, record.password_hash):
+    if record is None:
         return None
     return SessionUser(username=record.username, role=record.role)
 
@@ -101,6 +104,13 @@ def set_session_user(request: Request, user: SessionUser) -> None:
         "username": user.username,
         "role": user.role,
     }
+
+
+def login_session_user(request: Request, user: SessionUser) -> None:
+    """Clear and recreate the session to prevent session fixation."""
+    request.session.clear()
+    ensure_csrf_token(request)
+    set_session_user(request, user)
 
 
 def clear_session_user(request: Request) -> None:

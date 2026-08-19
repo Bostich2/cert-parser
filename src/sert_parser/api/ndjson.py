@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextvars import copy_context
 from typing import Any
 
 from sert_parser.logging_setup import set_step_sink, start_steps
+
+logger = logging.getLogger(__name__)
 
 STREAM_HEADERS = {
     "Cache-Control": "no-cache, no-transform",
@@ -32,8 +35,9 @@ async def stream_sync_work(work: Callable[[], dict[str, Any]]) -> AsyncIterator[
     def run() -> dict[str, Any]:
         try:
             return work()
-        except Exception as exc:
-            return {"type": "error", "detail": str(exc)}
+        except Exception:
+            logger.exception("NDJSON sync work failed")
+            return {"type": "error", "detail": "Внутренняя ошибка обработки"}
         finally:
             loop.call_soon_threadsafe(queue.put_nowait, ("end", None))
 
@@ -61,8 +65,9 @@ async def stream_async_work(work: Callable[[], Awaitable[dict[str, Any]]]) -> As
     async def run_work() -> dict[str, Any]:
         try:
             return await work()
-        except Exception as exc:
-            return {"type": "error", "detail": str(exc)}
+        except Exception:
+            logger.exception("NDJSON async work failed")
+            return {"type": "error", "detail": "Внутренняя ошибка обработки"}
 
     task = asyncio.create_task(run_work())
     try:

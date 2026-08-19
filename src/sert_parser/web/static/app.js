@@ -1031,8 +1031,9 @@ function renderTraceView() {
 function rowHtml(item, globalIndex) {
     const number = escapeHtml(item.official_number || item.normalized || item.query || "—");
     const country = escapeHtml(item.country_code || "—");
-    const link = item.url
-        ? `<a href="${escapeAttr(item.url)}" target="_blank" rel="noopener noreferrer">Открыть карточку</a>`
+    const safeUrl = safeHref(item.url);
+    const link = safeUrl
+        ? `<a href="${escapeAttr(safeUrl)}" target="_blank" rel="noopener noreferrer">Открыть карточку</a>`
         : "—";
     const validFrom = escapeHtml(formatDate(item.valid_from));
     const validUntil = escapeHtml(formatDate(item.valid_until));
@@ -1319,4 +1320,19 @@ function escapeHtml(value) {
 
 function escapeAttr(value) {
     return escapeHtml(value).replaceAll("'", "&#39;");
+}
+
+function safeHref(url) {
+    if (!url) {
+        return null;
+    }
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            return parsed.href;
+        }
+    } catch {
+        return null;
+    }
+    return null;
 }

@@ -21,6 +21,8 @@ _PAGE_DPI = 220
 def extract_numbers_from_pdf(payload: bytes, settings: Settings) -> list[str]:
     if not payload:
         raise PdfReadError("Файл PDF пустой")
+    if not payload.startswith(b"%PDF-"):
+        raise PdfReadError("Файл не является PDF")
     if len(payload) > settings.pdf_max_bytes:
         max_mb = settings.pdf_max_bytes // (1024 * 1024)
         raise PdfReadError(f"PDF больше {max_mb} МБ")

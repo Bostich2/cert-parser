@@ -50,6 +50,7 @@
                         {% endif %}
                         {% if auth_enabled %}
                         <form id="logout-form" method="post" action="/logout" class="settings-dropdown__form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <button type="submit" class="settings-dropdown__item settings-dropdown__item--danger" role="menuitem">
                                 Выйти
                             </button>

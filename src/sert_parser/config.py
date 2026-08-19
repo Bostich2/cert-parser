@@ -37,8 +37,8 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("http_ssl_verify", "belgiss_ssl_verify"),
     )
     fsa_base_url: str = "https://pub.fsa.gov.ru"
-    fsa_login_username: str = "anonymous"
-    fsa_login_password: str = "hrgesf7HDR67Bd"
+    fsa_login_username: str = Field(default="anonymous", validation_alias="FSA_LOGIN_USERNAME")
+    fsa_login_password: str = Field(default="hrgesf7HDR67Bd", validation_alias="FSA_LOGIN_PASSWORD")
     eokno_register_url: str = (
         "https://eokno.gov.kz/public-register/register-ktrm.xhtml"
     )
@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     pdf_ocr_max_pages: int = 5
     pdf_ocr_enabled: bool = True
     pdf_ocr_rec_lang: str = "eslav"
+    pdf_processing_timeout_seconds: float = 120.0
     log_level: str = "INFO"
     user_agent: str = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -76,10 +77,18 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_auth_settings(self) -> Settings:
+        if self.is_production:
+            if not self.auth_enabled:
+                raise ValueError("AUTH_ENABLED must be true when ENV=production")
+            if not self.http_ssl_verify:
+                raise ValueError("HTTP_SSL_VERIFY must be true when ENV=production")
         if not self.auth_enabled:
             return self
-        if not self.auth_secret_key.strip():
+        secret = self.auth_secret_key.strip()
+        if not secret:
             raise ValueError("AUTH_SECRET_KEY is required when AUTH_ENABLED=true")
+        if len(secret) < 32:
+            raise ValueError("AUTH_SECRET_KEY must be at least 32 characters when AUTH_ENABLED=true")
         if not self.auth_users.strip():
             raise ValueError("AUTH_USERS is required when AUTH_ENABLED=true")
         return self

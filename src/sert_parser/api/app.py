@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import secrets
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -14,24 +15,28 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.responses import Response
 
 from sert_parser.api.auth import (
     authenticate,
-    clear_session_user,
     ensure_csrf_token,
     get_session_user,
     is_admin,
-    set_session_user,
+    login_session_user,
     validate_csrf_token,
 )
 from sert_parser.api.middleware import AuthMiddleware, SecurityHeadersMiddleware
+from sert_parser.api.security import (
+    get_client_address,
+    read_upload_limited,
+    validate_pdf_content,
+    validate_xlsx_content,
+)
 
 from sert_parser.api.mappers import lookup_result_to_api_dict
-from sert_parser.api.ndjson import STREAM_HEADERS, stream_async_work, stream_sync_work
+from sert_parser.api.ndjson import STREAM_HEADERS, stream_async_work
 from sert_parser.application.export_service import ExportService
 from sert_parser.application.extract_service import ExtractService
 from sert_parser.application.lookup_service import LookupService
@@ -192,7 +197,8 @@ def _safe_next_url(next_url: str | None) -> str:
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    limiter = Limiter(key_func=get_remote_address)
+    limiter = Limiter(key_func=get_client_address)
+    session_secret = settings.auth_secret_key.strip() if settings.auth_enabled else secrets.token_hex(32)
     app = FastAPI(
         title="Парсер сертификатов ЕАЭС",
         version=get_version(),
@@ -206,7 +212,7 @@ def create_app() -> FastAPI:
     app.add_middleware(AuthMiddleware)
     app.add_middleware(
         SessionMiddleware,
-        secret_key=settings.auth_secret_key or "dev-insecure-secret",
+        secret_key=session_secret,
         max_age=settings.auth_session_max_age,
         https_only=settings.auth_secure_cookies,
         same_site="lax",
@@ -249,7 +255,8 @@ async def index_page(request: Request) -> HTMLResponse:
             "version": get_version(),
             "auth_enabled": settings.auth_enabled,
             "username": user.username if user else None,
-            "is_admin": True if not settings.auth_enabled else is_admin(user),
+            "is_admin": is_admin(user) if settings.auth_enabled else False,
+            "csrf_token": ensure_csrf_token(request) if settings.auth_enabled and user else "",
         },
     )
 
@@ -309,12 +316,12 @@ async def login_page(
             status_code=401,
         )
 
-    set_session_user(request, user)
+    login_session_user(request, user)
     return RedirectResponse(url=_safe_next_url(next_url), status_code=303)
 
 
 async def logout(request: Request) -> RedirectResponse:
-    clear_session_user(request)
+    request.session.clear()
     return RedirectResponse(url="/login", status_code=303)
 
 
@@ -385,11 +392,17 @@ async def _extract_pdf_payload(
 ) -> tuple[list[str], list[str], dict[str, object]]:
     settings: Settings = request.app.state.settings
     extract_service = _require_extract_service(request)
-    payload = await file.read()
+    payload = await read_upload_limited(file, settings.pdf_max_bytes)
+    validate_pdf_content(payload)
     start_steps()
     logger.info("%s: %s, %s байт", log_prefix, file.filename, len(payload))
     try:
-        numbers = extract_service.extract_from_pdf(payload)
+        numbers = await asyncio.wait_for(
+            asyncio.to_thread(extract_service.extract_from_pdf, payload),
+            timeout=settings.pdf_processing_timeout_seconds,
+        )
+    except TimeoutError as exc:
+        raise HTTPException(status_code=408, detail="Превышено время обработки PDF") from exc
     except PdfReadError as exc:
         raise HTTPException(status_code=400, detail=exc.message) from exc
     extract_trace = current_steps()
@@ -422,12 +435,19 @@ async def extract_pdf(request: Request, file: UploadFile = File(...)) -> dict:
 async def extract_pdf_stream(request: Request, file: UploadFile = File(...)) -> StreamingResponse:
     settings: Settings = request.app.state.settings
     extract_service = _require_extract_service(request)
-    payload = await file.read()
+    payload = await read_upload_limited(file, settings.pdf_max_bytes)
+    validate_pdf_content(payload)
     logger.info("POST /api/extract-pdf/stream: %s, %s байт", file.filename, len(payload))
+    timeout = settings.pdf_processing_timeout_seconds
 
-    def work() -> dict:
+    async def work() -> dict:
         try:
-            numbers = extract_service.extract_from_pdf(payload)
+            numbers = await asyncio.wait_for(
+                asyncio.to_thread(extract_service.extract_from_pdf, payload),
+                timeout=timeout,
+            )
+        except TimeoutError:
+            return {"type": "error", "detail": "Превышено время обработки PDF"}
         except PdfReadError as exc:
             return {"type": "error", "detail": exc.message}
         numbers, limit_meta = _limit_pdf_numbers(numbers, settings.max_batch_size)
@@ -447,7 +467,7 @@ async def extract_pdf_stream(request: Request, file: UploadFile = File(...)) -> 
         }
 
     return StreamingResponse(
-        stream_sync_work(work),
+        stream_async_work(work),
         media_type="application/x-ndjson",
         headers=STREAM_HEADERS,
     )
@@ -482,11 +502,9 @@ async def lookup_pdf(request: Request, file: UploadFile = File(...)) -> dict:
 async def extract_xlsx(request: Request, file: UploadFile = File(...)) -> dict:
     settings: Settings = request.app.state.settings
     extract_service = _require_extract_service(request)
-    payload = await file.read()
+    payload = await read_upload_limited(file, settings.xlsx_max_bytes)
+    validate_xlsx_content(payload)
     logger.info("POST /api/extract-xlsx: %s, %s байт", file.filename, len(payload))
-    if len(payload) > settings.xlsx_max_bytes:
-        max_mb = settings.xlsx_max_bytes // (1024 * 1024)
-        raise HTTPException(status_code=400, detail=f"Excel больше {max_mb} МБ")
     try:
         numbers = extract_service.extract_from_xlsx(payload)
     except XlsxReadError as exc:
@@ -501,6 +519,12 @@ async def extract_xlsx(request: Request, file: UploadFile = File(...)) -> dict:
 
 
 async def export_xlsx(request: Request, payload: ExportRequest) -> StreamingResponse:
+    settings: Settings = request.app.state.settings
+    if len(payload.results) > settings.max_batch_size:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Слишком много строк для экспорта. Максимум {settings.max_batch_size}",
+        )
     export_service = _require_export_service(request)
     rows = [item.model_dump() for item in payload.results]
     content = export_service.build_results_xlsx(rows)
@@ -558,11 +582,7 @@ async def reload_service(request: Request) -> dict:
 
 
 async def health_live(request: Request) -> dict:
-    return {
-        "status": "ok",
-        "version": get_version(),
-        "generation": int(getattr(request.app.state, "runtime_generation", 0)),
-    }
+    return {"status": "ok"}
 
 
 async def health(request: Request) -> dict:

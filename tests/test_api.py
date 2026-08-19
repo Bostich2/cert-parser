@@ -25,8 +25,8 @@ def test_index_page(client: TestClient) -> None:
     assert f"/static/app.js?v={version}" in response.text
     assert 'class="app-version"' in response.text
     assert "settings-toggle" in response.text
-    assert "Сбросить кэш" in response.text
-    assert "Полная перезагрузка" in response.text
+    assert "Сбросить кэш" not in response.text
+    assert "Полная перезагрузка" not in response.text
     assert "/static/flags/kz.svg" in response.text
     assert "<h2>Из буфера</h2>" in response.text
     assert "<h2>Из Excel</h2>" in response.text
@@ -43,8 +43,8 @@ def test_index_page(client: TestClient) -> None:
     assert "<h2>Список номеров</h2>" not in response.text
 
 
-def test_clear_cache(client: TestClient) -> None:
-    response = client.post("/api/cache/clear")
+def test_clear_cache(admin_client: TestClient) -> None:
+    response = admin_client.post("/api/cache/clear")
     assert response.status_code == 200
     body = response.json()
     assert "deleted" in body
@@ -52,25 +52,25 @@ def test_clear_cache(client: TestClient) -> None:
     assert "Кэш очищен" in body["message"]
 
 
-def test_reload_service_restarts_runtime(client: TestClient) -> None:
+def test_reload_service_restarts_runtime(admin_client: TestClient) -> None:
     version = get_version()
-    first = client.post("/api/reload")
+    first = admin_client.post("/api/reload")
     assert first.status_code == 200
     body = first.json()
     assert body["version"] == version
     assert body["generation"] >= 2
     assert "перезапущен" in body["message"].lower()
     assert version in body["message"]
-    second = client.post("/api/reload")
+    second = admin_client.post("/api/reload")
     assert second.status_code == 200
     assert second.json()["generation"] == body["generation"] + 1
-    lookup = client.post("/api/lookup", json={"numbers": ["просто текст"]})
+    lookup = admin_client.post("/api/lookup", json={"numbers": ["просто текст"]})
     assert lookup.status_code == 200
     assert lookup.json()["results"][0]["error_code"] == "invalid_number"
 
 
-def test_health_includes_version(client: TestClient) -> None:
-    response = client.get("/health")
+def test_health_includes_version(admin_client: TestClient) -> None:
+    response = admin_client.get("/health")
     assert response.status_code == 200
     body = response.json()
     assert body["version"] == get_version()
@@ -213,7 +213,7 @@ def test_extract_pdf_stream_returns_error_envelope(client: TestClient, monkeypat
     assert response.status_code == 200
     events = _ndjson_events(response)
     assert events[-1]["type"] == "error"
-    assert "OCR exploded" in events[-1]["detail"]
+    assert events[-1]["detail"] == "Внутренняя ошибка обработки"
 
 
 def test_lookup_stream_emits_steps(client: TestClient) -> None:
@@ -423,8 +423,8 @@ def test_extract_xlsx_rejects_oversized_file(client: TestClient, monkeypatch: py
             files={"file": ("big.xlsx", b"x" * 20, "application/octet-stream")},
         )
     get_settings.cache_clear()
-    assert response.status_code == 400
-    assert "Excel больше" in response.json()["detail"]
+    assert response.status_code == 413
+    assert "больше" in response.json()["detail"]
 
 
 def test_lookup_during_reload_returns_503(client: TestClient) -> None:
@@ -437,7 +437,7 @@ def test_lookup_during_reload_returns_503(client: TestClient) -> None:
     assert "перезапускается" in response.json()["detail"]
 
 
-def test_reload_waits_for_in_flight_lookup(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_reload_waits_for_in_flight_lookup(admin_client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
     import asyncio
     import threading
     import time
@@ -455,7 +455,7 @@ def test_reload_waits_for_in_flight_lookup(client: TestClient, monkeypatch: pyte
     lookup_result: dict = {}
 
     def run_lookup():
-        lookup_result["response"] = client.post(
+        lookup_result["response"] = admin_client.post(
             "/api/lookup",
             json={"numbers": ["просто текст"]},
         )
@@ -463,24 +463,24 @@ def test_reload_waits_for_in_flight_lookup(client: TestClient, monkeypatch: pyte
     thread = threading.Thread(target=run_lookup)
     thread.start()
     time.sleep(0.05)
-    reload_response = client.post("/api/reload")
+    reload_response = admin_client.post("/api/reload")
     thread.join(timeout=5)
     assert reload_response.status_code == 200
     assert lookup_result["response"].status_code == 200
     assert lookup_result["response"].json()["results"][0]["error_code"] == "invalid_number"
 
 
-def test_clear_cache_during_reload_returns_503(client: TestClient) -> None:
-    client.app.state.reload_in_progress = True
+def test_clear_cache_during_reload_returns_503(admin_client: TestClient) -> None:
+    admin_client.app.state.reload_in_progress = True
     try:
-        response = client.post("/api/cache/clear")
+        response = admin_client.post("/api/cache/clear")
     finally:
-        client.app.state.reload_in_progress = False
+        admin_client.app.state.reload_in_progress = False
     assert response.status_code == 503
 
 
 def test_reload_blocked_while_lookup_active(
-    client: TestClient,
+    admin_client: TestClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     import asyncio
@@ -502,11 +502,11 @@ def test_reload_blocked_while_lookup_active(
     monkeypatch.setattr(LookupService, "lookup_one", slow_lookup_one)
 
     lookup_thread = threading.Thread(
-        target=lambda: client.post("/api/lookup", json={"numbers": ["просто текст"]}),
+        target=lambda: admin_client.post("/api/lookup", json={"numbers": ["просто текст"]}),
     )
     lookup_thread.start()
     time.sleep(0.05)
-    reload_response = client.post("/api/reload")
+    reload_response = admin_client.post("/api/reload")
     lookup_thread.join(timeout=5)
     assert reload_response.status_code == 409
     assert "активны запросы" in reload_response.json()["detail"]

@@ -34,7 +34,7 @@ def auth_client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
     monkeypatch.setenv("LOOKUP_DELAY_SECONDS", "0")
     monkeypatch.setenv("PDF_OCR_ENABLED", "false")
     monkeypatch.setenv("AUTH_ENABLED", "true")
-    monkeypatch.setenv("AUTH_SECRET_KEY", "test-secret-key-for-session-signing")
+    monkeypatch.setenv("AUTH_SECRET_KEY", "test-secret-key-for-session-signing-32chars")
     monkeypatch.setenv("AUTH_USERS", _auth_users_json())
     monkeypatch.setenv("RATE_LIMIT_LOGIN", "1000/minute")
     monkeypatch.setenv("RATE_LIMIT_LOOKUP", "1000/minute")
@@ -105,7 +105,9 @@ def test_login_invalid_credentials(auth_client: TestClient) -> None:
 
 def test_logout(auth_client: TestClient) -> None:
     _login(auth_client, "user", "user-pass")
-    response = auth_client.post("/logout", follow_redirects=False)
+    page = auth_client.get("/")
+    csrf_token = page.text.split('name="csrf_token" value="', 1)[1].split('"', 1)[0]
+    response = auth_client.post("/logout", data={"csrf_token": csrf_token}, follow_redirects=False)
     assert response.status_code == 303
     assert auth_client.post("/api/cache/clear").status_code == 401
 
@@ -141,14 +143,13 @@ def test_health_live_is_public(auth_client: TestClient) -> None:
     response = auth_client.get("/health/live")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "ok"
-    assert "version" in payload
+    assert payload == {"status": "ok"}
 
 
-def test_auth_disabled_keeps_public_access(client: TestClient) -> None:
+def test_auth_disabled_blocks_admin_endpoints(client: TestClient) -> None:
     response = client.get("/")
     assert response.status_code == 200
-    assert client.post("/api/cache/clear").status_code == 200
+    assert client.post("/api/cache/clear").status_code == 403
 
 
 def test_login_rejects_external_next_url(auth_client: TestClient) -> None:
