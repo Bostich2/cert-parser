@@ -13,6 +13,10 @@ from cert_parser.logging_setup import log_step
 
 logger = logging.getLogger(__name__)
 
+_RAPIDOCR_UNSET = object()
+_rapidocr_cls: type | None | object = _RAPIDOCR_UNSET
+_import_error_logged = False
+
 _HEADER_RATIO = 0.32
 _HEADER_DPI = 320
 _PAGE_DPI = 220
@@ -173,7 +177,10 @@ def _texts_from_ocr_result(raw: object) -> str:
 
 
 def reset_ocr_engines() -> None:
+    global _rapidocr_cls, _import_error_logged
     _ocr_engine.cache_clear()
+    _rapidocr_cls = _RAPIDOCR_UNSET
+    _import_error_logged = False
 
 
 @lru_cache(maxsize=8)
@@ -200,14 +207,23 @@ def _ocr_engine(lang: str):
 
 
 def _import_rapidocr():
+    global _rapidocr_cls, _import_error_logged
+    if _rapidocr_cls is not _RAPIDOCR_UNSET:
+        return _rapidocr_cls
     try:
         from rapidocr import RapidOCR
-    except ImportError:
+    except ImportError as primary_exc:
         try:
             from rapidocr_onnxruntime import RapidOCR
-        except ImportError:
+        except ImportError as fallback_exc:
             logger.exception(
                 "RapidOCR is not installed. Run: pip install rapidocr onnxruntime"
             )
+            if not _import_error_logged:
+                log_step(f"PDF: OCR недоступен: {fallback_exc}")
+                _import_error_logged = True
+            _rapidocr_cls = None
             return None
+        logger.warning("Using legacy rapidocr_onnxruntime import: %s", primary_exc)
+    _rapidocr_cls = RapidOCR
     return RapidOCR
