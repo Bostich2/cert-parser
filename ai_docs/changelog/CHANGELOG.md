@@ -7,6 +7,7 @@
 - Единая цепочка lookup для BY, RU, KZ, KG (`ChainedRegistryProvider`, `build_lookup_chain` в `chained.py`)
 - Стратегия EAEU-first: по умолчанию сначала OData [tech.eaeunion.org](https://tech.eaeunion.org), затем национальный реестр; переключается через `LOOKUP_EAEU_FIRST`
 - Fallback на OData ЕАЭС для России (RU) и Кыргызстана (KG) — по аналогии с BY/KZ
+- GitHub Action `.github/workflows/release.yml`: push тега `v*.*.*` публикует GitHub Release; notes — из `CHANGELOG.md` (`scripts/release_notes.py`)
 - Git hooks для автообновления `src/cert_parser/_version.py` (`scripts/install_git_hooks.py`, `scripts/write_version.py`)
 - Session-авторизация (`AUTH_ENABLED`, логин/пароль, роли user/admin)
 - Production deploy: `docker-compose.prod.yml`, Caddy reverse proxy, TLS

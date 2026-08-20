@@ -63,7 +63,7 @@ python scripts/release.py patch --push
 python scripts/release.py minor --dry-run
 ```
 
-После тега обновите `ai_docs/changelog/CHANGELOG.md` и запушьте коммиты (если `--push` не использовали).
+Перед тегом добавьте секцию `## [X.Y.Z]` в `ai_docs/changelog/CHANGELOG.md` и закоммитьте. Пуш тега (`v0.2.0`) запускает GitHub Action **Release**: на странице Releases появляется релиз с текстом из changelog (если секции нет — GitHub сгенерирует notes сам).
 
 **Первый релиз** (если тегов ещё нет): `git tag -a v0.2.0 -m "cert-parser v0.2.0"` и `git push origin v0.2.0`.
 

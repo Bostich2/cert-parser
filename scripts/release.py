@@ -129,8 +129,12 @@ def main() -> int:
         print(f"Could not resolve version via setuptools-scm: {exc}")
 
     print("Next steps:")
-    print(f"  1. Update ai_docs/changelog/CHANGELOG.md for {next_tag[1:]}")
-    print(f"  2. git push origin {next_tag}" if not args.push else "  2. Tag pushed.")
+    print(f"  1. Commit ai_docs/changelog/CHANGELOG.md section ## [{next_tag[1:]}] before tagging")
+    print(
+        f"  2. git push origin {next_tag}  (GitHub Action publishes the Release)"
+        if not args.push
+        else "  2. Tag pushed; GitHub Action will publish the Release."
+    )
 
     if args.push:
         git("push", "origin", next_tag)
