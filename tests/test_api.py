@@ -84,6 +84,11 @@ def test_lookup_rejects_empty_batch(client: TestClient) -> None:
     assert response.status_code == 400
 
 
+def test_search_product_rejects_empty_batch(client: TestClient) -> None:
+    response = client.post("/api/search-product", json={"queries": ["  ", ""]})
+    assert response.status_code == 400
+
+
 def test_lookup_invalid_number(client: TestClient) -> None:
     response = client.post("/api/lookup", json={"numbers": ["просто текст"]})
     assert response.status_code == 200

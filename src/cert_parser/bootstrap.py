@@ -7,6 +7,7 @@ from cert_parser.application.country_router import CountryRouter
 from cert_parser.application.export_service import ExportService
 from cert_parser.application.extract_service import ExtractService
 from cert_parser.application.lookup_service import LookupService
+from cert_parser.application.product_search_service import ProductSearchService
 from cert_parser.config import get_settings
 from cert_parser.domain.ports import LookupCache
 from cert_parser.infrastructure.cache import SqliteLookupCache
@@ -15,7 +16,9 @@ from cert_parser.infrastructure.pdf import reset_ocr_engines
 from cert_parser.infrastructure.registries.armenia import ArmeniaProvider
 from cert_parser.infrastructure.registries.belarus import BelgissProvider
 from cert_parser.infrastructure.registries.chained import build_lookup_chain
-from cert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider
+from cert_parser.infrastructure.registries.eaeu_odata import EaeuOdataProvider, EaeuProductSearchProvider
+from cert_parser.infrastructure.registries.fsa_declarations import FsaDeclarationsProvider
+from cert_parser.infrastructure.registries.fsa_session import FsaSession
 from cert_parser.infrastructure.registries.kazakhstan import EoknoProvider
 from cert_parser.infrastructure.registries.kyrgyzstan import SwisProvider
 from cert_parser.infrastructure.registries.russia import FsaProvider
@@ -57,7 +60,11 @@ async def configure_runtime(app: FastAPI) -> None:
         },
     )
     belgiss = BelgissProvider(belgiss_client, settings)
-    fsa = FsaProvider(fsa_client, settings)
+    fsa_session = FsaSession(fsa_client, settings)
+    fsa = FsaProvider(fsa_client, settings, session=fsa_session)
+    fsa_decl = FsaDeclarationsProvider(fsa_client, settings, session=fsa_session)
+    eaeu_product_ru = EaeuProductSearchProvider(eaeu_client, settings, russia_only=True)
+    eaeu_product_other = EaeuProductSearchProvider(eaeu_client, settings, russia_only=False)
     eokno = EoknoProvider(eokno_client, settings)
     swis = SwisProvider(swis_client, settings)
     eaeu_by = EaeuOdataProvider(eaeu_client, settings, country_code="BY")
@@ -126,6 +133,10 @@ async def configure_runtime(app: FastAPI) -> None:
         "eaeu": armenia,
     }
     app.state.lookup_service = LookupService(router, cache, settings)
+    app.state.product_search_service = ProductSearchService(
+        [fsa, fsa_decl, eaeu_product_ru, eaeu_product_other],
+        settings,
+    )
     app.state.extract_service = extract_service
     app.state.export_service = export_service
     app.state.runtime_generation = int(getattr(app.state, "runtime_generation", 0)) + 1
@@ -144,6 +155,7 @@ async def shutdown_runtime(app: FastAPI) -> None:
     app.state.registry_clients = {}
     app.state.providers = {}
     app.state.lookup_service = None
+    app.state.product_search_service = None
     app.state.extract_service = None
     app.state.export_service = None
     app.state.cache = None

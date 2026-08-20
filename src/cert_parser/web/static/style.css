@@ -167,12 +167,59 @@ body {
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 
+.search-tabs {
+    margin-top: 18px;
+}
+
+.search-tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.search-tab {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 10px 16px;
+}
+
+.search-tab:hover {
+    background: #eef5fb;
+    color: var(--accent);
+}
+
+.search-tab[aria-selected="true"] {
+    background: #eef5fb;
+    color: var(--accent);
+    border-color: #c5d7eb;
+}
+
+.search-tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
 .sources-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: stretch;
     gap: 16px;
-    margin-top: 18px;
+    margin-top: 16px;
+}
+
+.sources-grid--product {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sources-grid[hidden] {
+    display: none;
 }
 
 .sources-grid .source-card {
@@ -310,7 +357,8 @@ body {
 }
 
 @media (max-width: 960px) {
-    .sources-grid {
+    .sources-grid,
+    .sources-grid--product {
         grid-template-columns: 1fr;
     }
 }

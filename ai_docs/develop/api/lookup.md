@@ -4,6 +4,8 @@ Endpoint для поиска карточки сертификата по рег
 
 Принимает батч номеров и возвращает массив `results` с результатом по каждому элементу.
 
+Поиск по **наименованию продукции** — отдельные маршруты `POST /api/search-product` и `POST /api/search-product/stream` ([search-product.md](search-product.md)). Контракт lookup не менялся.
+
 Остальные endpoint'ы (PDF, Excel, export, cache, reload, health) — см. [endpoints.md](endpoints.md).
 
 ## Request
@@ -108,9 +110,9 @@ Content-Type: `application/json`
 
 ## `POST /api/extract-xlsx`
 
-Извлекает номера из Excel без обращения к реестрам.
+Извлекает строки из столбца A без обращения к реестрам (номера или наименования продукции).
 
-`multipart/form-data`, поле `file`. Первый лист, столбец A. Пустые ячейки пропускаются. Первая строка отбрасывается, если похожа на заголовок (`номер`, `number`, `сертификат`).
+`multipart/form-data`, поле `file`. Первый лист, столбец A. Пустые ячейки пропускаются. Первая строка отбрасывается, если похожа на заголовок (`номер`, `number`, `сертификат`, `наименован`, `товар`, `продукц`, `product`).
 
 Успех:
 
@@ -124,7 +126,7 @@ Content-Type: `application/json`
 
 Если столбец A пустой — `200` с `error_code=no_numbers_in_xlsx`. Повреждённый или пустой файл — `400` (`invalid_xlsx`).
 
-Дальше клиент вызывает `POST /api/lookup` с полученным списком.
+Дальше клиент вызывает `POST /api/lookup` (номера) или `POST /api/search-product` (наименования). Поиск по продукции — [search-product.md](search-product.md).
 
 UI использует потоковые варианты, чтобы шаги появлялись сразу, а не пачкой в конце:
 

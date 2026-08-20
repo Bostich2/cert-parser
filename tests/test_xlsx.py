@@ -111,3 +111,38 @@ def test_build_results_xlsx_writes_headers_and_rows() -> None:
         )
     finally:
         workbook.close()
+
+
+def test_build_results_xlsx_adds_product_columns_when_present() -> None:
+    payload = build_results_xlsx(
+        [
+            {
+                "query": "насос",
+                "official_number": SECOND,
+                "country_code": "RU",
+                "product_name": "Насос погружной",
+                "doc_kind": "certificate",
+                "url": "https://example.test/card",
+                "pdf_url": "",
+                "valid_from": "2024-01-01",
+                "valid_until": "2025-01-01",
+                "status": "Действует",
+                "status_code": "01",
+                "error": "",
+                "error_code": "",
+                "cached": False,
+            }
+        ]
+    )
+    workbook = load_workbook(BytesIO(payload), read_only=True, data_only=True)
+    try:
+        sheet = workbook.active
+        assert sheet is not None
+        rows = list(sheet.iter_rows(values_only=True))
+        assert rows[0][0] == "Запрос"
+        assert rows[0][1] == "Продукция"
+        assert rows[0][2] == "Вид"
+        assert rows[1][1] == "Насос погружной"
+        assert rows[1][2] == "Сертификат"
+    finally:
+        workbook.close()

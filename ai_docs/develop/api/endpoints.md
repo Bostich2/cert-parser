@@ -4,7 +4,7 @@
 
 Версия приложения определяется **git-тегами** (`v0.2.0`) через `setuptools-scm` (`src/cert_parser/version.py`). В Docker можно задать `CERT_PARSER_VERSION` / `APP_VERSION`.
 
-## Поиск
+## Поиск по номеру
 
 ### `POST /api/lookup`
 
@@ -22,6 +22,38 @@
 - `{ "type": "done", "result": { … } }` — финальный результат (поля как у элемента `results[]` в `/api/lookup`)
 
 UI использует этот endpoint для одиночных запросов из буфера, чтобы шаги появлялись сразу.
+
+## Поиск по наименованию продукции
+
+Контракт, источники, поля хита и коды ошибок — [search-product.md](search-product.md). Поиск по номеру не затронут.
+
+### `POST /api/search-product`
+
+Батч-поиск по массиву наименований.
+
+```json
+{
+  "queries": ["шины легковые"],
+  "limit_per_query": 25
+}
+```
+
+Ответ: `{ "results": [ … ] }` — плоский список хитов (несколько записей на один запрос). Пустой батч после фильтрации пробелов — `400`. Больше `MAX_BATCH_SIZE` — `400`. `limit_per_query` по умолчанию 25, максимум 50.
+
+Поля сверх lookup: `product_name`, `doc_kind` (`certificate` \| `declaration`), `source` (`fsa_cert` \| `fsa_decl` \| `eaeu_ru` \| `eaeu_other`).
+
+### `POST /api/search-product/stream`
+
+Потоковый поиск **одного** наименования. Content-Type ответа: `application/x-ndjson`.
+
+В `queries` ровно один непустой элемент, иначе `400`.
+
+События NDJSON:
+
+- `{ "type": "step", "text": "…" }` — шаг обработки
+- `{ "type": "done", "results": [ … ] }` — массив хитов (**не** `"result"`, как у `/api/lookup/stream`)
+
+UI вызывает поток по одной строке подряд (батч в интерфейсе последовательный). На сервере четыре источника по одному запросу идут параллельно.
 
 ## PDF
 
@@ -83,7 +115,7 @@ Query-параметры:
 
 ### `POST /api/extract-xlsx`
 
-Извлекает номера из столбца A первого листа (`.xlsx`/`.xlsm`).
+Извлекает непустые строки из столбца A первого листа (`.xlsx`/`.xlsm`) — номера сертификатов или наименования продукции. Поиск в реестрах не выполняется.
 
 ```json
 {
@@ -93,7 +125,9 @@ Query-параметры:
 }
 ```
 
-Пустой столбец A — `error_code=no_numbers_in_xlsx`. Повреждённый файл — `400` (`invalid_xlsx`). Файл больше `XLSX_MAX_BYTES` — `400`. Больше `MAX_BATCH_SIZE` номеров в столбце A — `400`.
+Поле ответа по-прежнему `numbers`. Первая строка отбрасывается, если похожа на заголовок (`номер`, `number`, `сертификат`, `наименован`, `товар`, `продукц`, `product`). Пустой столбец A — `error_code=no_numbers_in_xlsx`. Повреждённый файл — `400` (`invalid_xlsx`). Файл больше `XLSX_MAX_BYTES` — `400`. Больше `MAX_BATCH_SIZE` строк в столбце A — `400`.
+
+Дальше клиент вызывает `/api/lookup` или `/api/search-product` / `/api/search-product/stream`.
 
 ### `POST /api/export-xlsx`
 
@@ -111,13 +145,15 @@ Query-параметры:
       "valid_from": "2024-05-29",
       "valid_until": "2029-05-29",
       "status": "действует",
+      "product_name": "…",
+      "doc_kind": "certificate",
       "error_code": null
     }
   ]
 }
 ```
 
-Ответ: бинарный файл `cert-parser-results.xlsx` (`Content-Disposition: attachment`).
+Ответ: бинарный файл `cert-parser-results.xlsx` (`Content-Disposition: attachment`). Колонка «Запрос» всегда. Если хотя бы в одной строке есть `product_name` или `doc_kind`, добавляются «Продукция» и «Вид».
 
 ## Сервис
 
@@ -204,15 +240,16 @@ Query-параметры:
 |-----|-----------------|
 | `invalid_number` | lookup |
 | `unsupported_country` | lookup |
-| `not_found` | lookup |
-| `source_unavailable` | lookup |
+| `query_too_short` | search-product |
+| `not_found` | lookup, search-product |
+| `source_unavailable` | lookup, search-product |
 | `ambiguous` | lookup |
 | `no_numbers_in_pdf` | extract-pdf, lookup-pdf |
 | `invalid_pdf` | extract-pdf (HTTP 400) |
 | `no_numbers_in_xlsx` | extract-xlsx |
 | `invalid_xlsx` | extract-xlsx (HTTP 400) |
 
-Правила кэширования lookup — см. [lookup.md](lookup.md).
+Правила кэширования lookup — см. [lookup.md](lookup.md). Поиск по продукции кэш не использует.
 
 ## Настройки
 

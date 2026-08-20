@@ -35,11 +35,16 @@ from cert_parser.api.security import (
     validate_xlsx_content,
 )
 
-from cert_parser.api.mappers import lookup_result_to_api_dict
+from cert_parser.api.mappers import lookup_result_to_api_dict, product_search_hit_to_api_dict
 from cert_parser.api.ndjson import STREAM_HEADERS, stream_async_work
 from cert_parser.application.export_service import ExportService
 from cert_parser.application.extract_service import ExtractService
 from cert_parser.application.lookup_service import LookupService
+from cert_parser.application.product_search_service import (
+    DEFAULT_LIMIT_PER_QUERY,
+    MAX_LIMIT_PER_QUERY,
+    ProductSearchService,
+)
 from cert_parser.bootstrap import (
     close_runtime,
     configure_runtime,
@@ -62,6 +67,11 @@ class LookupRequest(BaseModel):
     numbers: list[str] = Field(min_length=1)
 
 
+class ProductSearchRequest(BaseModel):
+    queries: list[str] = Field(min_length=1)
+    limit_per_query: int = Field(default=DEFAULT_LIMIT_PER_QUERY, ge=1, le=MAX_LIMIT_PER_QUERY)
+
+
 class ExportRow(BaseModel):
     query: str | None = None
     normalized: str | None = None
@@ -74,6 +84,8 @@ class ExportRow(BaseModel):
     status_code: str | None = None
     registry_id: str | None = None
     official_number: str | None = None
+    product_name: str | None = None
+    doc_kind: str | None = None
     error: str | None = None
     error_code: str | None = None
     cached: bool = False
@@ -119,6 +131,15 @@ def _require_lookup_service(request: Request) -> LookupService:
     if getattr(request.app.state, "reload_in_progress", False):
         raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
     service = request.app.state.lookup_service
+    if service is None:
+        raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+    return service
+
+
+def _require_product_search_service(request: Request) -> ProductSearchService:
+    if getattr(request.app.state, "reload_in_progress", False):
+        raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
+    service = getattr(request.app.state, "product_search_service", None)
     if service is None:
         raise HTTPException(status_code=503, detail=_RELOAD_BUSY_DETAIL)
     return service
@@ -236,6 +257,12 @@ def create_app() -> FastAPI:
     app.add_api_route("/logout", logout, methods=["POST"])
     app.add_api_route("/api/lookup", limiter.limit(_lookup_rate_limit)(lookup_certificates), methods=["POST"])
     app.add_api_route("/api/lookup/stream", limiter.limit(_lookup_rate_limit)(lookup_certificates_stream), methods=["POST"])
+    app.add_api_route("/api/search-product", limiter.limit(_lookup_rate_limit)(search_products), methods=["POST"])
+    app.add_api_route(
+        "/api/search-product/stream",
+        limiter.limit(_lookup_rate_limit)(search_products_stream),
+        methods=["POST"],
+    )
     app.add_api_route("/api/lookup-pdf", limiter.limit(_upload_rate_limit)(lookup_pdf), methods=["POST"])
     app.add_api_route("/api/extract-pdf", limiter.limit(_upload_rate_limit)(extract_pdf), methods=["POST"])
     app.add_api_route("/api/extract-pdf/stream", limiter.limit(_upload_rate_limit)(extract_pdf_stream), methods=["POST"])
@@ -384,6 +411,67 @@ async def lookup_certificates_stream(request: Request, payload: LookupRequest) -
         return {
             "type": "done",
             "result": lookup_result_to_api_dict(result, base_url=_api_base_url(request)),
+        }
+
+    async def stream_body():
+        try:
+            async for chunk in stream_async_work(work):
+                yield chunk
+        finally:
+            _release_lookup_slot(request)
+
+    return StreamingResponse(
+        stream_body(),
+        media_type="application/x-ndjson",
+        headers=STREAM_HEADERS,
+    )
+
+
+async def search_products(request: Request, payload: ProductSearchRequest) -> dict:
+    settings: Settings = request.app.state.settings
+    queries = [item for item in payload.queries if str(item).strip()]
+    if not queries:
+        raise HTTPException(status_code=400, detail="Передайте хотя бы один запрос")
+    if len(queries) > settings.max_batch_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Слишком много запросов. Максимум {settings.max_batch_size}",
+        )
+    service = _require_product_search_service(request)
+    logger.info("POST /api/search-product: %s запрос(ов)", len(queries))
+    results = await _run_lookup(
+        request,
+        service.search_many(queries, limit_per_query=payload.limit_per_query),
+    )
+    base_url = _api_base_url(request)
+    return {"results": [product_search_hit_to_api_dict(item, base_url=base_url) for item in results]}
+
+
+async def search_products_stream(request: Request, payload: ProductSearchRequest) -> StreamingResponse:
+    settings: Settings = request.app.state.settings
+    queries = [item for item in payload.queries if str(item).strip()]
+    if not queries:
+        raise HTTPException(status_code=400, detail="Передайте хотя бы один запрос")
+    if len(queries) > 1:
+        raise HTTPException(status_code=400, detail="Поток поддерживает один запрос")
+    if len(queries) > settings.max_batch_size:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Слишком много запросов. Максимум {settings.max_batch_size}",
+        )
+    service = _require_product_search_service(request)
+    raw = queries[0]
+    logger.info("POST /api/search-product/stream: %s", raw)
+    _reserve_lookup_slot(request)
+
+    async def work() -> dict:
+        results = await service.search_one(raw, limit_per_query=payload.limit_per_query)
+        return {
+            "type": "done",
+            "results": [
+                product_search_hit_to_api_dict(item, base_url=_api_base_url(request))
+                for item in results
+            ],
         }
 
     async def stream_body():

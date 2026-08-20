@@ -1,6 +1,6 @@
 # Парсер сертификатов ЕАЭС
 
-Веб-сервис ищет сертификат соответствия по регистрационному номеру в национальном реестре и возвращает ссылку на карточку и срок действия.
+Веб-сервис ищет документы соответствия **по регистрационному номеру** (национальные реестры ЕАЭС) или **по наименованию продукции**. По номеру возвращаются ссылка на карточку и срок действия. По товару — совпадения в сертификатах и декларациях FSA и в OData ЕАЭС.
 
 Поддерживаются:
 
@@ -20,7 +20,7 @@
 ЕАЭС AM-008/S.A-0175-2018
 ```
 
-Страна берётся из кода в номере. Номер можно извлечь из PDF (текстовый слой, при необходимости OCR) или из Excel (столбец A).
+Страна берётся из кода в номере. Номер можно извлечь из PDF (текстовый слой, при необходимости OCR) или из Excel (столбец A). Наименования продукции — из буфера или из того же столбца A Excel.
 
 ## Быстрый старт
 
@@ -85,13 +85,12 @@ python scripts/install_git_hooks.py
 
 ## Как пользоваться (UI)
 
-Три источника ввода:
+Две вкладки:
 
-- **Из буфера** — один или несколько номеров (по строке), вставка из буфера обмена.
-- **Из Excel** — `.xlsx`/`.xlsm`, столбец A первого листа.
-- **Из PDF** — файлы или папка (выбор, drag-and-drop); OCR при необходимости.
+- **Поиск по сертификату** — буфер, Excel, PDF (как раньше: номера по строке / столбец A / файлы и папка).
+- **Поиск по товару** — наименования из буфера (одно на строку) или из столбца A Excel. Ищется фрагмент формулировки из документа, не артикул магазина. Строки в UI идут по очереди.
 
-Таблица результатов: ссылка на карточку, PDF, срок действия, статус, ошибка. Есть пагинация и **экспорт в Excel**.
+Таблица результатов: запрос, номер, страна, продукция, вид, ссылка, PDF, срок действия, статус, ошибка. Есть пагинация и **экспорт в Excel** (для поиска по товару — колонки «Запрос», «Продукция», «Вид»).
 
 Блок «Ход поиска» показывает шаги (разбор номера, GET/POST, сколько строк). Те же строки пишутся в консоль uvicorn.
 
@@ -104,11 +103,13 @@ python scripts/install_git_hooks.py
 | Метод | Путь | Назначение |
 |-------|------|------------|
 | `POST` | `/api/lookup` | Батч-поиск по номерам |
-| `POST` | `/api/lookup/stream` | Потоковый поиск одного номера (NDJSON) |
+| `POST` | `/api/lookup/stream` | Потоковый поиск одного номера (NDJSON, `"result"`) |
+| `POST` | `/api/search-product` | Батч-поиск по наименованию продукции |
+| `POST` | `/api/search-product/stream` | Потоковый поиск одного наименования (NDJSON, `"results"`) |
 | `POST` | `/api/extract-pdf` | Извлечь номера из PDF |
 | `POST` | `/api/extract-pdf/stream` | То же, потоково (NDJSON) |
 | `POST` | `/api/lookup-pdf` | PDF → извлечение + поиск |
-| `POST` | `/api/extract-xlsx` | Извлечь номера из Excel |
+| `POST` | `/api/extract-xlsx` | Извлечь строки из столбца A Excel (номера или наименования) |
 | `POST` | `/api/export-xlsx` | Скачать результаты как `.xlsx` |
 | `GET` | `/api/certificate-pdf` | Скачать PDF сертификата из реестра (`source`, `registry_id`) |
 | `POST` | `/api/cache/clear` | Очистить SQLite-кэш |
@@ -118,7 +119,7 @@ python scripts/install_git_hooks.py
 | `GET/POST` | `/login` | Страница входа (публичная при включённой auth) |
 | `POST` | `/logout` | Выход из сессии |
 
-Подробнее: [ai_docs/develop/api/endpoints.md](ai_docs/develop/api/endpoints.md).
+Подробнее: [ai_docs/develop/api/endpoints.md](ai_docs/develop/api/endpoints.md), [search-product.md](ai_docs/develop/api/search-product.md).
 
 ### Пример: батч lookup
 
@@ -152,7 +153,7 @@ POST /api/lookup
 }
 ```
 
-Коды ошибок lookup: `invalid_number`, `unsupported_country`, `not_found`, `source_unavailable`, `ambiguous`. Для PDF/Excel: `no_numbers_in_pdf`, `invalid_pdf`, `no_numbers_in_xlsx`, `invalid_xlsx`.
+Коды ошибок lookup: `invalid_number`, `unsupported_country`, `not_found`, `source_unavailable`, `ambiguous`. Поиск по продукции: `query_too_short`, `not_found`, `source_unavailable`. Для PDF/Excel: `no_numbers_in_pdf`, `invalid_pdf`, `no_numbers_in_xlsx`, `invalid_xlsx`.
 
 ## Переменные окружения
 
@@ -227,5 +228,6 @@ pytest
 
 - [Usage Guide](ai_docs/develop/usage-guide.md)
 - [API: lookup](ai_docs/develop/api/lookup.md)
+- [API: поиск по продукции](ai_docs/develop/api/search-product.md)
 - [API: все endpoint'ы](ai_docs/develop/api/endpoints.md)
 - [Changelog](ai_docs/changelog/CHANGELOG.md)

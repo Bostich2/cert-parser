@@ -1,3 +1,7 @@
+const tabCert = document.getElementById("tab-cert");
+const tabProduct = document.getElementById("tab-product");
+const panelCert = document.getElementById("panel-cert");
+const panelProduct = document.getElementById("panel-product");
 const listForm = document.getElementById("list-form");
 const listInput = document.getElementById("number-list");
 const pasteBtn = document.getElementById("paste-btn");
@@ -5,6 +9,13 @@ const xlsxForm = document.getElementById("xlsx-form");
 const xlsxInput = document.getElementById("xlsx-file");
 const xlsxDrop = document.getElementById("xlsx-drop");
 const xlsxSummary = document.getElementById("xlsx-summary");
+const productListForm = document.getElementById("product-list-form");
+const productListInput = document.getElementById("product-list");
+const productPasteBtn = document.getElementById("product-paste-btn");
+const productXlsxForm = document.getElementById("product-xlsx-form");
+const productXlsxInput = document.getElementById("product-xlsx-file");
+const productXlsxDrop = document.getElementById("product-xlsx-drop");
+const productXlsxSummary = document.getElementById("product-xlsx-summary");
 const pdfForm = document.getElementById("pdf-form");
 const pdfInput = document.getElementById("pdf-file");
 const pdfDirInput = document.getElementById("pdf-dir");
@@ -98,6 +109,7 @@ let pendingTraceLines = [];
 let extractPdfEndpoint = null;
 let extractPdfStreamEndpoint = null;
 let lookupStreamEndpoint = null;
+let searchProductStreamEndpoint = null;
 const retryingRows = new Set();
 let openRowMenuIndex = null;
 
@@ -186,6 +198,16 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
+const searchTabs = [tabCert, tabProduct].filter(Boolean);
+for (const tab of searchTabs) {
+    tab.addEventListener("click", () => {
+        activateSearchTab(tab.id);
+    });
+    tab.addEventListener("keydown", (event) => {
+        handleSearchTabKeydown(event, tab);
+    });
+}
+
 listForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const numbers = parseNumbers(listInput.value);
@@ -196,17 +218,7 @@ listForm.addEventListener("submit", async (event) => {
 });
 
 pasteBtn.addEventListener("click", async () => {
-    try {
-        const text = await navigator.clipboard.readText();
-        if (!text) {
-            return;
-        }
-        const current = listInput.value.trim();
-        listInput.value = current ? `${current}\n${text}` : text;
-        listInput.focus();
-    } catch {
-        listInput.focus();
-    }
+    await pasteIntoTextarea(listInput);
 });
 
 xlsxForm.addEventListener("submit", async (event) => {
@@ -227,6 +239,39 @@ xlsxDrop.addEventListener("keydown", (event) => {
 
 xlsxInput.addEventListener("change", () => {
     updateXlsxSelection();
+});
+
+productListForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const queries = parseNumbers(productListInput.value);
+    if (!queries.length) {
+        return;
+    }
+    await runProductSearch(queries);
+});
+
+productPasteBtn.addEventListener("click", async () => {
+    await pasteIntoTextarea(productListInput);
+});
+
+productXlsxForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const file = productXlsxInput.files && productXlsxInput.files[0];
+    if (!file) {
+        return;
+    }
+    await runProductXlsxSearch(file);
+});
+
+productXlsxDrop.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        productXlsxInput.click();
+    }
+});
+
+productXlsxInput.addEventListener("change", () => {
+    updateProductXlsxSelection();
 });
 
 pdfForm.addEventListener("submit", async (event) => {
@@ -297,6 +342,52 @@ function parseNumbers(text) {
         .filter(Boolean);
 }
 
+async function pasteIntoTextarea(textarea) {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text) {
+            return;
+        }
+        const current = textarea.value.trim();
+        textarea.value = current ? `${current}\n${text}` : text;
+        textarea.focus();
+    } catch {
+        textarea.focus();
+    }
+}
+
+function activateSearchTab(tabId) {
+    const selectedCert = tabId === "tab-cert";
+    tabCert.setAttribute("aria-selected", selectedCert ? "true" : "false");
+    tabProduct.setAttribute("aria-selected", selectedCert ? "false" : "true");
+    tabCert.tabIndex = selectedCert ? 0 : -1;
+    tabProduct.tabIndex = selectedCert ? -1 : 0;
+    panelCert.hidden = !selectedCert;
+    panelProduct.hidden = selectedCert;
+}
+
+function handleSearchTabKeydown(event, tab) {
+    const key = event.key;
+    if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "Home" && key !== "End") {
+        return;
+    }
+    event.preventDefault();
+    const currentIndex = searchTabs.indexOf(tab);
+    let nextIndex = currentIndex;
+    if (key === "ArrowLeft") {
+        nextIndex = (currentIndex - 1 + searchTabs.length) % searchTabs.length;
+    } else if (key === "ArrowRight") {
+        nextIndex = (currentIndex + 1) % searchTabs.length;
+    } else if (key === "Home") {
+        nextIndex = 0;
+    } else if (key === "End") {
+        nextIndex = searchTabs.length - 1;
+    }
+    const nextTab = searchTabs[nextIndex];
+    activateSearchTab(nextTab.id);
+    nextTab.focus();
+}
+
 function setSelectedPdfs(fileList) {
     selectedPdfs = uniquePdfs(fileList);
     if (!selectedPdfs.length) {
@@ -315,6 +406,13 @@ function updateXlsxSelection() {
     const hasFile = Boolean(file);
     xlsxSummary.textContent = hasFile ? file.name : "Файл не выбран";
     xlsxDrop.classList.toggle("is-selected", hasFile);
+}
+
+function updateProductXlsxSelection() {
+    const file = productXlsxInput.files && productXlsxInput.files[0];
+    const hasFile = Boolean(file);
+    productXlsxSummary.textContent = hasFile ? file.name : "Файл не выбран";
+    productXlsxDrop.classList.toggle("is-selected", hasFile);
 }
 
 function uniquePdfs(fileList) {
@@ -548,6 +646,190 @@ async function runXlsxLookup(file) {
     await runLookup(numbers, { preserveTrace: true });
 }
 
+async function runProductSearch(queries, options = {}) {
+    const { preserveTrace = false } = options;
+    setBusy(true);
+    renderRows([]);
+    if (!preserveTrace) {
+        resetTrace();
+    }
+    const collected = [];
+    let currentQuery = "";
+    try {
+        for (let index = 0; index < queries.length; index += 1) {
+            const current = queries[index];
+            currentQuery = current;
+            showProgress(
+                progressLabel("товар", index + 1, queries.length),
+                "Ищем фрагмент формулировки из документа…",
+            );
+            if (queries.length > 1) {
+                appendTraceLine(`— ${current} —`);
+            }
+            const chunk = await searchProductChunk(current, (step) => {
+                appendTraceLine(step);
+                showProgress(progressLabel("товар", index + 1, queries.length), step);
+            });
+            collected.push(...chunk);
+            renderRows(collected);
+        }
+    } catch (error) {
+        clearPendingTrace();
+        collected.push(tagProductHit({
+            query: currentQuery,
+            error: humanizeError(error),
+            error_code: "client_error",
+            trace: [humanizeError(error)],
+        }));
+        appendTraceSteps(collected[collected.length - 1], Boolean(currentQuery), currentQuery);
+        renderRows(collected);
+    } finally {
+        hideProgress();
+        setBusy(false);
+    }
+}
+
+async function searchProductChunk(query, onStep) {
+    if (searchProductStreamEndpoint !== false) {
+        try {
+            return await searchProductChunkStream(query, onStep);
+        } catch (error) {
+            if (searchProductStreamEndpoint === false) {
+                return searchProductChunkJson(query, onStep);
+            }
+            throw error;
+        }
+    }
+    return searchProductChunkJson(query, onStep);
+}
+
+async function searchProductChunkStream(query, onStep) {
+    const response = await apiFetch("/api/search-product/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ queries: [query] }),
+    });
+    if (response.status === 404) {
+        searchProductStreamEndpoint = false;
+        throw new Error("Not Found");
+    }
+    let done = null;
+    await readNdjson(response, (event) => {
+        if (event.type === "step") {
+            if (onStep) {
+                onStep(event.text);
+            }
+            return;
+        }
+        if (event.type === "error") {
+            throw new Error(event.detail || "Ошибка потока поиска");
+        }
+        if (event.type === "done") {
+            done = event;
+        }
+    });
+    searchProductStreamEndpoint = true;
+    if (!done) {
+        throw new Error("Сервер не вернул результат поиска");
+    }
+    return productHitsFromDone(done, query);
+}
+
+async function searchProductChunkJson(query, onStep) {
+    const response = await apiFetch("/api/search-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ queries: [query], limit_per_query: 25 }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(httpErrorMessage(response, payload));
+    }
+    const hits = productHitsFromDone(payload, query);
+    if (onStep && hits[0] && hits[0].trace) {
+        for (const step of hits[0].trace) {
+            onStep(step);
+        }
+    }
+    return hits;
+}
+
+function productHitsFromDone(payload, query) {
+    let hits = [];
+    if (Array.isArray(payload.results)) {
+        hits = payload.results;
+    } else if (Array.isArray(payload.result)) {
+        hits = payload.result;
+    } else if (payload.result) {
+        hits = [payload.result];
+    }
+    if (!hits.length) {
+        hits = [{
+            query,
+            error: "Ничего не найдено",
+            error_code: "not_found",
+        }];
+    }
+    return hits.map((hit) => tagProductHit({ ...hit, query: hit.query || query }));
+}
+
+function tagProductHit(hit) {
+    return { ...hit, search_kind: "product" };
+}
+
+async function runProductXlsxSearch(file) {
+    setBusy(true);
+    renderRows([]);
+    resetTrace();
+    showProgress("Читаю Excel", "Собираю наименования из столбца A…");
+    setPendingTrace(["Читаю Excel и собираю наименования из столбца A…"]);
+    let queries;
+    try {
+        const body = new FormData();
+        body.append("file", file);
+        const response = await apiFetch("/api/extract-xlsx", { method: "POST", body });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const detail = payload.detail || `Ошибка сервера (${response.status})`;
+            throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
+        }
+        clearPendingTrace();
+        if (payload.error_code === "no_numbers_in_xlsx") {
+            const row = tagProductHit({
+                query: file.name,
+                error: payload.error || "В Excel не найдены наименования в столбце A",
+                error_code: payload.error_code,
+                trace: [payload.error || "В Excel не найдены наименования в столбце A"],
+            });
+            appendTraceSteps(row, false);
+            renderRows([row]);
+            return;
+        }
+        queries = payload.numbers || [];
+        appendTraceSteps({
+            trace: [`Excel: найдено ${queries.length} ${pluralizeNames(queries.length)}`],
+        }, false);
+        if (!queries.length) {
+            throw new Error("В Excel не найдены наименования в столбце A");
+        }
+    } catch (error) {
+        clearPendingTrace();
+        const row = tagProductHit({
+            query: file.name,
+            error: error.message || "Не удалось прочитать Excel",
+            error_code: "client_error",
+            trace: [error.message || "Не удалось прочитать Excel"],
+        });
+        appendTraceSteps(row, false);
+        renderRows([row]);
+        return;
+    } finally {
+        hideProgress();
+        setBusy(false);
+    }
+    await runProductSearch(queries, { preserveTrace: true });
+}
+
 async function runPdfLookups(files) {
     setBusy(true);
     renderRows([]);
@@ -764,7 +1046,7 @@ function renderRows(results) {
     currentPage = Math.min(Math.max(currentPage, 1), pages);
     updateResultsControls(currentResults.length, pages);
     if (!currentResults.length) {
-        resultsBody.innerHTML = '<tr class="empty"><td colspan="8">Пока ничего не искали</td></tr>';
+        resultsBody.innerHTML = '<tr class="empty"><td colspan="11">Пока ничего не искали</td></tr>';
         return;
     }
     closeRowMenus();
@@ -773,8 +1055,12 @@ function renderRows(results) {
     resultsBody.innerHTML = pageRows.map((item, localIndex) => rowHtml(item, start + localIndex)).join("");
 }
 
+function isProductRow(item) {
+    return Boolean(item && item.search_kind === "product");
+}
+
 function isRetriableRow(item) {
-    if (!item || !item.error || !item.query) {
+    if (!item || !item.error || !item.query || isProductRow(item)) {
         return false;
     }
     if (item.error_code && NON_RETRIABLE_ERROR_CODES.has(item.error_code)) {
@@ -1029,8 +1315,11 @@ function renderTraceView() {
 }
 
 function rowHtml(item, globalIndex) {
-    const number = escapeHtml(item.official_number || item.normalized || item.query || "—");
+    const query = escapeHtml(item.query || "—");
+    const number = escapeHtml(item.official_number || item.normalized || (isProductRow(item) ? "—" : item.query) || "—");
     const country = escapeHtml(item.country_code || "—");
+    const productName = escapeHtml(item.product_name || "—");
+    const docKind = escapeHtml(formatDocKind(item.doc_kind));
     const safeUrl = safeHref(item.url);
     const link = safeUrl
         ? `<a href="${escapeAttr(safeUrl)}" target="_blank" rel="noopener noreferrer">Открыть карточку</a>`
@@ -1057,8 +1346,11 @@ function rowHtml(item, globalIndex) {
     }
     const menu = rowMenuHtml(item, globalIndex);
     return `<tr class="${rowClasses.join(" ")}">
+        <td>${query}</td>
         <td>${number}</td>
         <td>${country}</td>
+        <td>${productName}</td>
+        <td>${docKind}</td>
         <td>${link}</td>
         <td class="pdf-cell">${pdfLink}</td>
         <td>${validFrom}</td>
@@ -1139,6 +1431,16 @@ function statusCss(code) {
     return "";
 }
 
+function formatDocKind(kind) {
+    if (kind === "certificate") {
+        return "СС";
+    }
+    if (kind === "declaration") {
+        return "ДС";
+    }
+    return kind || "—";
+}
+
 function formatDate(value) {
     if (!value) {
         return "—";
@@ -1168,7 +1470,8 @@ function waitingHint(number) {
 }
 
 function progressLabel(kind, current, total, detail) {
-    const kindLabel = kind === "PDF" ? "PDF" : "Номер";
+    const kindLabels = { PDF: "PDF", номер: "Номер", товар: "Наименование" };
+    const kindLabel = kindLabels[kind] || "Номер";
     const base = total > 1 ? `${kindLabel} ${current} из ${total}` : kindLabel;
     return detail ? `${base}: ${detail}` : base;
 }
@@ -1183,6 +1486,18 @@ function pluralizeNumbers(total) {
         return "номера";
     }
     return "номеров";
+}
+
+function pluralizeNames(total) {
+    const mod10 = total % 10;
+    const mod100 = total % 100;
+    if (mod10 === 1 && mod100 !== 11) {
+        return "наименование";
+    }
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        return "наименования";
+    }
+    return "наименований";
 }
 
 function showProgress(label, detail) {

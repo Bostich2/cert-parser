@@ -4,7 +4,15 @@ from io import BytesIO
 
 from cert_parser.domain.errors import XlsxReadError
 
-_HEADER_HINTS = ("номер", "number", "сертификат")
+_HEADER_HINTS = (
+    "номер",
+    "number",
+    "сертификат",
+    "наименован",
+    "товар",
+    "продукц",
+    "product",
+)
 
 
 def extract_numbers_from_xlsx(payload: bytes, *, max_batch_size: int | None = None) -> list[str]:
@@ -42,6 +50,12 @@ def extract_numbers_from_xlsx(payload: bytes, *, max_batch_size: int | None = No
         workbook.close()
 
 
+_DOC_KIND_LABELS = {
+    "certificate": "Сертификат",
+    "declaration": "Декларация",
+}
+
+
 def build_results_xlsx(rows: list[dict]) -> bytes:
     try:
         from openpyxl import Workbook
@@ -53,25 +67,38 @@ def build_results_xlsx(rows: list[dict]) -> bytes:
     if sheet is None:
         raise XlsxReadError("В книге Excel нет листа")
     sheet.title = "Результаты"
-    headers = [
-        "Запрос",
-        "Номер",
-        "Страна",
-        "Ссылка",
-        "PDF",
-        "Действует с",
-        "Действует до",
-        "Статус",
-        "Код статуса",
-        "Ошибка",
-        "Код ошибки",
-        "Из кэша",
-    ]
+    include_product = any(row.get("product_name") or row.get("doc_kind") for row in rows)
+    headers = ["Запрос"]
+    if include_product:
+        headers.extend(["Продукция", "Вид"])
+    headers.extend(
+        [
+            "Номер",
+            "Страна",
+            "Ссылка",
+            "PDF",
+            "Действует с",
+            "Действует до",
+            "Статус",
+            "Код статуса",
+            "Ошибка",
+            "Код ошибки",
+            "Из кэша",
+        ]
+    )
     sheet.append(headers)
     for item in rows:
-        sheet.append(
+        row = [item.get("query") or ""]
+        if include_product:
+            kind = item.get("doc_kind") or ""
+            row.extend(
+                [
+                    item.get("product_name") or "",
+                    _DOC_KIND_LABELS.get(kind, kind),
+                ]
+            )
+        row.extend(
             [
-                item.get("query") or "",
                 item.get("official_number") or item.get("normalized") or item.get("query") or "",
                 item.get("country_code") or "",
                 item.get("url") or "",
@@ -85,6 +112,7 @@ def build_results_xlsx(rows: list[dict]) -> bytes:
                 "Да" if item.get("cached") else "Нет",
             ]
         )
+        sheet.append(row)
     buffer = BytesIO()
     workbook.save(buffer)
     workbook.close()

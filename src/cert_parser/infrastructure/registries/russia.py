@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 from datetime import date
 from typing import Any
 
@@ -13,29 +12,38 @@ from cert_parser.domain.errors import (
     CertificateNotFoundError,
     SourceUnavailableError,
 )
-from cert_parser.domain.models import CertificateNumber, RegistryRecord, parse_iso_date
-from cert_parser.domain.ports import RegistryProvider
+from cert_parser.domain.models import CertificateNumber, ProductSearchHit, ProductSearchQuery, RegistryRecord, parse_iso_date
+from cert_parser.domain.ports import ProductSearchProvider, RegistryProvider
 from cert_parser.infrastructure.registries.fsa_pdf import build_fsa_pdf_proxy_url
+from cert_parser.infrastructure.registries.fsa_session import (
+    FsaSession,
+    fsa_items,
+    fsa_list_payload,
+    fsa_product_name,
+    fsa_search_terms,
+)
 from cert_parser.infrastructure.registries.matching import is_safe_contained_match
 from cert_parser.logging_setup import log_step
 
-logger = logging.getLogger(__name__)
-
-_UNAVAILABLE_403 = (
-    "Реестр Росаккредитации недоступен (403). "
-    "Нужен доступ из РФ или HTTPS_PROXY"
-)
+FSA_CERT_PRODUCT_COLUMN = "fullName"
+_REFERER_PATH = "/rss/certificate"
+_LOG_PREFIX = "RU"
 
 
-class FsaProvider(RegistryProvider):
+class FsaProvider(RegistryProvider, ProductSearchProvider):
     """Russia EAEU certificates via pub.fsa.gov.ru RSS API."""
 
-    def __init__(self, client: httpx.AsyncClient, settings: Settings) -> None:
+    source = "fsa_cert"
+
+    def __init__(
+        self,
+        client: httpx.AsyncClient,
+        settings: Settings,
+        session: FsaSession | None = None,
+    ) -> None:
         self._client = client
         self._base = settings.fsa_base_url.rstrip("/")
-        self._username = settings.fsa_login_username
-        self._password = settings.fsa_login_password
-        self._token: str | None = None
+        self._session = session or FsaSession(client, settings)
         self._status_names: dict[str, str] | None = None
 
     async def lookup(self, number: CertificateNumber) -> RegistryRecord:
@@ -59,6 +67,26 @@ class FsaProvider(RegistryProvider):
             pdf_url=build_fsa_pdf_proxy_url(registry_id),
         )
 
+    async def search_products(
+        self,
+        query: ProductSearchQuery,
+        *,
+        limit: int,
+    ) -> list[ProductSearchHit]:
+        size = max(1, limit)
+        for term in fsa_search_terms(query):
+            log_step(f"RU: поиск сертификатов по продукции «{term}»")
+            items = await self._search_by_column(FSA_CERT_PRODUCT_COLUMN, term, size=size)
+            if items:
+                hits: list[ProductSearchHit] = []
+                for item in items[:size]:
+                    hit = await self._hit_from_item(item, query.raw)
+                    if hit is not None:
+                        hits.append(hit)
+                if hits:
+                    return hits
+        return []
+
     async def ping(self) -> bool:
         try:
             await self._ensure_token()
@@ -69,30 +97,49 @@ class FsaProvider(RegistryProvider):
         except httpx.HTTPError:
             return False
 
+    async def _hit_from_item(self, item: dict[str, Any], query_raw: str) -> ProductSearchHit | None:
+        registry_id = str(item.get("id") or "")
+        if not registry_id:
+            return None
+        status_code = str(item.get("idStatus") or "") or None
+        status_label = await self._status_label(status_code)
+        official = str(item.get("number") or "") or None
+        return ProductSearchHit(
+            query=query_raw,
+            official_number=official,
+            country_code="RU",
+            doc_kind="certificate",
+            product_name=fsa_product_name(item),
+            url=f"{self._base}/rss/certificate/view/{registry_id}/baseInfo",
+            pdf_url=build_fsa_pdf_proxy_url(registry_id),
+            valid_from=_first_date(item.get("startDate"), item.get("date"), item.get("regDate")),
+            valid_until=parse_iso_date(_stringify(item.get("endDate"))),
+            status=status_label,
+            status_code=status_code,
+            registry_id=registry_id,
+            source=self.source,
+        )
+
     async def _search(self, term: str) -> list[dict[str, Any]]:
         log_step(f"RU: POST /api/v1/rss/common/certificates/get, number={term}")
-        payload = {
-            "size": 10,
-            "page": 0,
-            "filter": {
-                "idTechReg": [],
-                "regDate": {"minDate": "", "maxDate": ""},
-                "endDate": {"minDate": "", "maxDate": ""},
-                "columnsSearch": [
-                    {"name": "number", "search": term, "type": 0, "translated": False}
-                ],
-            },
-            "columnsSort": [{"column": "date", "sort": "DESC"}],
-        }
+        payload = fsa_list_payload("number", term, size=10)
         data = await self._api_json(
             "POST",
             "/api/v1/rss/common/certificates/get",
             json_body=payload,
         )
-        items = data.get("items") if isinstance(data, dict) else None
-        if not isinstance(items, list):
-            return []
-        return [item for item in items if isinstance(item, dict)]
+        return fsa_items(data)
+
+    async def _search_by_column(self, column: str, term: str, *, size: int) -> list[dict[str, Any]]:
+        payload = fsa_list_payload(column, term, size=size)
+        data = await self._api_json(
+            "POST",
+            "/api/v1/rss/common/certificates/get",
+            json_body=payload,
+        )
+        items = fsa_items(data)
+        log_step(f"RU: записей в ответе: {len(items)}")
+        return items
 
     async def _status_label(self, status_code: str | None) -> str:
         if not status_code:
@@ -126,71 +173,17 @@ class FsaProvider(RegistryProvider):
         json_body: dict[str, Any] | None = None,
         retry_auth: bool = True,
     ) -> dict[str, Any]:
-        await self._ensure_token()
-        url = f"{self._base}{path}"
-        headers = {
-            "Authorization": f"Bearer {self._token}",
-            "Origin": self._base,
-            "Referer": f"{self._base}/rss/certificate",
-            "Content-Type": "application/json",
-        }
-        try:
-            response = await self._client.request(method, url, json=json_body, headers=headers)
-        except httpx.HTTPError as exc:
-            logger.warning("FSA request failed: %s", exc)
-            raise SourceUnavailableError("Реестр Росаккредитации недоступен") from exc
-        if response.status_code == 401 and retry_auth:
-            self._token = None
-            return await self._api_json(method, path, json_body=json_body, retry_auth=False)
-        if response.status_code == 403:
-            log_step("RU: HTTP 403 — нужен доступ из РФ или HTTPS_PROXY")
-            raise SourceUnavailableError(_UNAVAILABLE_403)
-        if response.status_code >= 400:
-            log_step(f"RU: HTTP {response.status_code} для {path}")
-            logger.warning("FSA HTTP %s for %s", response.status_code, url)
-            raise SourceUnavailableError("Реестр Росаккредитации вернул ошибку")
-        try:
-            data = response.json()
-        except ValueError as exc:
-            raise SourceUnavailableError("Реестр Росаккредитации вернул некорректный ответ") from exc
-        return data if isinstance(data, dict) else {}
+        return await self._session.api_json(
+            method,
+            path,
+            json_body=json_body,
+            referer_path=_REFERER_PATH,
+            log_prefix=_LOG_PREFIX,
+            retry_auth=retry_auth,
+        )
 
     async def _ensure_token(self) -> None:
-        if self._token:
-            return
-        log_step("RU: анонимный вход в pub.fsa.gov.ru")
-        try:
-            await self._client.get(f"{self._base}/rss/certificate")
-            response = await self._client.post(
-                f"{self._base}/login",
-                json={"username": self._username, "password": self._password},
-                headers={
-                    "Origin": self._base,
-                    "Referer": f"{self._base}/rss/certificate",
-                    "Content-Type": "application/json",
-                },
-            )
-        except httpx.HTTPError as exc:
-            raise SourceUnavailableError("Реестр Росаккредитации недоступен") from exc
-        if response.status_code == 403:
-            log_step("RU: HTTP 403 на /login — нужен доступ из РФ или HTTPS_PROXY")
-            raise SourceUnavailableError(_UNAVAILABLE_403)
-        if response.status_code >= 400:
-            raise SourceUnavailableError("Не удалось авторизоваться в реестре Росаккредитации")
-        token = response.headers.get("Authorization") or response.headers.get("authorization")
-        if not token:
-            try:
-                body = response.json()
-            except ValueError:
-                body = {}
-            if isinstance(body, dict):
-                token = str(body.get("access_token") or body.get("token") or "")
-        if not token:
-            raise SourceUnavailableError("Реестр Росаккредитации не вернул токен")
-        if token.lower().startswith("bearer "):
-            token = token[7:]
-        self._token = token
-        log_step("RU: токен получен")
+        await self._session.ensure_token(referer_path=_REFERER_PATH, log_prefix=_LOG_PREFIX)
 
 
 def _pick_item(items: list[dict[str, Any]], number: CertificateNumber) -> dict[str, Any]:

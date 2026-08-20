@@ -4,6 +4,11 @@
 
 ### Added
 
+- UI: вкладки «Поиск по сертификату» (буфер, Excel, PDF) и «Поиск по товару» (наименования из буфера и столбца A Excel)
+- API: `POST /api/search-product` — батч-поиск по наименованию продукции (`queries`, `limit_per_query`)
+- API: `POST /api/search-product/stream` — один запрос, NDJSON `step`/`done` с массивом `"results"` (не `"result"`, как у lookup)
+- Поиск по товару: параллельно FSA сертификаты (`fsa_cert`), FSA декларации (`fsa_decl`), OData ЕАЭС RU (`eaeu_ru`) и не-RU (`eaeu_other`); в выдаче сначала записи с `country_code=RU`
+- Поля хита `product_name`, `doc_kind` (`certificate` \| `declaration`), `source`; коды `query_too_short`, `not_found`, `source_unavailable`
 - Единая цепочка lookup для BY, RU, KZ, KG (`ChainedRegistryProvider`, `build_lookup_chain` в `chained.py`)
 - Стратегия EAEU-first: по умолчанию сначала OData [tech.eaeunion.org](https://tech.eaeunion.org), затем национальный реестр; переключается через `LOOKUP_EAEU_FIRST`
 - Fallback на OData ЕАЭС для России (RU) и Кыргызстана (KG) — по аналогии с BY/KZ
@@ -32,6 +37,9 @@
 
 ### Changed
 
+- Excel: `POST /api/extract-xlsx` читает столбец A и для номеров, и для наименований (заголовок также `наименован` / `товар` / `продукц` / `product`)
+- Excel-экспорт: при наличии `product_name`/`doc_kind` добавляются колонки «Продукция» и «Вид»; колонка «Запрос» всегда
+- UI: в таблице результатов колонки «Запрос», «Продукция», «Вид»
 - Bootstrap: BY/KZ/RU/KG собираются через `build_lookup_chain` вместо прямых провайдеров и обёрток
 - Trace lookup: строка «Провайдер» отражает порядок цепочки (EAEU-first или national-first)
 - UI: подсказки ожидания для BY, RU, KZ, KG показывают порядок источников (EAEU → национальный реестр)

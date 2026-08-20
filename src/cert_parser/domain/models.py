@@ -65,6 +65,34 @@ class LookupResult:
     trace: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class ProductSearchQuery:
+    raw: str
+    normalized: str
+    tokens: tuple[str, ...]
+    stems: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ProductSearchHit:
+    query: str
+    official_number: str | None = None
+    country_code: str | None = None
+    doc_kind: str | None = None
+    product_name: str | None = None
+    url: str | None = None
+    pdf_url: str | None = None
+    valid_from: date | None = None
+    valid_until: date | None = None
+    status: str | None = None
+    status_code: str | None = None
+    registry_id: str | None = None
+    source: str | None = None
+    error: str | None = None
+    error_code: str | None = None
+    trace: tuple[str, ...] = ()
+
+
 def parse_iso_date(value: str | None) -> date | None:
     if not value:
         return None

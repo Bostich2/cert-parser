@@ -63,72 +63,129 @@
     </header>
 
     <main class="wrap">
-        <div class="sources-grid">
-            <section class="card source-card">
-                <h2>Из буфера</h2>
-                <form id="list-form" class="source-form">
-                    <label class="source-desc" for="number-list">Один или несколько номеров, каждый с новой строки. Можно вставить из буфера или из столбца Excel.</label>
-                    <div class="source-main">
-                        <div class="textarea-wrap">
-                            <textarea id="number-list" rows="6" placeholder="ЕАЭС BY/112 02.01. ТР018 010.02 00276"></textarea>
-                            <button type="button" id="paste-btn" class="paste-icon-btn"
-                                    title="Вставить из буфера" aria-label="Вставить из буфера">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                     stroke-linejoin="round" aria-hidden="true">
-                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="source-actions">
-                        <button type="submit">Найти</button>
-                    </div>
-                </form>
-            </section>
+        <div class="search-tabs">
+            <div class="search-tablist" role="tablist" aria-label="Режим поиска">
+                <button type="button" class="search-tab" role="tab" id="tab-cert"
+                        aria-controls="panel-cert" aria-selected="true" tabindex="0" data-keep-enabled>
+                    Поиск по сертификату
+                </button>
+                <button type="button" class="search-tab" role="tab" id="tab-product"
+                        aria-controls="panel-product" aria-selected="false" tabindex="-1" data-keep-enabled>
+                    Поиск по товару
+                </button>
+            </div>
 
-            <section class="card source-card">
-                <h2>Из Excel</h2>
-                <form id="xlsx-form" class="source-form">
-                    <label class="source-desc" for="xlsx-file">Файл со списком номеров в столбце A (первый лист, формат .xlsx).</label>
-                    <input id="xlsx-file" class="sr-only" name="file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                    <div class="source-main">
-                        <label id="xlsx-drop" class="file-dropzone" for="xlsx-file" tabindex="0" role="button"
-                               aria-label="Выбрать Excel-файл">
-                            <p class="file-dropzone-title">Выберите Excel-файл</p>
-                            <p id="xlsx-summary" class="file-dropzone-summary">Файл не выбран</p>
-                        </label>
-                    </div>
-                    <div class="source-actions">
-                        <button type="submit">Найти из Excel</button>
-                    </div>
-                </form>
-            </section>
-
-            <section class="card source-card">
-                <h2>Из PDF</h2>
-                <form id="pdf-form" class="source-form">
-                    <label class="source-desc" for="pdf-drop">PDF-файлы или папка. Номера извлекаются из текста, при необходимости — OCR.</label>
-                    <input id="pdf-file" class="sr-only" name="file" type="file" accept="application/pdf,.pdf" multiple>
-                    <input id="pdf-dir" class="sr-only" name="directory" type="file" webkitdirectory>
-                    <div class="source-main">
-                        <div id="pdf-drop" class="dropzone" tabindex="0" role="button"
-                             aria-label="Выбрать PDF-файлы или перетащить папку">
-                            <p class="dropzone-title">Перетащите файлы или папку сюда</p>
-                            <p class="dropzone-actions">
-                                <button type="button" id="pdf-pick-files" class="linkish">Выбрать файлы</button>
-                                <span class="dropzone-sep">или</span>
-                                <button type="button" id="pdf-pick-dir" class="linkish">выбрать папку</button>
-                            </p>
-                            <p id="pdf-summary" class="dropzone-summary">Файлы не выбраны</p>
+            <div id="panel-cert" class="sources-grid" role="tabpanel" aria-labelledby="tab-cert">
+                <section class="card source-card">
+                    <h2>Из буфера</h2>
+                    <form id="list-form" class="source-form">
+                        <label class="source-desc" for="number-list">Один или несколько номеров, каждый с новой строки. Можно вставить из буфера или из столбца Excel.</label>
+                        <div class="source-main">
+                            <div class="textarea-wrap">
+                                <textarea id="number-list" rows="6" placeholder="ЕАЭС BY/112 02.01. ТР018 010.02 00276"></textarea>
+                                <button type="button" id="paste-btn" class="paste-icon-btn"
+                                        title="Вставить из буфера" aria-label="Вставить из буфера">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="source-actions">
-                        <button type="submit">Найти из PDF</button>
-                    </div>
-                </form>
-            </section>
+                        <div class="source-actions">
+                            <button type="submit">Найти</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="card source-card">
+                    <h2>Из Excel</h2>
+                    <form id="xlsx-form" class="source-form">
+                        <label class="source-desc" for="xlsx-file">Файл со списком номеров в столбце A (первый лист, формат .xlsx).</label>
+                        <input id="xlsx-file" class="sr-only" name="file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                        <div class="source-main">
+                            <label id="xlsx-drop" class="file-dropzone" for="xlsx-file" tabindex="0" role="button"
+                                   aria-label="Выбрать Excel-файл">
+                                <p class="file-dropzone-title">Выберите Excel-файл</p>
+                                <p id="xlsx-summary" class="file-dropzone-summary">Файл не выбран</p>
+                            </label>
+                        </div>
+                        <div class="source-actions">
+                            <button type="submit">Найти из Excel</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="card source-card">
+                    <h2>Из PDF</h2>
+                    <form id="pdf-form" class="source-form">
+                        <label class="source-desc" for="pdf-drop">PDF-файлы или папка. Номера извлекаются из текста, при необходимости — OCR.</label>
+                        <input id="pdf-file" class="sr-only" name="file" type="file" accept="application/pdf,.pdf" multiple>
+                        <input id="pdf-dir" class="sr-only" name="directory" type="file" webkitdirectory>
+                        <div class="source-main">
+                            <div id="pdf-drop" class="dropzone" tabindex="0" role="button"
+                                 aria-label="Выбрать PDF-файлы или перетащить папку">
+                                <p class="dropzone-title">Перетащите файлы или папку сюда</p>
+                                <p class="dropzone-actions">
+                                    <button type="button" id="pdf-pick-files" class="linkish">Выбрать файлы</button>
+                                    <span class="dropzone-sep">или</span>
+                                    <button type="button" id="pdf-pick-dir" class="linkish">выбрать папку</button>
+                                </p>
+                                <p id="pdf-summary" class="dropzone-summary">Файлы не выбраны</p>
+                            </div>
+                        </div>
+                        <div class="source-actions">
+                            <button type="submit">Найти из PDF</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <div id="panel-product" class="sources-grid sources-grid--product" role="tabpanel" aria-labelledby="tab-product" hidden>
+                <section class="card source-card">
+                    <h2>Наименования из буфера</h2>
+                    <form id="product-list-form" class="source-form">
+                        <label class="source-desc" for="product-list">Одно наименование на строку. Ищем фрагмент формулировки из документа, не артикул магазина.</label>
+                        <div class="source-main">
+                            <div class="textarea-wrap">
+                                <textarea id="product-list" rows="6" placeholder="шины легковые"></textarea>
+                                <button type="button" id="product-paste-btn" class="paste-icon-btn"
+                                        title="Вставить из буфера" aria-label="Вставить из буфера">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                         stroke-linejoin="round" aria-hidden="true">
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="source-actions">
+                            <button type="submit">Найти</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="card source-card">
+                    <h2>Из списка Excel</h2>
+                    <form id="product-xlsx-form" class="source-form">
+                        <label class="source-desc" for="product-xlsx-file">Наименования в столбце A (первый лист, .xlsx). Ищем фрагмент формулировки из документа, не артикул магазина.</label>
+                        <input id="product-xlsx-file" class="sr-only" name="file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                        <div class="source-main">
+                            <label id="product-xlsx-drop" class="file-dropzone" for="product-xlsx-file" tabindex="0" role="button"
+                                   aria-label="Выбрать Excel-файл с наименованиями">
+                                <p class="file-dropzone-title">Выберите Excel-файл</p>
+                                <p id="product-xlsx-summary" class="file-dropzone-summary">Файл не выбран</p>
+                            </label>
+                        </div>
+                        <div class="source-actions">
+                            <button type="submit">Найти из Excel</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
         </div>
 
         <section class="card">
@@ -168,8 +225,11 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>Запрос</th>
                             <th>Номер</th>
                             <th>Страна</th>
+                            <th>Продукция</th>
+                            <th>Вид</th>
                             <th>Ссылка</th>
                             <th>PDF</th>
                             <th>Действует с</th>
@@ -180,7 +240,7 @@
                     </thead>
                     <tbody id="results-body">
                         <tr class="empty">
-                            <td colspan="8">Пока ничего не искали</td>
+                            <td colspan="11">Пока ничего не искали</td>
                         </tr>
                     </tbody>
                 </table>

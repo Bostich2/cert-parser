@@ -3,7 +3,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Protocol
 
-from cert_parser.domain.models import CertificateNumber, RegistryRecord
+from cert_parser.domain.models import (
+    CertificateNumber,
+    ProductSearchHit,
+    ProductSearchQuery,
+    RegistryRecord,
+)
 
 
 class LookupCache(Protocol):
@@ -27,3 +32,18 @@ class RegistryProvider(ABC):
 
     async def ping(self) -> bool:
         return True
+
+
+class ProductSearchProvider(ABC):
+    """Search conformity documents by product name. Separate from RegistryProvider.lookup."""
+
+    source: str
+
+    @abstractmethod
+    async def search_products(
+        self,
+        query: ProductSearchQuery,
+        *,
+        limit: int,
+    ) -> list[ProductSearchHit]:
+        """Return matching hits or raise SourceUnavailableError."""
