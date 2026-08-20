@@ -51,11 +51,20 @@ def test_long_marketplace_title_skips_phrase() -> None:
     assert query is not None
     steps = registry_search_steps(query)
     assert steps[0][1] == "tokens"
-    assert steps[0][0] == ("Cordiant", "Comfort", "SUV")
-    assert steps[1][1] == "first"
-    assert steps[1][0] == ("Cordiant",)
+    assert steps[0][0] == ("Cordiant", "Comfort")
     assert all(label != "phrase" for _, label in steps)
+    assert all(label != "first" for _, label in steps)
     assert contiguous_search_terms(query) == ["Cordiant Comfort", "Cordiant"]
+
+
+def test_trazano_sku_uses_two_brand_tokens() -> None:
+    query = parse_product_search_query(
+        "Trazano Z-107 ZuperEco Шины летние 225/55 R18 98V"
+    )
+    assert query is not None
+    steps = registry_search_steps(query)
+    assert steps[0] == (("Trazano", "ZuperEco"), "tokens")
+    assert contiguous_search_terms(query) == ["Trazano ZuperEco", "Trazano"]
 
 
 def test_short_query_keeps_phrase_then_tokens() -> None:

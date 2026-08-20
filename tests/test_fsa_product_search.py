@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from datetime import date
+
 import httpx
 import pytest
 import respx
@@ -9,7 +12,12 @@ from cert_parser.config import Settings
 from cert_parser.domain.errors import SourceUnavailableError
 from cert_parser.domain.product_query import parse_product_search_query
 from cert_parser.infrastructure.registries.eaeu_odata import EaeuProductSearchProvider
-from cert_parser.infrastructure.registries.fsa_session import fsa_list_payload, fsa_product_name
+from cert_parser.infrastructure.registries.fsa_filters import (
+    acting_status_ids,
+    tech_reg_ids_for_query,
+    tr_codes_for_query,
+)
+from cert_parser.infrastructure.registries.fsa_session import FsaSession, fsa_list_payload, fsa_product_name
 from cert_parser.infrastructure.registries.fsa_declarations import FSA_DECL_PRODUCT_COLUMN, FsaDeclarationsProvider
 from cert_parser.infrastructure.registries.russia import FSA_CERT_PRODUCT_COLUMN, FsaProvider
 
@@ -41,7 +49,50 @@ def test_fsa_product_columns_are_product_full_name() -> None:
     assert FSA_DECL_PRODUCT_COLUMN == "productFullName"
     payload = fsa_list_payload("productFullName", "шины", size=5, sort_column="declDate")
     assert payload["columnsSort"] == [{"column": "declDate", "sort": "DESC"}]
+    assert "status" not in payload["filter"]
+    assert payload["filter"]["endDate"]["minDate"] == ""
     assert fsa_product_name({"productFullName": "Шины Cordiant", "applicantName": "ООО Ромашка"}) == "Шины Cordiant"
+
+
+def test_fsa_product_payload_narrows_to_acting_and_unexpired() -> None:
+    payload = fsa_list_payload(
+        "productFullName",
+        "шины",
+        size=5,
+        sort_column="declDate",
+        active_only=True,
+        status_ids=[6],
+        as_of=date(2026, 8, 20),
+    )
+    assert payload["filter"]["status"] == [6]
+    assert payload["filter"]["endDate"]["minDate"] == "2026-08-20T00:00:00.000Z"
+    assert payload["filter"]["idTechReg"] == []
+
+
+def test_lookup_payload_does_not_narrow_by_status_or_date() -> None:
+    payload = fsa_list_payload("number", "ЕАЭС RU", size=10)
+    assert "status" not in payload["filter"]
+    assert payload["filter"]["endDate"]["minDate"] == ""
+    assert payload["filter"]["idTechReg"] == []
+
+
+def test_tr_codes_and_ids_from_identifiers() -> None:
+    query = parse_product_search_query("шины легковые Cordiant")
+    assert query is not None
+    assert tr_codes_for_query(query) == ("018/2011",)
+    ids = tech_reg_ids_for_query(
+        query,
+        {"techReg": {"11": {"name": "ТР ТС 018/2011 О безопасности колесных транспортных средств"}}},
+    )
+    assert ids == [11]
+    assert acting_status_ids({"status": {"6": {"name": "Действует"}, "7": {"name": "Приостановлен"}}}) == [6]
+
+
+def _assert_active_product_filter(body: dict, *, tech_reg_ids: list[int] | None = None) -> None:
+    filt = body["filter"]
+    assert filt["status"] == [6]
+    assert filt["endDate"]["minDate"].startswith(date.today().isoformat())
+    assert filt["idTechReg"] == (tech_reg_ids or [])
 
 
 @respx.mock
@@ -49,8 +100,9 @@ async def test_fsa_cert_search_uses_product_fullname_column() -> None:
     _mock_fsa_auth()
 
     def check_payload(request: httpx.Request) -> httpx.Response:
-        body = request.read()
-        assert FSA_CERT_PRODUCT_COLUMN.encode() in body
+        body = json.loads(request.content)
+        assert body["filter"]["columnsSearch"][0]["name"] == FSA_CERT_PRODUCT_COLUMN
+        _assert_active_product_filter(body)
         return httpx.Response(
             200,
             json={
@@ -87,9 +139,10 @@ async def test_fsa_decl_search_uses_product_fullname_and_no_pdf() -> None:
     _mock_fsa_auth()
 
     def check_payload(request: httpx.Request) -> httpx.Response:
-        body = request.read()
-        assert FSA_DECL_PRODUCT_COLUMN.encode() in body
-        assert b"declDate" in body
+        body = json.loads(request.content)
+        assert body["filter"]["columnsSearch"][0]["name"] == FSA_DECL_PRODUCT_COLUMN
+        assert body["columnsSort"] == [{"column": "declDate", "sort": "DESC"}]
+        _assert_active_product_filter(body)
         return httpx.Response(
             200,
             json={
@@ -141,10 +194,7 @@ async def test_fsa_403_still_returns_eaeu_hits() -> None:
     }
 
     def odata_response(request: httpx.Request) -> httpx.Response:
-        filt = request.url.params.get("$filter", "")
-        if "eq 'RU'" in filt:
-            return httpx.Response(200, json={"value": [odata_item]})
-        return httpx.Response(200, json={"value": []})
+        return httpx.Response(200, json={"value": [odata_item]})
 
     respx.get(ODATA_URL).mock(side_effect=odata_response)
 
@@ -152,9 +202,8 @@ async def test_fsa_403_still_returns_eaeu_hits() -> None:
     client = httpx.AsyncClient(timeout=5.0)
     fsa = FsaProvider(client, settings)
     decls = FsaDeclarationsProvider(client, settings)
-    eaeu_ru = EaeuProductSearchProvider(client, settings, russia_only=True)
-    eaeu_other = EaeuProductSearchProvider(client, settings, russia_only=False)
-    service = ProductSearchService([fsa, decls, eaeu_ru, eaeu_other], settings)
+    eaeu = EaeuProductSearchProvider(client, settings)
+    service = ProductSearchService([fsa, decls, eaeu], settings)
     hits = await service.search_one(QUERY)
     await client.aclose()
     assert any(hit.source == "eaeu_ru" and hit.error_code is None for hit in hits)
@@ -174,23 +223,55 @@ async def test_fsa_cert_forbidden_raises() -> None:
 
 
 @respx.mock
-async def test_fsa_cert_timeout_on_phrase_tries_next_term() -> None:
+async def test_fsa_cert_timeout_on_phrase_does_not_retry_term() -> None:
     _mock_fsa_auth()
     calls = {"n": 0}
 
     def handler(request: httpx.Request) -> httpx.Response:
         calls["n"] += 1
-        body = request.read().decode()
-        if "насос погружной" in body:
+        raise httpx.TimeoutException("slow phrase")
+
+    respx.post(f"{BASE}/api/v1/rss/common/certificates/get").mock(side_effect=handler)
+    provider = FsaProvider(httpx.AsyncClient(timeout=5.0), _settings())
+    query = parse_product_search_query(QUERY)
+    assert query is not None
+    with pytest.raises(SourceUnavailableError, match="вовремя"):
+        await provider.search_products(query, limit=10)
+    await provider._client.aclose()
+    assert calls["n"] == 1
+
+
+@respx.mock
+async def test_fsa_cert_timeout_retries_with_tech_reg() -> None:
+    _mock_fsa_auth()
+    respx.get(f"{BASE}/api/v1/rss/common/identifiers").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "status": {"6": {"name": "Действует"}},
+                "techReg": {
+                    "11": {"name": "ТР ТС 018/2011 О безопасности колесных транспортных средств"}
+                },
+            },
+        )
+    )
+    calls: list[list[int]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        tech_ids = body["filter"]["idTechReg"]
+        calls.append(tech_ids)
+        _assert_active_product_filter(body, tech_reg_ids=tech_ids)
+        if not tech_ids:
             raise httpx.TimeoutException("slow phrase")
         return httpx.Response(
             200,
             json={
                 "items": [
                     {
-                        "id": 111,
-                        "number": "ЕАЭС RU С-CN.АА01.В.00001/24",
-                        "productFullName": "Насос погружной",
+                        "id": 333,
+                        "number": "ЕАЭС RU С-RU.АА01.В.00003/24",
+                        "productFullName": "Шины легковые Cordiant",
                         "idStatus": 6,
                     }
                 ]
@@ -199,10 +280,35 @@ async def test_fsa_cert_timeout_on_phrase_tries_next_term() -> None:
 
     respx.post(f"{BASE}/api/v1/rss/common/certificates/get").mock(side_effect=handler)
     provider = FsaProvider(httpx.AsyncClient(timeout=5.0), _settings())
-    query = parse_product_search_query(QUERY)
+    query = parse_product_search_query("шины легковые")
     assert query is not None
     hits = await provider.search_products(query, limit=10)
     await provider._client.aclose()
-    assert calls["n"] >= 2
+    assert calls == [[], [11]]
     assert len(hits) == 1
-    assert hits[0].source == "fsa_cert"
+    assert hits[0].product_name == "Шины легковые Cordiant"
+
+
+@respx.mock
+async def test_shared_fsa_session_does_not_login_twice_on_failure() -> None:
+    login_calls = {"n": 0}
+    respx.get(f"{BASE}/rss/certificate").mock(return_value=httpx.Response(200, text="ok"))
+    respx.get(f"{BASE}/rds/declaration").mock(return_value=httpx.Response(200, text="ok"))
+
+    def login(_request: httpx.Request) -> httpx.Response:
+        login_calls["n"] += 1
+        raise httpx.TimeoutException("slow login")
+
+    respx.post(f"{BASE}/login").mock(side_effect=login)
+    client = httpx.AsyncClient(timeout=5.0)
+    session = FsaSession(client, _settings())
+    certs = FsaProvider(client, _settings(), session=session)
+    decls = FsaDeclarationsProvider(client, _settings(), session=session)
+    query = parse_product_search_query(QUERY)
+    assert query is not None
+    with pytest.raises(SourceUnavailableError):
+        await certs.search_products(query, limit=10)
+    with pytest.raises(SourceUnavailableError):
+        await decls.search_products(query, limit=10)
+    await client.aclose()
+    assert login_calls["n"] == 1

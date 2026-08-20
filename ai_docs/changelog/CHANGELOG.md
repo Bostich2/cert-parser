@@ -2,9 +2,13 @@
 
 ## [Unreleased]
 
+## [0.2.0]
+
 ### Fixed
 
 - Поиск по товару: FSA ищет в колонке `productFullName` («Наименование продукции»), а не в `fullName`; у деклараций сортировка списка — `declDate`
+- Поиск по товару: один OData-запрос вместо двух (RU / не-RU); таймаут шага не запускает такой же повтор; неудачный вход FSA не дублируется декларациями
+- Поиск по товару: FSA отдаёт действующие записи и при таймауте повторяет запрос с фильтром по техрегламенту
 - Автосчёт версии: git-хуки копируют `run-write-version.sh`, пишутся с LF и вызывают тот же Python, что ставил хуки; UI берёт живую версию из git, а не устаревший `_version.py`
 
 ### Added
@@ -12,7 +16,7 @@
 - UI: вкладки «Поиск по сертификату» (буфер, Excel, PDF) и «Поиск по товару» (наименования из буфера и столбца A Excel)
 - API: `POST /api/search-product` — батч-поиск по наименованию продукции (`queries`, `limit_per_query`)
 - API: `POST /api/search-product/stream` — один запрос, NDJSON `step`/`done` с массивом `"results"` (не `"result"`, как у lookup)
-- Поиск по товару: параллельно FSA сертификаты (`fsa_cert`), FSA декларации (`fsa_decl`), OData ЕАЭС RU (`eaeu_ru`) и не-RU (`eaeu_other`); в выдаче сначала записи с `country_code=RU`
+- Поиск по товару: параллельно FSA сертификаты (`fsa_cert`), FSA декларации (`fsa_decl`) и один OData ЕАЭС (`eaeu_ru` / `eaeu_other` по стране записи); в выдаче сначала записи с `country_code=RU`
 - Поля хита `product_name`, `doc_kind` (`certificate` \| `declaration`), `source`; коды `query_too_short`, `not_found`, `source_unavailable`
 - Единая цепочка lookup для BY, RU, KZ, KG (`ChainedRegistryProvider`, `build_lookup_chain` в `chained.py`)
 - Стратегия EAEU-first: по умолчанию сначала OData [tech.eaeunion.org](https://tech.eaeunion.org), затем национальный реестр; переключается через `LOOKUP_EAEU_FIRST`
@@ -39,11 +43,13 @@
 - Поддержка стран: BY, RU, KZ, KG, AM
 - Поле `extract_trace` в ответах PDF-endpoint'ов
 - Поле `generation` в `GET /health`
+- FastAPI-приложение с веб-UI и батч-lookup по национальным реестрам ЕАЭС
+- SQLite-кэш, trace-логирование шагов поиска
 
 ### Changed
 
 - Excel: `POST /api/extract-xlsx` читает столбец A и для номеров, и для наименований (заголовок также `наименован` / `товар` / `продукц` / `product`)
-- Поиск по товару: длинные SKU не сканируются целиком (`contains` по 2–3 словам); таймаут шага не валит весь источник; вход в FSA не держит общую сессию 30 с
+- Поиск по товару: длинные SKU не сканируются целиком (`contains` по 1–2 словам); таймаут шага не валит весь источник; вход в FSA не держит общую сессию 30 с
 - Excel-экспорт: при наличии `product_name`/`doc_kind` добавляются колонки «Продукция» и «Вид»; колонка «Запрос» всегда
 - UI: в таблице результатов колонки «Запрос», «Продукция», «Вид»
 - Bootstrap: BY/KZ/RU/KG собираются через `build_lookup_chain` вместо прямых провайдеров и обёрток
@@ -57,8 +63,3 @@
 ### Removed
 
 - Обёртки `BelarusProvider` и `KazakhstanProvider` — логика цепочки перенесена в `ChainedRegistryProvider`
-
-## [0.2.0]
-
-- FastAPI-приложение с веб-UI и батч-lookup по национальным реестрам ЕАЭС
-- SQLite-кэш, trace-логирование шагов поиска

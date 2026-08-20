@@ -9,7 +9,7 @@ MIN_QUERY_LENGTH = 4
 MIN_TOKEN_LENGTH = 3
 MIN_STEM_SOURCE_LENGTH = 5
 MIN_STEM_LENGTH = 4
-MAX_AND_TOKENS = 3
+MAX_AND_TOKENS = 2
 PHRASE_MAX_TOKENS = 2
 PHRASE_MAX_CHARS = 32
 
@@ -48,8 +48,6 @@ def registry_search_steps(query: ProductSearchQuery) -> list[tuple[tuple[str, ..
         stems = tuple(stem for token in significant if (stem := _stem(token)))
         if stems:
             steps.append((stems, "stems"))
-    elif len(significant) >= 2:
-        steps.append(((significant[0],), "first"))
     if not steps and query.normalized:
         steps.append(((query.normalized,), "phrase"))
     return steps

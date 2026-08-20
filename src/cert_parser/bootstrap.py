@@ -63,8 +63,7 @@ async def configure_runtime(app: FastAPI) -> None:
     fsa_session = FsaSession(fsa_client, settings)
     fsa = FsaProvider(fsa_client, settings, session=fsa_session)
     fsa_decl = FsaDeclarationsProvider(fsa_client, settings, session=fsa_session)
-    eaeu_product_ru = EaeuProductSearchProvider(eaeu_client, settings, russia_only=True)
-    eaeu_product_other = EaeuProductSearchProvider(eaeu_client, settings, russia_only=False)
+    eaeu_product = EaeuProductSearchProvider(eaeu_client, settings)
     eokno = EoknoProvider(eokno_client, settings)
     swis = SwisProvider(swis_client, settings)
     eaeu_by = EaeuOdataProvider(eaeu_client, settings, country_code="BY")
@@ -134,7 +133,7 @@ async def configure_runtime(app: FastAPI) -> None:
     }
     app.state.lookup_service = LookupService(router, cache, settings)
     app.state.product_search_service = ProductSearchService(
-        [fsa, fsa_decl, eaeu_product_ru, eaeu_product_other],
+        [fsa, fsa_decl, eaeu_product],
         settings,
     )
     app.state.extract_service = extract_service

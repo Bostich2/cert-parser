@@ -3,9 +3,11 @@ from __future__ import annotations
 from datetime import date
 
 import httpx
+import pytest
 import respx
 
 from cert_parser.config import Settings
+from cert_parser.domain.errors import SourceUnavailableError
 from cert_parser.domain.product_query import parse_product_search_query
 from cert_parser.infrastructure.registries.eaeu_odata import (
     EaeuProductSearchProvider,
@@ -33,9 +35,11 @@ def test_product_name_any_filter_phrase_and_tokens() -> None:
     assert "contains(p/productName,'кабель') and contains(p/productName,'силовой')" in tokens
 
 
-def test_country_filters_ru_and_other() -> None:
-    ru = build_product_search_filter(russia_only=True, needles=("насос",))
-    other = build_product_search_filter(russia_only=False, needles=("насос",))
+def test_country_filters_optional() -> None:
+    any_country = build_product_search_filter(needles=("насос",))
+    ru = build_product_search_filter(needles=("насос",), russia_only=True)
+    other = build_product_search_filter(needles=("насос",), russia_only=False)
+    assert any_country.startswith("technicalRegulationObjectDetails/productDetails/any(")
     assert ru.startswith("unifiedCountryCode/value eq 'RU' and ")
     assert other.startswith("unifiedCountryCode/value ne 'RU' and ")
 
@@ -58,8 +62,8 @@ def test_cascade_skips_phrase_for_long_sku() -> None:
     )
     assert query is not None
     steps = product_filter_cascade(query)
-    assert [label for _, label in steps] == ["tokens", "first"]
-    assert steps[0][0] == ("Cordiant", "Comfort", "SUV")
+    assert [label for _, label in steps] == ["tokens"]
+    assert steps[0][0] == ("Cordiant", "Comfort")
 
 
 def test_hit_from_odata_item_maps_fields() -> None:
@@ -129,10 +133,32 @@ async def test_odata_timeout_on_phrase_tries_tokens() -> None:
 
     respx.get(ODATA_URL).mock(side_effect=handler)
     client = httpx.AsyncClient(timeout=5.0)
-    provider = EaeuProductSearchProvider(client, Settings(), russia_only=True)
+    provider = EaeuProductSearchProvider(client, Settings())
     query = parse_product_search_query("насос погружной")
     assert query is not None
     hits = await provider.search_products(query, limit=10)
     await client.aclose()
     assert len(hits) == 1
     assert hits[0].official_number == "ЕАЭС RU С-CN.АА01.В.00001/24"
+    assert hits[0].source == "eaeu_ru"
+
+
+@respx.mock
+async def test_odata_timeout_on_tokens_does_not_retry() -> None:
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        raise httpx.TimeoutException("slow")
+
+    respx.get(ODATA_URL).mock(side_effect=handler)
+    client = httpx.AsyncClient(timeout=5.0)
+    provider = EaeuProductSearchProvider(client, Settings())
+    query = parse_product_search_query(
+        "Trazano Z-107 ZuperEco Шины летние 225/55 R18 98V"
+    )
+    assert query is not None
+    with pytest.raises(SourceUnavailableError):
+        await provider.search_products(query, limit=10)
+    await client.aclose()
+    assert calls["n"] == 1

@@ -83,20 +83,17 @@ class EaeuOdataProvider(RegistryProvider):
 
 
 class EaeuProductSearchProvider(ProductSearchProvider):
-    """Product-name search against tech.eaeunion.org OData (RU vs other countries)."""
+    """Product-name search against tech.eaeunion.org OData."""
 
     def __init__(
         self,
         client: httpx.AsyncClient,
         settings: Settings,
-        *,
-        russia_only: bool,
     ) -> None:
         self._client = client
         self._odata_url = settings.eaeu_odata_url.rstrip("/")
         self._view_base = settings.eaeu_register_view_url.rstrip("/")
-        self._russia_only = russia_only
-        self.source = "eaeu_ru" if russia_only else "eaeu_other"
+        self.source = "eaeu"
 
     async def search_products(
         self,
@@ -104,13 +101,10 @@ class EaeuProductSearchProvider(ProductSearchProvider):
         *,
         limit: int,
     ) -> list[ProductSearchHit]:
-        top = max(1, limit)
+        top = max(1, min(limit * 2, 20))
         last_unavailable: SourceUnavailableError | None = None
         for needles, label in product_filter_cascade(query):
-            filter_expr = build_product_search_filter(
-                russia_only=self._russia_only,
-                needles=needles,
-            )
+            filter_expr = build_product_search_filter(needles=needles)
             log_step(f"{self.source}: OData {label} «{' '.join(needles)}»")
             try:
                 items = await fetch_odata_values(
@@ -122,15 +116,17 @@ class EaeuProductSearchProvider(ProductSearchProvider):
                 )
             except SourceUnavailableError as exc:
                 last_unavailable = exc
-                log_step(f"{self.source}: {label} не ответил, следующий шаг")
-                continue
+                if label == "phrase":
+                    log_step(f"{self.source}: {label} не ответил, следующий шаг")
+                    continue
+                raise
             if items:
                 return [
                     hit_from_odata_item(
                         item,
                         query.raw,
                         self._view_base,
-                        source=self.source,
+                        source=_hit_source(item),
                     )
                     for item in items[:top]
                 ]
@@ -150,13 +146,20 @@ def product_name_any_filter(needles: tuple[str, ...]) -> str:
     return f"technicalRegulationObjectDetails/productDetails/any(p: {inner})"
 
 
-def build_product_search_filter(*, russia_only: bool, needles: tuple[str, ...]) -> str:
+def build_product_search_filter(
+    needles: tuple[str, ...],
+    *,
+    russia_only: bool | None = None,
+) -> str:
+    product = product_name_any_filter(needles)
+    if russia_only is None:
+        return product
     country = (
         "unifiedCountryCode/value eq 'RU'"
         if russia_only
         else "unifiedCountryCode/value ne 'RU'"
     )
-    return f"{country} and {product_name_any_filter(needles)}"
+    return f"{country} and {product}"
 
 
 def product_filter_cascade(query: ProductSearchQuery) -> list[tuple[tuple[str, ...], str]]:
@@ -187,6 +190,11 @@ def hit_from_odata_item(
         registry_id=record.registry_id,
         source=source,
     )
+
+
+def _hit_source(item: dict[str, Any]) -> str:
+    country = _odata_country_code(item)
+    return "eaeu_ru" if (country or "").upper() == "RU" else "eaeu_other"
 
 
 def _odata_country_code(item: dict[str, Any]) -> str | None:

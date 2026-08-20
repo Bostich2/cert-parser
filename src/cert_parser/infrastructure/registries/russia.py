@@ -17,10 +17,12 @@ from cert_parser.domain.ports import ProductSearchProvider, RegistryProvider
 from cert_parser.infrastructure.registries.fsa_pdf import build_fsa_pdf_proxy_url
 from cert_parser.infrastructure.registries.fsa_session import (
     FsaSession,
+    fetch_fsa_product_items,
     fsa_items,
     fsa_list_payload,
     fsa_product_name,
-    fsa_search_terms,
+    fsa_status_names,
+    load_fsa_identifiers,
 )
 from cert_parser.infrastructure.registries.matching import is_safe_contained_match
 from cert_parser.logging_setup import log_step
@@ -44,7 +46,7 @@ class FsaProvider(RegistryProvider, ProductSearchProvider):
         self._client = client
         self._base = settings.fsa_base_url.rstrip("/")
         self._session = session or FsaSession(client, settings)
-        self._status_names: dict[str, str] | None = None
+        self._identifiers: dict[str, Any] | None = None
 
     async def lookup(self, number: CertificateNumber) -> RegistryRecord:
         items = await self._search(number.normalized)
@@ -74,28 +76,23 @@ class FsaProvider(RegistryProvider, ProductSearchProvider):
         limit: int,
     ) -> list[ProductSearchHit]:
         size = max(1, limit)
-        last_unavailable: SourceUnavailableError | None = None
-        for term in fsa_search_terms(query):
-            log_step(f"RU: поиск сертификатов по продукции «{term}»")
-            try:
-                items = await self._search_by_column(FSA_CERT_PRODUCT_COLUMN, term, size=size)
-            except SourceUnavailableError as exc:
-                last_unavailable = exc
-                if self._session.has_token:
-                    log_step("RU: этот запрос не ответил, следующий шаг")
-                    continue
-                raise
-            if items:
-                hits: list[ProductSearchHit] = []
-                for item in items[:size]:
-                    hit = await self._hit_from_item(item, query.raw)
-                    if hit is not None:
-                        hits.append(hit)
-                if hits:
-                    return hits
-        if last_unavailable is not None:
-            raise last_unavailable
-        return []
+        items = await fetch_fsa_product_items(
+            self._session,
+            query,
+            column=FSA_CERT_PRODUCT_COLUMN,
+            size=size,
+            sort_column="date",
+            list_path="/api/v1/rss/common/certificates/get",
+            referer_path=_REFERER_PATH,
+            log_prefix=_LOG_PREFIX,
+            load_identifiers=self._identifiers_data,
+        )
+        hits: list[ProductSearchHit] = []
+        for item in items[:size]:
+            hit = await self._hit_from_item(item, query.raw)
+            if hit is not None:
+                hits.append(hit)
+        return hits
 
     async def ping(self) -> bool:
         try:
@@ -140,41 +137,22 @@ class FsaProvider(RegistryProvider, ProductSearchProvider):
         )
         return fsa_items(data)
 
-    async def _search_by_column(self, column: str, term: str, *, size: int) -> list[dict[str, Any]]:
-        payload = fsa_list_payload(column, term, size=size)
-        data = await self._api_json(
-            "POST",
-            "/api/v1/rss/common/certificates/get",
-            json_body=payload,
-        )
-        items = fsa_items(data)
-        log_step(f"RU: записей в ответе: {len(items)}")
-        return items
-
     async def _status_label(self, status_code: str | None) -> str:
         if not status_code:
             return "не указан"
-        names = await self._identifiers()
+        names = fsa_status_names(await self._identifiers_data())
         return names.get(status_code, status_code)
 
-    async def _identifiers(self) -> dict[str, str]:
-        if self._status_names is not None:
-            return self._status_names
-        data = await self._api_json("GET", "/api/v1/rss/common/identifiers")
-        mapping: dict[str, str] = {}
-        status_block = data.get("status") if isinstance(data, dict) else None
-        if isinstance(status_block, dict):
-            for key, value in status_block.items():
-                if isinstance(value, dict) and value.get("name"):
-                    mapping[str(key)] = str(value["name"])
-                elif isinstance(value, str):
-                    mapping[str(key)] = value
-        elif isinstance(status_block, list):
-            for item in status_block:
-                if isinstance(item, dict) and item.get("id") is not None:
-                    mapping[str(item["id"])] = str(item.get("name") or item["id"])
-        self._status_names = mapping
-        return mapping
+    async def _identifiers_data(self) -> dict[str, Any]:
+        if self._identifiers is not None:
+            return self._identifiers
+        self._identifiers = await load_fsa_identifiers(
+            self._session,
+            path="/api/v1/rss/common/identifiers",
+            referer_path=_REFERER_PATH,
+            log_prefix=_LOG_PREFIX,
+        )
+        return self._identifiers
 
     async def _api_json(
         self,
