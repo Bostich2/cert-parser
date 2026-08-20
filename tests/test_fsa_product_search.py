@@ -9,6 +9,7 @@ from cert_parser.config import Settings
 from cert_parser.domain.errors import SourceUnavailableError
 from cert_parser.domain.product_query import parse_product_search_query
 from cert_parser.infrastructure.registries.eaeu_odata import EaeuProductSearchProvider
+from cert_parser.infrastructure.registries.fsa_session import fsa_list_payload, fsa_product_name
 from cert_parser.infrastructure.registries.fsa_declarations import FSA_DECL_PRODUCT_COLUMN, FsaDeclarationsProvider
 from cert_parser.infrastructure.registries.russia import FSA_CERT_PRODUCT_COLUMN, FsaProvider
 
@@ -35,8 +36,16 @@ def _mock_fsa_auth() -> None:
     )
 
 
+def test_fsa_product_columns_are_product_full_name() -> None:
+    assert FSA_CERT_PRODUCT_COLUMN == "productFullName"
+    assert FSA_DECL_PRODUCT_COLUMN == "productFullName"
+    payload = fsa_list_payload("productFullName", "шины", size=5, sort_column="declDate")
+    assert payload["columnsSort"] == [{"column": "declDate", "sort": "DESC"}]
+    assert fsa_product_name({"productFullName": "Шины Cordiant", "applicantName": "ООО Ромашка"}) == "Шины Cordiant"
+
+
 @respx.mock
-async def test_fsa_cert_search_uses_fullname_column() -> None:
+async def test_fsa_cert_search_uses_product_fullname_column() -> None:
     _mock_fsa_auth()
 
     def check_payload(request: httpx.Request) -> httpx.Response:
@@ -49,7 +58,7 @@ async def test_fsa_cert_search_uses_fullname_column() -> None:
                     {
                         "id": 111,
                         "number": "ЕАЭС RU С-CN.АА01.В.00001/24",
-                        "fullName": "Насос погружной",
+                        "productFullName": "Насос погружной",
                         "startDate": "2024-01-15",
                         "endDate": "2029-12-31",
                         "idStatus": 6,
@@ -74,11 +83,13 @@ async def test_fsa_cert_search_uses_fullname_column() -> None:
 
 
 @respx.mock
-async def test_fsa_decl_search_uses_fullname_and_no_pdf() -> None:
+async def test_fsa_decl_search_uses_product_fullname_and_no_pdf() -> None:
     _mock_fsa_auth()
 
     def check_payload(request: httpx.Request) -> httpx.Response:
-        assert FSA_DECL_PRODUCT_COLUMN.encode() in request.read()
+        body = request.read()
+        assert FSA_DECL_PRODUCT_COLUMN.encode() in body
+        assert b"declDate" in body
         return httpx.Response(
             200,
             json={
@@ -86,9 +97,9 @@ async def test_fsa_decl_search_uses_fullname_and_no_pdf() -> None:
                     {
                         "id": 222,
                         "number": "ЕАЭС N RU Д-DE.АА01.В.00002/24",
-                        "fullName": "Насос",
-                        "startDate": "2024-02-01",
-                        "endDate": "2029-02-01",
+                        "productFullName": "Насос",
+                        "declDate": "2024-02-01",
+                        "declEndDate": "2029-02-01",
                         "idStatus": 6,
                     }
                 ]
@@ -106,6 +117,8 @@ async def test_fsa_decl_search_uses_fullname_and_no_pdf() -> None:
     assert hits[0].doc_kind == "declaration"
     assert hits[0].pdf_url is None
     assert hits[0].url.endswith("/rds/declaration/view/222/baseInfo")
+    assert str(hits[0].valid_from) == "2024-02-01"
+    assert str(hits[0].valid_until) == "2029-02-01"
 
 
 @respx.mock
@@ -158,3 +171,38 @@ async def test_fsa_cert_forbidden_raises() -> None:
     with pytest.raises(SourceUnavailableError, match="403"):
         await provider.search_products(query, limit=10)
     await provider._client.aclose()
+
+
+@respx.mock
+async def test_fsa_cert_timeout_on_phrase_tries_next_term() -> None:
+    _mock_fsa_auth()
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        body = request.read().decode()
+        if "насос погружной" in body:
+            raise httpx.TimeoutException("slow phrase")
+        return httpx.Response(
+            200,
+            json={
+                "items": [
+                    {
+                        "id": 111,
+                        "number": "ЕАЭС RU С-CN.АА01.В.00001/24",
+                        "productFullName": "Насос погружной",
+                        "idStatus": 6,
+                    }
+                ]
+            },
+        )
+
+    respx.post(f"{BASE}/api/v1/rss/common/certificates/get").mock(side_effect=handler)
+    provider = FsaProvider(httpx.AsyncClient(timeout=5.0), _settings())
+    query = parse_product_search_query(QUERY)
+    assert query is not None
+    hits = await provider.search_products(query, limit=10)
+    await provider._client.aclose()
+    assert calls["n"] >= 2
+    assert len(hits) == 1
+    assert hits[0].source == "fsa_cert"

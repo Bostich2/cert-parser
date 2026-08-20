@@ -9,6 +9,7 @@ from cert_parser.config import Settings
 from cert_parser.domain.errors import CertificateNotFoundError, SourceUnavailableError
 from cert_parser.domain.models import CertificateNumber, ProductSearchHit, ProductSearchQuery, RegistryRecord
 from cert_parser.domain.ports import ProductSearchProvider, RegistryProvider
+from cert_parser.domain.product_query import registry_search_steps
 from cert_parser.infrastructure.registries.matching import (
     pick_matching_odata_item,
     record_from_odata_item,
@@ -104,19 +105,25 @@ class EaeuProductSearchProvider(ProductSearchProvider):
         limit: int,
     ) -> list[ProductSearchHit]:
         top = max(1, limit)
+        last_unavailable: SourceUnavailableError | None = None
         for needles, label in product_filter_cascade(query):
             filter_expr = build_product_search_filter(
                 russia_only=self._russia_only,
                 needles=needles,
             )
-            log_step(f"{self.source}: OData {label}")
-            items = await fetch_odata_values(
-                self._client,
-                self._odata_url,
-                filter_expr,
-                top=top,
-                log_prefix=self.source,
-            )
+            log_step(f"{self.source}: OData {label} «{' '.join(needles)}»")
+            try:
+                items = await fetch_odata_values(
+                    self._client,
+                    self._odata_url,
+                    filter_expr,
+                    top=top,
+                    log_prefix=self.source,
+                )
+            except SourceUnavailableError as exc:
+                last_unavailable = exc
+                log_step(f"{self.source}: {label} не ответил, следующий шаг")
+                continue
             if items:
                 return [
                     hit_from_odata_item(
@@ -127,6 +134,8 @@ class EaeuProductSearchProvider(ProductSearchProvider):
                     )
                     for item in items[:top]
                 ]
+        if last_unavailable is not None:
+            raise last_unavailable
         return []
 
 
@@ -151,12 +160,7 @@ def build_product_search_filter(*, russia_only: bool, needles: tuple[str, ...]) 
 
 
 def product_filter_cascade(query: ProductSearchQuery) -> list[tuple[tuple[str, ...], str]]:
-    steps: list[tuple[tuple[str, ...], str]] = [((query.normalized,), "phrase")]
-    if query.tokens:
-        steps.append((query.tokens, "tokens"))
-    if query.stems:
-        steps.append((query.stems, "stems"))
-    return steps
+    return registry_search_steps(query)
 
 
 def hit_from_odata_item(

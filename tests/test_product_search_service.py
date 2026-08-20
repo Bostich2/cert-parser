@@ -114,3 +114,4 @@ async def test_all_sources_unavailable() -> None:
     hits = await service.search_one("насос погружной")
     assert len(hits) == 1
     assert hits[0].error_code == "source_unavailable"
+    assert any("недоступен" in step for step in hits[0].trace)

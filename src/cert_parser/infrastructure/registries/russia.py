@@ -25,7 +25,7 @@ from cert_parser.infrastructure.registries.fsa_session import (
 from cert_parser.infrastructure.registries.matching import is_safe_contained_match
 from cert_parser.logging_setup import log_step
 
-FSA_CERT_PRODUCT_COLUMN = "fullName"
+FSA_CERT_PRODUCT_COLUMN = "productFullName"
 _REFERER_PATH = "/rss/certificate"
 _LOG_PREFIX = "RU"
 
@@ -74,9 +74,17 @@ class FsaProvider(RegistryProvider, ProductSearchProvider):
         limit: int,
     ) -> list[ProductSearchHit]:
         size = max(1, limit)
+        last_unavailable: SourceUnavailableError | None = None
         for term in fsa_search_terms(query):
             log_step(f"RU: поиск сертификатов по продукции «{term}»")
-            items = await self._search_by_column(FSA_CERT_PRODUCT_COLUMN, term, size=size)
+            try:
+                items = await self._search_by_column(FSA_CERT_PRODUCT_COLUMN, term, size=size)
+            except SourceUnavailableError as exc:
+                last_unavailable = exc
+                if self._session.has_token:
+                    log_step("RU: этот запрос не ответил, следующий шаг")
+                    continue
+                raise
             if items:
                 hits: list[ProductSearchHit] = []
                 for item in items[:size]:
@@ -85,6 +93,8 @@ class FsaProvider(RegistryProvider, ProductSearchProvider):
                         hits.append(hit)
                 if hits:
                     return hits
+        if last_unavailable is not None:
+            raise last_unavailable
         return []
 
     async def ping(self) -> bool:

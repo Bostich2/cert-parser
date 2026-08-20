@@ -9,9 +9,13 @@ import httpx
 from cert_parser.config import Settings
 from cert_parser.domain.errors import SourceUnavailableError
 from cert_parser.domain.models import ProductSearchQuery
+from cert_parser.domain.product_query import contiguous_search_terms
 from cert_parser.logging_setup import log_step
 
 logger = logging.getLogger(__name__)
+
+FSA_WARMUP_TIMEOUT_SECONDS = 8.0
+FSA_LOGIN_TIMEOUT_SECONDS = 15.0
 
 UNAVAILABLE_403 = (
     "Реестр Росаккредитации недоступен (403). "
@@ -29,6 +33,10 @@ class FsaSession:
         self._password = settings.fsa_login_password
         self._token: str | None = None
         self._token_lock = asyncio.Lock()
+
+    @property
+    def has_token(self) -> bool:
+        return bool(self._token)
 
     @property
     def base(self) -> str:
@@ -90,7 +98,13 @@ class FsaSession:
                 return
             log_step(f"{log_prefix}: анонимный вход в pub.fsa.gov.ru")
             try:
-                await self._client.get(f"{self._base}{referer_path}")
+                try:
+                    await self._client.get(
+                        f"{self._base}{referer_path}",
+                        timeout=FSA_WARMUP_TIMEOUT_SECONDS,
+                    )
+                except httpx.TimeoutException:
+                    log_step(f"{log_prefix}: страница входа не ответила, пробуем /login")
                 response = await self._client.post(
                     f"{self._base}/login",
                     json={"username": self._username, "password": self._password},
@@ -99,6 +113,7 @@ class FsaSession:
                         "Referer": f"{self._base}{referer_path}",
                         "Content-Type": "application/json",
                     },
+                    timeout=FSA_LOGIN_TIMEOUT_SECONDS,
                 )
             except httpx.TimeoutException as exc:
                 raise SourceUnavailableError("Реестр Росаккредитации не ответил вовремя") from exc
@@ -125,7 +140,7 @@ class FsaSession:
             log_step(f"{log_prefix}: токен получен")
 
 
-def fsa_list_payload(column: str, term: str, *, size: int) -> dict[str, Any]:
+def fsa_list_payload(column: str, term: str, *, size: int, sort_column: str = "date") -> dict[str, Any]:
     return {
         "size": size,
         "page": 0,
@@ -137,7 +152,7 @@ def fsa_list_payload(column: str, term: str, *, size: int) -> dict[str, Any]:
                 {"name": column, "search": term, "type": 0, "translated": False}
             ],
         },
-        "columnsSort": [{"column": "date", "sort": "DESC"}],
+        "columnsSort": [{"column": sort_column, "sort": "DESC"}],
     }
 
 
@@ -149,20 +164,11 @@ def fsa_items(data: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def fsa_search_terms(query: ProductSearchQuery) -> list[str]:
-    terms = [query.normalized]
-    if query.tokens:
-        joined = " ".join(query.tokens)
-        if joined not in terms:
-            terms.append(joined)
-    if query.stems:
-        joined = " ".join(query.stems)
-        if joined not in terms:
-            terms.append(joined)
-    return terms
+    return contiguous_search_terms(query)
 
 
 def fsa_product_name(item: dict[str, Any]) -> str | None:
-    for key in ("fullName", "productName"):
+    for key in ("productFullName", "fullName", "productName"):
         value = item.get(key)
         if value:
             return str(value)

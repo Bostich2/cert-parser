@@ -11,6 +11,7 @@ from pathlib import Path
 
 TAG_PATTERN = re.compile(r"^v(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)$")
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_VERSION = (0, 2, 0)
 
 
 def run(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -59,6 +60,12 @@ def format_version(version: tuple[int, int, int]) -> str:
     return f"v{version[0]}.{version[1]}.{version[2]}"
 
 
+def next_version(current_tag: str | None, part: str) -> tuple[int, int, int]:
+    if current_tag:
+        return bump_version(parse_version(current_tag), part)
+    return BASELINE_VERSION
+
+
 def ensure_clean_worktree() -> None:
     status = git("status", "--porcelain")
     if status:
@@ -95,14 +102,11 @@ def main() -> int:
     git("rev-parse", "--is-inside-work-tree")
 
     tag = latest_tag()
-    if tag:
-        current = parse_version(tag)
-    else:
-        current = (0, 2, 0)
-        print("No semver tags found; starting from v0.2.0 baseline.")
+    if not tag:
+        print("No semver tags found; creating baseline v0.2.0.")
 
-    next_version = bump_version(current, args.part)
-    next_tag = format_version(next_version)
+    upcoming = next_version(tag, args.part)
+    next_tag = format_version(upcoming)
     message = args.message or f"cert-parser {next_tag}"
 
     print(f"Current tag: {tag or '(none)'}")
@@ -118,13 +122,10 @@ def main() -> int:
     print(f"Created tag {next_tag}")
 
     try:
-        import setuptools_scm
+        sys.path.insert(0, str(ROOT / "src"))
+        from cert_parser.version import compute_scm_version
 
-        resolved = setuptools_scm.get_version(
-            root=str(ROOT),
-            relative_to="src/cert_parser/version.py",
-        )
-        print(f"Resolved version: {resolved}")
+        print(f"Resolved version: {compute_scm_version(write_files=False)}")
     except Exception as exc:  # noqa: BLE001 - release helper
         print(f"Could not resolve version via setuptools-scm: {exc}")
 

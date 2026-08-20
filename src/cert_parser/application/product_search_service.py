@@ -71,11 +71,9 @@ class ProductSearchService:
             if isinstance(result, BaseException):
                 if isinstance(result, asyncio.CancelledError):
                     raise result
-                failures += 1
-                if isinstance(result, SourceUnavailableError):
-                    log_step(f"{provider.source}: недоступен — {result.message}")
-                else:
+                if not isinstance(result, SourceUnavailableError):
                     log_step(f"{provider.source}: ошибка — {result}")
+                failures += 1
                 continue
             hits.extend(result)
 
@@ -101,7 +99,11 @@ class ProductSearchService:
         limit: int,
     ) -> list[ProductSearchHit]:
         log_step(f"{provider.source}: поиск")
-        hits = await provider.search_products(query, limit=limit)
+        try:
+            hits = await provider.search_products(query, limit=limit)
+        except SourceUnavailableError as exc:
+            log_step(f"{provider.source}: недоступен — {exc.message}")
+            raise
         log_step(f"{provider.source}: найдено {len(hits)}")
         return hits[:limit]
 

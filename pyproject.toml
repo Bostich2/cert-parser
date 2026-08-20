@@ -35,8 +35,10 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 version_file = "src/cert_parser/_version.py"
-tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
 fallback_version = "0.0.0.dev0"
+
+[tool.setuptools_scm.tag]
+regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
 
 [tool.setuptools.packages.find]
 where = ["src"]

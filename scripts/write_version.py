@@ -3,11 +3,11 @@
 
 from __future__ import annotations
 
-import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
 VERSION_FILE = ROOT / "src" / "cert_parser" / "_version.py"
 
 
@@ -21,22 +21,25 @@ def read_version() -> str:
 
 
 def main() -> int:
-    proc = subprocess.run(
-        [sys.executable, "-m", "setuptools_scm", "--force-write-version-files"],
-        cwd=ROOT,
-        check=False,
-    )
-    if proc.returncode != 0:
+    sys.path.insert(0, str(SRC))
+    try:
+        from cert_parser.version import compute_scm_version
+    except ImportError:
         print(
-            "Could not regenerate _version.py. Install dev deps: pip install -e \".[dev]\"",
+            'Could not regenerate _version.py. Install dev deps: pip install -e ".[dev]"',
             file=sys.stderr,
         )
-        return proc.returncode
+        return 1
 
-    version = read_version()
-    if version:
-        rel = VERSION_FILE.relative_to(ROOT)
-        print(f"Wrote {rel} -> {version}")
+    try:
+        written = compute_scm_version(write_files=True)
+    except Exception as exc:  # noqa: BLE001 - release helper
+        print(f"Could not regenerate _version.py: {exc}", file=sys.stderr)
+        return 1
+
+    version = read_version() or written
+    rel = VERSION_FILE.relative_to(ROOT)
+    print(f"Wrote {rel} -> {version}")
     return 0
 
 

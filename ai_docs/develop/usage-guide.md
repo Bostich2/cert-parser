@@ -159,7 +159,7 @@ curl -X POST http://127.0.0.1:8000/api/search-product ^
 
 ### Git hooks для версии
 
-После `git commit` / `merge` / `checkout` можно автоматически перегенерировать `src/cert_parser/_version.py`:
+После `git commit` / `merge` / `checkout` можно автоматически перегенерировать `src/cert_parser/_version.py`. Установщик копирует и `run-write-version.sh`, и сами хуки (LF, вызов текущего Python):
 
 ```bash
 python scripts/install_git_hooks.py

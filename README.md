@@ -75,13 +75,13 @@ python scripts/release.py minor --dry-run
 
 Коммиты после тега получают dev-версию вида `0.2.1.dev3+gabc1234` (число после `dev` — счётчик коммитов с последнего тега).
 
-**Автообновление `_version.py` после коммита** (один раз на машине):
+**Автообновление `_version.py` после коммита** (один раз на машине, и повторно если хуки перестали срабатывать):
 
 ```bash
 python scripts/install_git_hooks.py
 ```
 
-Хук перегенерирует `src/cert_parser/_version.py` после каждого commit / merge / checkout. Вручную: `python scripts/write_version.py`.
+Хук перегенерирует `src/cert_parser/_version.py` после каждого commit / merge / checkout. Вручную: `python scripts/write_version.py`. Пока сервис запущен из git-клона, `/health` и бейдж в шапке читают версию напрямую из тегов и числа коммитов, даже если файл `_version.py` устарел.
 
 ## Как пользоваться (UI)
 

@@ -18,7 +18,7 @@ from cert_parser.infrastructure.registries.fsa_session import (
 )
 from cert_parser.logging_setup import log_step
 
-FSA_DECL_PRODUCT_COLUMN = "fullName"
+FSA_DECL_PRODUCT_COLUMN = "productFullName"
 _REFERER_PATH = "/rds/declaration"
 _LOG_PREFIX = "RU декларации"
 _LIST_PATH = "/api/v1/rds/common/declarations/get"
@@ -48,9 +48,17 @@ class FsaDeclarationsProvider(ProductSearchProvider):
         limit: int,
     ) -> list[ProductSearchHit]:
         size = max(1, limit)
+        last_unavailable: SourceUnavailableError | None = None
         for term in fsa_search_terms(query):
             log_step(f"{_LOG_PREFIX}: поиск по продукции «{term}»")
-            items = await self._search_by_column(term, size=size)
+            try:
+                items = await self._search_by_column(term, size=size)
+            except SourceUnavailableError as exc:
+                last_unavailable = exc
+                if self._session.has_token:
+                    log_step(f"{_LOG_PREFIX}: этот запрос не ответил, следующий шаг")
+                    continue
+                raise
             if items:
                 hits: list[ProductSearchHit] = []
                 for item in items[:size]:
@@ -59,10 +67,17 @@ class FsaDeclarationsProvider(ProductSearchProvider):
                         hits.append(hit)
                 if hits:
                     return hits
+        if last_unavailable is not None:
+            raise last_unavailable
         return []
 
     async def _search_by_column(self, term: str, *, size: int) -> list[dict[str, Any]]:
-        payload = fsa_list_payload(FSA_DECL_PRODUCT_COLUMN, term, size=size)
+        payload = fsa_list_payload(
+            FSA_DECL_PRODUCT_COLUMN,
+            term,
+            size=size,
+            sort_column="declDate",
+        )
         data = await self._session.api_json(
             "POST",
             _LIST_PATH,
@@ -87,8 +102,15 @@ class FsaDeclarationsProvider(ProductSearchProvider):
             product_name=fsa_product_name(item),
             url=f"{self._base}/rds/declaration/view/{registry_id}/baseInfo",
             pdf_url=None,
-            valid_from=_first_date(item.get("startDate"), item.get("date"), item.get("regDate")),
-            valid_until=parse_iso_date(_stringify(item.get("endDate"))),
+            valid_from=_first_date(
+                item.get("declDate"),
+                item.get("startDate"),
+                item.get("date"),
+                item.get("regDate"),
+            ),
+            valid_until=parse_iso_date(
+                _stringify(item.get("declEndDate") or item.get("endDate"))
+            ),
             status=await self._status_label(status_code),
             status_code=status_code,
             registry_id=registry_id,

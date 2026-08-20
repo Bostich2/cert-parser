@@ -713,6 +713,7 @@ async def reload_service(request: Request) -> dict:
             app.state.reload_in_progress = False
         await close_runtime(old_clients, old_cache)
         generation = int(app.state.runtime_generation)
+        get_version.cache_clear()
         logger.info("POST /api/reload: ready, generation %s, version %s", generation, get_version())
     version = get_version()
     return {

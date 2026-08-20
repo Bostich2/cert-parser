@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from datetime import date
 
+import httpx
+import respx
+
+from cert_parser.config import Settings
 from cert_parser.domain.product_query import parse_product_search_query
 from cert_parser.infrastructure.registries.eaeu_odata import (
+    EaeuProductSearchProvider,
     build_product_search_filter,
     hit_from_odata_item,
     odata_escape,
@@ -47,6 +52,16 @@ def test_cascade_phrase_then_tokens_then_stems() -> None:
     assert steps[2][0] == query.stems
 
 
+def test_cascade_skips_phrase_for_long_sku() -> None:
+    query = parse_product_search_query(
+        "Cordiant Comfort 2 SUV Шины летние 235/65 R17 108H"
+    )
+    assert query is not None
+    steps = product_filter_cascade(query)
+    assert [label for _, label in steps] == ["tokens", "first"]
+    assert steps[0][0] == ("Cordiant", "Comfort", "SUV")
+
+
 def test_hit_from_odata_item_maps_fields() -> None:
     item = {
         "docId": "ЕАЭС RU С-CN.АА01.В.00001/24",
@@ -88,3 +103,36 @@ def test_hit_from_odata_item_declaration_kind() -> None:
     assert hit.doc_kind == "declaration"
     assert hit.country_code == "BY"
     assert hit.source == "eaeu_other"
+
+
+ODATA_URL = "https://tech.eaeunion.org/odata/ConformityDocDetailsType"
+
+
+@respx.mock
+async def test_odata_timeout_on_phrase_tries_tokens() -> None:
+    item = {
+        "docId": "ЕАЭС RU С-CN.АА01.В.00001/24",
+        "Id": "odata-id-1",
+        "unifiedCountryCode": {"value": "RU"},
+        "docStatusDetails": {"docStatusCode": "01"},
+        "conformityDocKindName": "Сертификат соответствия",
+        "technicalRegulationObjectDetails": {
+            "productDetails": [{"productName": "Насос погружной"}]
+        },
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        filt = request.url.params.get("$filter", "")
+        if "contains(p/productName,'насос погружной')" in filt:
+            raise httpx.TimeoutException("slow phrase")
+        return httpx.Response(200, json={"value": [item]})
+
+    respx.get(ODATA_URL).mock(side_effect=handler)
+    client = httpx.AsyncClient(timeout=5.0)
+    provider = EaeuProductSearchProvider(client, Settings(), russia_only=True)
+    query = parse_product_search_query("насос погружной")
+    assert query is not None
+    hits = await provider.search_products(query, limit=10)
+    await client.aclose()
+    assert len(hits) == 1
+    assert hits[0].official_number == "ЕАЭС RU С-CN.АА01.В.00001/24"
