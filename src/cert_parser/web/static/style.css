@@ -201,6 +201,15 @@ body {
     border-color: #c5d7eb;
 }
 
+.search-tab-beta {
+    margin-left: 6px;
+    font-size: 0.72em;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
 .search-tab:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 1px;
@@ -216,6 +225,14 @@ body {
 
 .sources-grid--product {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.product-search-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
 }
 
 .sources-grid[hidden] {

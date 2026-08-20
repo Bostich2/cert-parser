@@ -71,7 +71,7 @@
                 </button>
                 <button type="button" class="search-tab" role="tab" id="tab-product"
                         aria-controls="panel-product" aria-selected="false" tabindex="-1" data-keep-enabled>
-                    Поиск по товару
+                    Поиск по товару <span class="search-tab-beta">beta</span>
                 </button>
             </div>
 
@@ -144,13 +144,14 @@
             </div>
 
             <div id="panel-product" class="sources-grid sources-grid--product" role="tabpanel" aria-labelledby="tab-product" hidden>
+                <p class="product-search-note">Реестр ФСА заточен под проверку документа по номеру. Здесь — приблизительный поиск по формулировке продукции в <strong>действующих</strong> сертификатах и декларациях, не по артикулу магазина. Лучше работает короткий фрагмент вроде «шины легковые Cordiant».</p>
                 <section class="card source-card">
                     <h2>Наименования из буфера</h2>
                     <form id="product-list-form" class="source-form">
-                        <label class="source-desc" for="product-list">Одно наименование на строку. Ищем фрагмент формулировки из документа, не артикул магазина.</label>
+                        <label class="source-desc" for="product-list">Одно наименование на строку. Ищем фрагмент формулировки из документа.</label>
                         <div class="source-main">
                             <div class="textarea-wrap">
-                                <textarea id="product-list" rows="6" placeholder="шины легковые"></textarea>
+                                <textarea id="product-list" rows="6" placeholder="шины легковые Cordiant"></textarea>
                                 <button type="button" id="product-paste-btn" class="paste-icon-btn"
                                         title="Вставить из буфера" aria-label="Вставить из буфера">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -171,7 +172,7 @@
                 <section class="card source-card">
                     <h2>Из списка Excel</h2>
                     <form id="product-xlsx-form" class="source-form">
-                        <label class="source-desc" for="product-xlsx-file">Наименования в столбце A (первый лист, .xlsx). Ищем фрагмент формулировки из документа, не артикул магазина.</label>
+                        <label class="source-desc" for="product-xlsx-file">Наименования в столбце A (первый лист, .xlsx). Та же формулировка из документа, не артикул.</label>
                         <input id="product-xlsx-file" class="sr-only" name="file" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
                         <div class="source-main">
                             <label id="product-xlsx-drop" class="file-dropzone" for="product-xlsx-file" tabindex="0" role="button"

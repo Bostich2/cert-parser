@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import httpx
 import pytest
 import respx
@@ -32,25 +34,33 @@ def _mock_auth() -> None:
     )
 
 
+def _lookup_payload_ok(request: httpx.Request) -> httpx.Response:
+    body = json.loads(request.content)
+    assert body["filter"]["columnsSearch"][0]["name"] == "number"
+    assert "status" not in body["filter"]
+    assert body["filter"]["endDate"]["minDate"] == ""
+    return httpx.Response(
+        200,
+        json={
+            "total": 1,
+            "items": [
+                {
+                    "id": 2360455,
+                    "number": EXAMPLE,
+                    "startDate": "2024-01-15",
+                    "endDate": "2029-12-31",
+                    "idStatus": 6,
+                }
+            ],
+        },
+    )
+
+
 @respx.mock
 async def test_fsa_lookup_returns_card_and_validity() -> None:
     _mock_auth()
     respx.post(f"{BASE}/api/v1/rss/common/certificates/get").mock(
-        return_value=httpx.Response(
-            200,
-            json={
-                "total": 1,
-                "items": [
-                    {
-                        "id": 2360455,
-                        "number": EXAMPLE,
-                        "startDate": "2024-01-15",
-                        "endDate": "2029-12-31",
-                        "idStatus": 6,
-                    }
-                ],
-            },
-        )
+        side_effect=_lookup_payload_ok,
     )
     provider = _provider()
     record = await provider.lookup(parse_certificate_number("ЕАЭС RU C-CN.СБ21.А.00039/19"))
